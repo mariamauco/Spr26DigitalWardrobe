@@ -1,9 +1,0 @@
-flask
-flask-cors
-pymongo
-dnspython
-flask-jwt-extended
-bcrypt
-requests
-python-dotenv
-Pillow
