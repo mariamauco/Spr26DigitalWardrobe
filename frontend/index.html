@@ -1,0 +1,312 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Closet Demo</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; }
+      input, select, button { padding: 10px; font-size: 14px; }
+      button { cursor: pointer; }
+      .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin: 12px 0; display: flex; gap: 12px; align-items: center; }
+      img { width: 110px; height: 110px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; }
+      .muted { color: #666; font-size: 13px; }
+      .pill { display: inline-block; padding: 2px 8px; border: 1px solid #ddd; border-radius: 999px; margin-right: 6px; font-size: 12px; }
+      .ok { color: #0a7; }
+      .err { color: #c22; }
+      hr { border: none; border-top: 1px solid #eee; margin: 18px 0; }
+      code { background: #f6f6f6; padding: 2px 6px; border-radius: 6px; }
+    </style>
+  </head>
+
+  <body>
+    <h1>Closet Demo (Local Uploads)</h1>
+    <p class="muted">
+      Backend: <code id="backendUrlLabel"></code>
+    </p>
+
+    <div class="row">
+      <label>
+        Backend URL:
+        <input id="backendUrl" style="width: 320px" placeholder="http://localhost:5000" />
+      </label>
+      <button id="saveBackend">Save</button>
+      <button id="logoutBtn">Logout</button>
+    </div>
+
+    <p id="status" class="muted"></p>
+
+    <hr />
+
+    <h2>1) Login</h2>
+    <div class="row">
+      <input id="email" placeholder="email" style="width: 240px" />
+      <input id="password" type="password" placeholder="password" style="width: 240px" />
+      <button id="loginBtn">Login</button>
+    </div>
+    <p class="muted">
+      This expects your backend route: <code>POST /login</code> returning <code>{ token }</code>.
+      If your login route is <code>/api/auth/login</code>, change it in the code below (search for <b>LOGIN_PATH</b>).
+    </p>
+
+    <hr />
+
+    <h2>2) Upload a clothing item</h2>
+    <div class="row">
+      <input id="name" placeholder="name (optional)" style="width: 220px" />
+      <select id="type">
+        <option value="top">top</option>
+        <option value="bottom">bottom</option>
+        <option value="outerwear">outerwear</option>
+        <option value="dress">dress</option>
+        <option value="shoes">shoes</option>
+        <option value="accessory">accessory</option>
+      </select>
+      <input id="colors" placeholder="colors (comma) e.g. blue,white" style="width: 260px" />
+      <input id="tags" placeholder="tags (comma) e.g. casual,winter" style="width: 260px" />
+      <input id="image" type="file" accept="image/*" />
+      <button id="uploadBtn">Upload</button>
+    </div>
+
+    <hr />
+
+    <h2>3) Your items</h2>
+    <div class="row">
+      <button id="refreshBtn">Refresh list</button>
+    </div>
+    <div id="items"></div>
+
+    <script>
+      // ====== CONFIG ======
+      // Change these if your backend uses different paths
+      const LOGIN_PATH = "/api/auth/login";            // or "/api/auth/login"
+      const CLOTHING_PATH = "/api/clothing";  // as we built earlier
+
+      // ====== STATE ======
+      const statusEl = document.getElementById("status");
+      const itemsEl = document.getElementById("items");
+      const backendUrlInput = document.getElementById("backendUrl");
+      const backendUrlLabel = document.getElementById("backendUrlLabel");
+
+      function setStatus(msg, kind = "muted") {
+        statusEl.className = kind;
+        statusEl.textContent = msg;
+      }
+
+      function getBackend() {
+        return localStorage.getItem("backendUrl") || "http://localhost:5050";
+      }
+
+      function setBackend(url) {
+        localStorage.setItem("backendUrl", url.replace(/\/$/, ""));
+        backendUrlLabel.textContent = getBackend();
+      }
+
+      function getToken() {
+        return localStorage.getItem("token");
+      }
+
+      function setToken(token) {
+        localStorage.setItem("token", token);
+      }
+
+      function clearToken() {
+        localStorage.removeItem("token");
+      }
+
+      function authHeaders() {
+        const token = getToken();
+        return token ? { Authorization: `Bearer ${token}` } : {};
+      }
+
+      // ====== API HELPERS ======
+      async function apiJson(path, options = {}) {
+        const base = getBackend();
+        const res = await fetch(base + path, {
+          ...options,
+          headers: {
+            ...(options.headers || {}),
+            ...authHeaders(),
+          },
+        });
+
+        const text = await res.text();
+        let data;
+        try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+
+        if (!res.ok) {
+          const msg = (data && (data.message || data.error)) ? (data.message || data.error) : `HTTP ${res.status}`;
+          throw new Error(msg);
+        }
+        return data;
+      }
+
+      // ====== UI ACTIONS ======
+      async function login() {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        if (!email || !password) {
+          setStatus("Enter email + password.", "err");
+          return;
+        }
+
+        setStatus("Logging in...");
+        try {
+          const data = await apiJson(LOGIN_PATH, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (!data?.token) throw new Error("No token returned from server.");
+          setToken(data.token);
+
+          setStatus("Logged in ✅", "ok");
+          await refreshItems();
+        } catch (e) {
+          setStatus("Login failed: " + e.message, "err");
+        }
+      }
+
+      async function uploadItem() {
+        const token = getToken();
+        if (!token) {
+          setStatus("You must login first.", "err");
+          return;
+        }
+
+        const file = document.getElementById("image").files[0];
+        if (!file) {
+          setStatus("Choose an image file.", "err");
+          return;
+        }
+
+        const name = document.getElementById("name").value.trim();
+        const type = document.getElementById("type").value;
+        const colors = document.getElementById("colors").value.trim();
+        const tags = document.getElementById("tags").value.trim();
+
+        const fd = new FormData();
+        fd.append("image", file);
+        fd.append("type", type);
+        if (name) fd.append("name", name);
+        if (colors) fd.append("colors", colors); // comma-separated
+        if (tags) fd.append("tags", tags);       // comma-separated
+
+        setStatus("Uploading...");
+        try {
+          const base = getBackend();
+          const res = await fetch(base + CLOTHING_PATH, {
+            method: "POST",
+            headers: { ...authHeaders() }, // DO NOT set Content-Type with FormData
+            body: fd,
+          });
+
+          const text = await res.text();
+          let data;
+          try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+
+          if (!res.ok) {
+            const msg = (data && (data.message || data.error)) ? (data.message || data.error) : `HTTP ${res.status}`;
+            throw new Error(msg);
+          }
+
+          setStatus("Uploaded ✅", "ok");
+          document.getElementById("image").value = "";
+          await refreshItems();
+        } catch (e) {
+          setStatus("Upload failed: " + e.message, "err");
+        }
+      }
+
+      async function refreshItems() {
+        const token = getToken();
+        if (!token) {
+          itemsEl.innerHTML = `<p class="muted">Login to see your items.</p>`;
+          return;
+        }
+
+        setStatus("Loading items...");
+        try {
+          const items = await apiJson(CLOTHING_PATH, { method: "GET" });
+
+          if (!Array.isArray(items) || items.length === 0) {
+            itemsEl.innerHTML = `<p class="muted">No items yet.</p>`;
+            setStatus("Loaded ✅", "ok");
+            return;
+          }
+
+          const base = getBackend();
+          itemsEl.innerHTML = items.map(item => {
+            const imgSrc = item.imagePath ? (base + item.imagePath) : "";
+            const colors = (item.colors || []).map(c => `<span class="pill">${escapeHtml(c)}</span>`).join("");
+            const tags = (item.tags || []).map(t => `<span class="pill">${escapeHtml(t)}</span>`).join("");
+            return `
+              <div class="card">
+                ${imgSrc ? `<img src="${imgSrc}" alt="item" />` : ""}
+                <div style="flex: 1;">
+                  <div><b>${escapeHtml(item.name || "(no name)")}</b> <span class="muted">(${escapeHtml(item.type)})</span></div>
+                  <div class="muted">Colors: ${colors || "<span class='muted'>none</span>"}</div>
+                  <div class="muted">Tags: ${tags || "<span class='muted'>none</span>"}</div>
+                  <div class="muted">ID: <code>${escapeHtml(item._id)}</code></div>
+                </div>
+                <button onclick="deleteItem('${item._id}')">Delete</button>
+              </div>
+            `;
+          }).join("");
+
+          setStatus("Loaded ✅", "ok");
+        } catch (e) {
+          setStatus("Failed to load items: " + e.message, "err");
+        }
+      }
+
+      async function deleteItem(id) {
+        if (!confirm("Delete this item?")) return;
+        setStatus("Deleting...");
+        try {
+          await apiJson(`${CLOTHING_PATH}/${id}`, { method: "DELETE" });
+          setStatus("Deleted ✅", "ok");
+          await refreshItems();
+        } catch (e) {
+          setStatus("Delete failed: " + e.message, "err");
+        }
+      }
+
+      // Expose deleteItem to inline onclick
+      window.deleteItem = deleteItem;
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      // ====== WIRE BUTTONS ======
+      document.getElementById("loginBtn").addEventListener("click", login);
+      document.getElementById("uploadBtn").addEventListener("click", uploadItem);
+      document.getElementById("refreshBtn").addEventListener("click", refreshItems);
+
+      document.getElementById("saveBackend").addEventListener("click", () => {
+        setBackend(backendUrlInput.value || "http://localhost:5000");
+        setStatus("Backend URL saved ✅", "ok");
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        clearToken();
+        setStatus("Logged out.", "muted");
+        refreshItems();
+      });
+
+      // ====== INIT ======
+      backendUrlInput.value = getBackend();
+      backendUrlLabel.textContent = getBackend();
+      refreshItems();
+    </script>
+  </body>
+</html>

@@ -3,6 +3,8 @@ import cors from "cors";
 import mongoose from "mongoose";
 import "dotenv/config";
 import authRoutes from "./routes/auth.js"; 
+import path from "path";
+import clothingRoutes from "./routes/clothing.js";
 
 const app = express();
 app.use(cors()); // allows front end to call backend
@@ -27,5 +29,11 @@ mongoose.connect(process.env.MONGO_URI)
   })
   .catch((err) => console.error("Mongo connection error:", err));
 
+app.use(cors({ origin: "http://localhost:5173" })); // or "*" for quick testing
 app.use("/api/auth", authRoutes);  
 
+// UPLOADING IMAGES //
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+// CLOTHING ROUTES //
+app.use("/api/clothing", clothingRoutes);
