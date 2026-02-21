@@ -29,7 +29,8 @@ mongoose.connect(process.env.MONGO_URI)
   })
   .catch((err) => console.error("Mongo connection error:", err));
 
-app.use(cors({ origin: "http://localhost:5173" })); // or "*" for quick testing
+app.use(cors({ origin: "*" })); // or http://localhost:5173 for prod
+//app.use(cors({ origin: "*" })); // or "*" for testing
 app.use("/api/auth", authRoutes);  
 
 // UPLOADING IMAGES //
