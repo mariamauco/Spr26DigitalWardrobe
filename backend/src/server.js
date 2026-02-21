@@ -16,7 +16,7 @@ app.get("/health", (_, res) => res.json({ ok: true }));
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    app.listen(process.env.PORT || 5050, () =>
+    app.listen(process.env.PORT || 5050, '0.0.0.0', () =>
       console.log("API running")
     );
   })
