@@ -3,6 +3,8 @@ import cors from "cors";
 import mongoose from "mongoose";
 import "dotenv/config";
 import authRoutes from "./routes/auth.js"; 
+import path from "path";
+import clothingRoutes from "./routes/clothing.js";
 
 const app = express();
 app.use(cors()); // allows front end to call backend
@@ -14,7 +16,7 @@ app.get("/health", (_, res) => res.json({ ok: true }));
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    app.listen(process.env.PORT || 5050, () =>
+    app.listen(process.env.PORT || 5050, '0.0.0.0', () =>
       console.log("API running")
     );
   })
@@ -27,5 +29,12 @@ mongoose.connect(process.env.MONGO_URI)
   })
   .catch((err) => console.error("Mongo connection error:", err));
 
+app.use(cors({ origin: "*" })); // or http://localhost:5173 for prod
+//app.use(cors({ origin: "*" })); // or "*" for testing
 app.use("/api/auth", authRoutes);  
 
+// UPLOADING IMAGES //
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+// CLOTHING ROUTES //
+app.use("/api/clothing", clothingRoutes);
