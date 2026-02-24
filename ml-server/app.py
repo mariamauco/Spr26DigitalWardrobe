@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+from rembg import remove 
 
 # Flask cors: flask extension that enables cros origin resource sharing (useful for development)
 from flask_cors import CORS

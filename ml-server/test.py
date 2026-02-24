@@ -7,11 +7,12 @@ from transformers import CLIPProcessor, CLIPModel
 # Fine category examples (expand later)
 
 COARSE_PROMPTS = {
-    "top": ["a photo of a top"],
-    "bottom": ["a photo of a bottom"],
-    "shoe": ["a photo of a shoe"],
-    "accessory": ["a photo of an accessory"],
+    "top": "a photo of a top",
+    "bottom": "a photo of a bottom",
+    "shoe": "a photo of a shoe",
+    "accessory": "a photo of an accessory",
 }
+
 FINE_CATEGORY_PROMPTS = {
     "top": [
         "a photo of a t-shirt",
@@ -75,10 +76,9 @@ image = Image.open('test_images/outputshirt1.jpg').convert("RGB")
 labels = []
 all_prompts = []
 
-for category, prompt_list in COARSE_PROMPTS.items():
-    for p in prompt_list:
-        labels.append(category)
-        all_prompts.append(p)
+for category, prompt in COARSE_PROMPTS.items():
+    labels.append(category)
+    all_prompts.append(prompt)
 
 inputs = processor(text=all_prompts, images=image, return_tensors="pt", padding=True)
 
