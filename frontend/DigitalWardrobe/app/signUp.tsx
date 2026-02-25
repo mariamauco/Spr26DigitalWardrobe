@@ -11,6 +11,8 @@ export default function SignUpScreen() {
 
 	const signUp = async () => {
 
+		console.log("SIGNUP FUNCTION CALLED");
+
 		// check to see if user entered in all values
 		if (!name || !email || !password) {
 			Alert.alert("Error", "All fields are required");
@@ -24,7 +26,7 @@ export default function SignUpScreen() {
 		};
 
 		try {
-		const response = await fetch("http://138.197.16.179:5050/", {
+		const response = await fetch("http://138.197.16.179:5050/api/auth/register", {
 			method: "POST",
 			headers: {
 			"Content-Type": "application/json",
@@ -32,11 +34,16 @@ export default function SignUpScreen() {
 			body: JSON.stringify(payload),
 		});
 
-		if (!response.ok) {
-			throw new Error("Signup failed");
-		}
+      	console.log("Status:", response.status);
 
 		const data = await response.json();
+		console.log("Response:", data);
+
+		if (!response.ok) {
+			Alert.alert("SignUp Failed", data.message || "Invalid credentials");
+			return;
+		}
+		
     	Alert.alert("Success", "Sign up successful!"); // sends notification to user that signup was succesful
 
 		} 

@@ -10,6 +10,8 @@ export default function LogInScreen() {
 
 	const login = async () => {
 
+    	console.log("LOGIN FUNCTION CALLED");
+
 		// check to see if user entered in all values
 		if (!email || !password) {
 			Alert.alert("Error", "All fields are required");
@@ -22,7 +24,7 @@ export default function LogInScreen() {
 		};
 
 		try {
-		const response = await fetch("http://138.197.16.179:5050/", {
+		const response = await fetch("http://138.197.16.179:5050/api/auth/login", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -30,15 +32,20 @@ export default function LogInScreen() {
 		body: JSON.stringify(payload),
 		});
 
-		if (!response.ok) {
-		throw new Error("Login failed");
-		}
+      	console.log("Status:", response.status);
 
 		const data = await response.json();
+		console.log("Response:", data);
+
+		if (!response.ok) {
+			Alert.alert("Login Failed", data.message || "Invalid credentials");
+			return;
+		}
+
 		Alert.alert("Success", "Login successful!"); // sends notification to user that login was succesful
 
 		} catch (error) {
-		Alert.alert("Error", "Signup failed. Please try again."); // sends notification to user that login was NOT succesful
+		Alert.alert("Error", "Login failed. Please try again."); // sends notification to user that login was NOT succesful
 		console.error("Error:", error);
 		}
 	};
