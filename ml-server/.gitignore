@@ -3,3 +3,5 @@ venv/
 env/
 __pycache_
 /test_images
+.code-workspace
+.vscode/
