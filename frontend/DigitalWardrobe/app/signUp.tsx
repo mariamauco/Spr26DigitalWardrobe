@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Pressable } from "react-native";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
+import Button from "../components/ui/button";
 
 export default function SignUpScreen() {
 
@@ -11,7 +12,7 @@ export default function SignUpScreen() {
   	const [password, setPassword] = useState("");
 
 	const router = useRouter();
-	
+
 	const signUp = async () => {
 
 		console.log("SIGNUP FUNCTION CALLED");
@@ -73,9 +74,8 @@ export default function SignUpScreen() {
 				<TextInput placeholder='name' style={styles.input} value={name} onChangeText={setName}/>
 				<TextInput placeholder='email' style={styles.input} value={email} onChangeText={setEmail}/>
 				<TextInput placeholder='password' style={styles.input} secureTextEntry value={password} onChangeText={setPassword}/>
-				<Pressable onPress={signUp}>
-					<Text>Sign up</Text>
-				</Pressable>
+				
+				<Button title="Sign up" onPress={signUp} />
 		</View>
 		</>
 	);

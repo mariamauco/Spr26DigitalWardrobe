@@ -46,7 +46,7 @@ export default function LogInScreen() {
 
 		Alert.alert("Success", "Login successful!"); // sends notification to user that login was succesful
 
-		const statusResponse = await fetch(`http://138.197.16.179:5050/api/auth/login`, {
+		const statusResponse = await fetch("http://138.197.16.179:5050/api/auth/login", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
