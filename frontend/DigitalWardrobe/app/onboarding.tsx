@@ -9,7 +9,7 @@ export default function SignUpScreen() {
                 <TextInput id='name' placeholder='name' style={styles.input} />
                 <TextInput id='email' placeholder='email' style={styles.input} />
                 <TextInput id='password' placeholder='password' style={styles.input} />
-                <button id='loginBtn'>Sign Up</button>
+                <button id='loginBtn'>Start Onboarding</button>
         </View>
         </>
     );

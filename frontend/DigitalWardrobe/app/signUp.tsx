@@ -2,6 +2,7 @@ import { Text, View, StyleSheet, TextInput } from 'react-native';
 import React, { useState } from "react";
 import { Pressable } from "react-native";
 import { Alert } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function SignUpScreen() {
 
@@ -9,6 +10,8 @@ export default function SignUpScreen() {
   	const [email, setEmail] = useState("");
   	const [password, setPassword] = useState("");
 
+	const router = useRouter();
+	
 	const signUp = async () => {
 
 		console.log("SIGNUP FUNCTION CALLED");
@@ -44,7 +47,14 @@ export default function SignUpScreen() {
 			return;
 		}
 		
-    	Alert.alert("Success", "Sign up successful!"); // sends notification to user that signup was succesful
+    	Alert.alert("Success", "Sign up successful!",
+			[
+				{ 
+					text: "OK", 
+					onPress: () => router.replace("/onboarding") // Redirects to onboarding.tsx
+				}
+            ]
+		); // sends notification to user that signup was succesful
 
 		} 
 		catch (error) {
