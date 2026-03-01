@@ -67,7 +67,7 @@ export default function SignUpScreen() {
 	return (
 		<>
 		<View style={styles.container}>
-			<Text style={styles.title}>Sign Up</Text>
+			<Text style={styles.title}>Create Account</Text>
 		</View>
 
 		<View style={{ padding: 3, margin: 5, flex: 4, alignItems: 'center' }}>

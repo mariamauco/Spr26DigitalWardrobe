@@ -11,7 +11,7 @@ export default function LandingScreen() {
 				<Text style={styles.title}>Welcome to DigitalWardrobe</Text>
 
 				<Link href="/signUp" style={styles.link}>Go to sign up</Link>
-				<Link href="/login" style={styles.link}>Go to log in</Link>
+				<Link href="/logIn" style={styles.link}>Go to log in</Link>
 				<Link href="/dashboard" style={styles.link}>Go to Dashboard</Link>
 				<Link href="/onboarding" style={styles.link}>Go to Onboarding</Link>
 			</View>
