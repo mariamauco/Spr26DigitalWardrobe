@@ -1,6 +1,7 @@
 from rembg import remove
 from PIL import Image
 import requests
+import numpy as np
 from transformers import CLIPProcessor, CLIPModel
 
 
@@ -120,6 +121,17 @@ probs = probs.detach().numpy()[0]
 best_idx = probs.argmax()
 best_category = labels[best_idx]
 confidence = float(probs[best_idx])
+
+
+#save the category into a vector to pass into the backend
+#generate an embedding using a library to generate a feauture vector
+image_inputs = processor(images=image, return_tensors="pt")
+image_features = model.get_image_features(**image_inputs)
+
+#normalize the data and convert
+image_features = image_features.detach().numpy().flatten()
+image_features = image_features / np.linalg.norm(image_features)
+feature_vector = image_features.tolist()
 
 print("Predicted coarse category:", best_category)
 print("Confidence:", confidence)
