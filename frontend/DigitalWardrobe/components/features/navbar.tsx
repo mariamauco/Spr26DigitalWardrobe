@@ -1,20 +1,16 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
+import Button from "../ui/button";
 
 export default function NavBar() {
+const router = useRouter();
+    
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Digital Wardrobe</Text>
 
-      <Pressable
-        style={({ pressed }) => [
-          styles.button,
-          pressed && styles.pressed
-        ]}
-        onPress={() => router.push("/login")}
-      >
-        <Text style={styles.buttonText}>Log In</Text>
-      </Pressable>
+        <Button title="Login" onPress={() => router.replace("/logIn")} />
+
     </View>
   );
 }
