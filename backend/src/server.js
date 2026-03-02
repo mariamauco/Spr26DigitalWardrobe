@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.js";
 import path from "path";
 import clothingRoutes from "./routes/clothing.js";
 import onboardingRoutes from "./routes/onboarding.js";
+import weatherRoutes from "./routes/weather.js";
 
 const app = express();
 app.use(cors()); // allows front end to call backend
@@ -19,18 +20,9 @@ app.get("/health", (_, res) => res.json({ ok: true }));
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    app.listen(process.env.PORT || 5050, '0.0.0.0', () =>
-      console.log("API running")
-    );
-  })
-  .catch(console.error);
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("Mongo connected");
-    app.listen(process.env.PORT || 5000, () => console.log("API running"));
     console.log("MONGO_URI:", process.env.MONGO_URI);
-    console.log("Connected DB:", mongoose.connection.name);
+    console.log("Connected DB:", mongoose.connection.db?.databaseName || mongoose.connection.name);
+    app.listen(process.env.PORT || 5000, '0.0.0.0', () => console.log("API running"));
   })
   .catch((err) => console.error("Mongo connection error:", err));
 
@@ -49,6 +41,8 @@ app.use("/api/clothing", clothingRoutes);
 
 // ONBOARDING ROUTES //
 app.use("/api/onboarding", onboardingRoutes);
+
+app.use("/api", weatherRoutes);
 
 
 //https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=a136e95903135fc736e4af312c8d23bc&units=imperial
