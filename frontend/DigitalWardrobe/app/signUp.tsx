@@ -2,12 +2,16 @@ import { Text, View, StyleSheet, TextInput } from 'react-native';
 import React, { useState } from "react";
 import { Pressable } from "react-native";
 import { Alert } from "react-native";
+import { useRouter } from "expo-router";
+import Button from "../components/ui/button";
 
 export default function SignUpScreen() {
 
 	const [name, setName] = useState("");
   	const [email, setEmail] = useState("");
   	const [password, setPassword] = useState("");
+
+	const router = useRouter();
 
 	const signUp = async () => {
 
@@ -44,7 +48,14 @@ export default function SignUpScreen() {
 			return;
 		}
 		
-    	Alert.alert("Success", "Sign up successful!"); // sends notification to user that signup was succesful
+    	Alert.alert("Success", "Sign up successful!",
+			[
+				{ 
+					text: "OK", 
+					onPress: () => router.replace("/onboarding") // Redirects to onboarding.tsx
+				}
+            ]
+		); // sends notification to user that signup was succesful
 
 		} 
 		catch (error) {
@@ -56,16 +67,15 @@ export default function SignUpScreen() {
 	return (
 		<>
 		<View style={styles.container}>
-			<Text style={styles.title}>Sign Up</Text>
+			<Text style={styles.title}>Create Account</Text>
 		</View>
 
 		<View style={{ padding: 3, margin: 5, flex: 4, alignItems: 'center' }}>
 				<TextInput placeholder='name' style={styles.input} value={name} onChangeText={setName}/>
 				<TextInput placeholder='email' style={styles.input} value={email} onChangeText={setEmail}/>
 				<TextInput placeholder='password' style={styles.input} secureTextEntry value={password} onChangeText={setPassword}/>
-				<Pressable onPress={signUp}>
-					<Text>Sign up</Text>
-				</Pressable>
+				
+				<Button title="Sign up" onPress={signUp} />
 		</View>
 		</>
 	);
