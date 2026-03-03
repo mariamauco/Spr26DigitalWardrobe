@@ -12,7 +12,7 @@ router.get("/weather", authMiddleware, async (req, res) => {
         const zip = user.zipCode;
 
         const response = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?zip=${zip},US&units=imperial&appid=${process.env.REACT_APP_API_KEY}`
+            `https://api.openweathermap.org/data/2.5/weather?zip=${zip},US&units=imperial&appid=${process.env.WEATHER_API_KEY}`
         );
 
 
