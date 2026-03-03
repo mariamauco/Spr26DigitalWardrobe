@@ -6,16 +6,40 @@ export default function NavBar() {
 const router = useRouter();
     
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Digital Wardrobe</Text>
+    <View style={styles.outer}>
+      <View style={styles.inner}>
+        <Text style={styles.title}>Digital Wardrobe</Text>
 
-        <Button title="Login" onPress={() => router.replace("/logIn")} />
-
+        <Pressable
+          style={({ pressed }) => [
+          styles.button,
+          pressed && styles.pressed
+        ]}
+        onPress={() => router.push("/logIn")}
+      >
+          <Text style={styles.buttonText}>Log In</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outer: {
+    width: "100%",
+    paddingTop: 24,      // space from top
+    paddingBottom: 12,
+  },
+
+  inner: {
+    width: "100%",
+    maxWidth: 1200,      // keeps content centered like Figma
+    alignSelf: "center",
+    paddingHorizontal: 48,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   container: {
     width: "100%",
     height: 60,
@@ -25,12 +49,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderRadius: 8,
-    backgroundColor: "#ffffff",
+    backgroundColor: "transparent",
   },
 
   title: {
     fontSize: 30,
     color: "#8A5F5F",
+    fontFamily: "DMSerifDisplay_400Regular",
   },
 
   button: {
@@ -45,6 +70,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 20,
     color: "#F2F0F0",
+    fontFamily: "DMSerifDisplay_400Regular",
   },
 
   pressed: {
