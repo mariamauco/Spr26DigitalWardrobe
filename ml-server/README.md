@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ### ML-Server for AI wardrobe project
 This folder contains the Flask-based Machine Learning server for the Digital Wardrobe application.
 
@@ -13,7 +12,7 @@ The ML server is responsible for heavy AI processing including:
 🧪 Future virtual try-on experiments
 
 This server works alongside the MERN backend and React frontend as part of the system architecture described in the project documentation
-=======
+
 # How to run app:
 
 1. **Update package manager**
@@ -42,4 +41,3 @@ This server works alongside the MERN backend and React frontend as part of the s
 
 7. **Access the application**
     Open your browser and go to `http://127.0.0.1:5000`
->>>>>>> origin/main

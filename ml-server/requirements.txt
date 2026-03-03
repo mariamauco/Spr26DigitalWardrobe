@@ -11,3 +11,5 @@ rembg[cpu]
 torch
 tensorflow
 transformers[torch]
+pandas
+kaggle
