@@ -18,6 +18,8 @@ const ClothingItemSchema = new mongoose.Schema(
 
         imagePath: {type: String, required: true}, // URL to the clothing item image
 
+        imageEmbedding: {type: [Number], validator: function (v) {return v.length === 512;},message: "imageEmbedding must be a 512-dimensional vector.", required:true}
+
     },
 
     { timestamps: true }
