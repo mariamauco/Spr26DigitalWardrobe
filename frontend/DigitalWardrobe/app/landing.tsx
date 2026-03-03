@@ -1,8 +1,6 @@
 import { Text, View, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import NavBar from "../components/features/navbar";
-
-import NavBar from "../components/features/navbar";
 import OmbreBackground from "../components/features/ombrebackground";
 import GridOverlay from "../components/features/gridoverlay";
 
