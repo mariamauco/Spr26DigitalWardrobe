@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 ### ML-Server for AI wardrobe project
 This folder contains the Flask-based Machine Learning server for the Digital Wardrobe application.
 
@@ -28,18 +28,13 @@ This server works alongside the MERN backend and React frontend as part of the s
     `source env/bin/activate`
     Activates the virtual environment so packages install locally to this project.
 
-4. **Install Flask**
-    `pip install Flask`
-    Installs the Flask web framework for building the application.
+4. **Install all requirements**
+    `pip install -r requirements.txt`
+    Installs all requirements listed in the requirements txt for building the application.
 
-5. **Install Flask CORS**
-    `pip install flask-cors`
-    Installs Flask extension to handle Cross-Origin Resource Sharing requests.
-
-6. **Start the server**
+5. **Start the server**
     `flask run`
     Launches the Flask development server.
 
-7. **Access the application**
+6. **Access the application**
     Open your browser and go to `http://127.0.0.1:5000`
->>>>>>> origin/main
