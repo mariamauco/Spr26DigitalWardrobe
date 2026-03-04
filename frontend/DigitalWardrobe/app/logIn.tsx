@@ -1,8 +1,13 @@
-import { TextInput ,Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import React, { useState } from "react";
 import { Pressable } from "react-native";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
+// imports for components
+import Button from "../components/ui/button";
+import OmbreBackground from "../components/features/ombrebackground";
+import GridOverlay from "../components/features/gridoverlay";
+import TextBox from "../components/ui/textBox";
 
 export default function LogInScreen() {
 
@@ -67,42 +72,74 @@ export default function LogInScreen() {
 		console.error("Error:", error);
 		}
 	};
+
 	
 	return (
 		<>
-		<View style={styles.container}>
-			<Text style={styles.title}>Log In</Text>
+		<View style={styles.mainContainer}>
+			<OmbreBackground />
+			<GridOverlay />
+			
+			<KeyboardAvoidingView 
+				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+				style={{ flex: 1 }}
+			>
+				<ScrollView contentContainerStyle={styles.scrollContent}>
+						<View style={styles.header}>
+							<Text style={styles.title}>Welcome Back</Text>
+						</View>
+
+						<View style={styles.container}>
+							<TextBox 
+								placeholder='email' 
+								value={email} 
+								onChangeText={setEmail}
+								keyboardType="email-address"
+								autoCapitalize="none"
+							/>
+							<TextBox 
+								placeholder='password' 
+								secureTextEntry 
+								value={password} 
+								onChangeText={setPassword}
+							/>
+							<Button title="Log In" onPress={login} />
+						</View>
+				</ScrollView>
+			</KeyboardAvoidingView>
 		</View>
-		<View style={{padding:3, margin:5, flex:4, alignItems:'center'}}>
-			<TextInput placeholder='email' style={styles.input} value={email} onChangeText={setEmail}/>
-			<TextInput placeholder='password' style={styles.input} secureTextEntry value={password} onChangeText={setPassword}/>
-			<Pressable onPress={login}>
-				<Text>Log In</Text>
-			</Pressable>
-		</View>
-		
 		</>
-		
 	);
 }
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
+	mainContainer: {
+		flex: 1, // This ensures the background covers the whole screen
+	},
+	scrollContent: {
+		flexGrow: 1,
 		alignItems: 'center',
 		justifyContent: 'center',
-		padding: 24,
+		paddingVertical: 40,
+	},
+	header: {
+		marginBottom: 20,
+		alignItems: 'center',
 	},
 	title: {
-		fontSize: 24,
-		fontWeight: '600',
+		color: "#8A5F5F",
+		fontFamily: "Poppins_700Bold", // see note below
+		fontSize: 36,
+		fontWeight: "700",
+	},	
+	container: {
+		width: '100%',
+		alignItems: 'center',
+		gap: 24,
 	},
-	input:{
-		width:'50%', 
-		borderColor:'black', 
-		borderWidth:1, 
-		margin:3,
-		borderRadius:5,
-		padding:1,
+	pickerWrapper: {
+		width: "80%", 
+		alignSelf: "center", 
+		marginVertical: 10 
 	}
-});
+});	
