@@ -252,23 +252,25 @@ export default function SignUpScreen() {
 		const data = await response.json();
 		console.log("Response:", data);
 
-		if (!response.ok) {
+		// this alert is not triggering ;-; the status is 201 when logged
+		if (response.status === 201) {
+			Alert.alert("Success", "Sign up successful!",
+				[
+					{ 
+						text: "OK", 
+						onPress: () => router.replace("../onboarding")
+					}
+				]
+			);
+			router.replace("../onboarding"); // added this to get rerouted since alert doesnt happen
+			return;
+		} else {
 			Alert.alert("SignUp Failed", data.message || "Invalid credentials");
 			return;
 		}
-		
-    	Alert.alert("Success", "Sign up successful!",
-			[
-				{ 
-					text: "OK", 
-					onPress: () => router.replace("/onboarding/step1") // Redirects to onboarding.tsx
-				}
-            ]
-		); // sends notification to user that signup was succesful
-
 		} 
 		catch (error) {
-		Alert.alert("Error", "Signup failed. Please try again."); // sends notification to user that signup was NOT succesful
+		Alert.alert("Error", "Signup failed. Please try again.");
 		console.error("Error:", error);
 		}
 	};

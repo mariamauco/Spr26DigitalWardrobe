@@ -68,7 +68,7 @@ export default function LogInScreen() {
 
 			// If onboarding is false, send to onboarding page
             if (onboardingData == null || onboardingData.completed === false) {
-                router.replace("../onboarding/_layout.tsx");
+                router.replace("../onboarding/");
             } else { // If already onboarded, send to dashboard
                 router.replace("/dashboard");
             }
