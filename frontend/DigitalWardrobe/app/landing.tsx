@@ -17,7 +17,7 @@ export default function LandingScreen() {
 				<Link href="/signup" style={styles.link}>Go to sign up</Link>
 				<Link href="/login" style={styles.link}>Go to log in</Link>
 				<Link href="/dashboard" style={styles.link}>Go to Dashboard</Link>
-				<Link href="/onboarding" style={styles.link}>Go to Onboarding</Link>
+				<Link href="../onboarding" style={styles.link}>Go to Onboarding</Link>
 			</View>
 		</View>
 	);
