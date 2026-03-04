@@ -15,7 +15,7 @@ const router = useRouter();
           styles.button,
           pressed && styles.pressed
         ]}
-        onPress={() => router.push("/logIn")}
+        onPress={() => router.push("/login")}
       >
           <Text style={styles.buttonText}>Log In</Text>
         </Pressable>

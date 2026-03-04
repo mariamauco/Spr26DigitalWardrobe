@@ -22,10 +22,10 @@ export default function RootLayout() {
       <Stack initialRouteName="landing">
         <Stack.Screen name="landing" options={{ headerShown: false }} />
         <Stack.Screen name="dashboard" options={{ title: 'Dashboard' }} />
-        <Stack.Screen name="logIn" options={{ title: 'Log In' }} />
-        <Stack.Screen name="signUp" options={{ title: 'Sign Up' }} />
-        <Stack.Screen name="onboarding" options={{ title: 'Onboarding' }} />
-
+        <Stack.Screen name="login" options={{ title: 'Log In' }} />
+        <Stack.Screen name="signup" options={{ title: 'Sign Up' }} />
+        {/*<Stack.Screen name="onboarding" options={{ title: 'Onboarding' }} />
+*/}
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

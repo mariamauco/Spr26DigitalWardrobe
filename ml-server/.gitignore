@@ -5,3 +5,5 @@ __pycache_
 /test_images
 .code-workspace
 .vscode/
+evaluate_clip/dataset/
+evaluate_clip/results/

@@ -261,7 +261,7 @@ export default function SignUpScreen() {
 			[
 				{ 
 					text: "OK", 
-					onPress: () => router.replace("/onboarding") // Redirects to onboarding.tsx
+					onPress: () => router.replace("/onboarding/step1") // Redirects to onboarding.tsx
 				}
             ]
 		); // sends notification to user that signup was succesful

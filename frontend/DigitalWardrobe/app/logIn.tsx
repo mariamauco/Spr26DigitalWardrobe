@@ -13,6 +13,7 @@ export default function LogInScreen() {
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");	
+	const [token, setToken] = useState("");
 	const router = useRouter();
 
 	const login = async () => {
@@ -48,20 +49,25 @@ export default function LogInScreen() {
 			Alert.alert("Login Failed", data.message || "Invalid credentials");
 			return;
 		}
+		const authToken = data.token;
+		setToken(authToken);
 
 		Alert.alert("Success", "Login successful!"); // sends notification to user that login was succesful
 
-		const statusResponse = await fetch("http://138.197.16.179:5050/api/auth/login", {
+		const onboardingRes = await fetch("http://138.197.16.179:5050/api/onboarding", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
+					"Authorization": `Bearer ${authToken}`
                 },
             });
 
-            const statusData = await statusResponse.json();
-            
+
+            const onboardingData = await onboardingRes.json();
+            console.log(onboardingData)
+
 			// If onboarding is false, send to onboarding page
-            if (statusData.onboarding === false) {
+            if (onboardingData == null || onboardingData.completed === false) {
                 router.replace("/onboarding");
             } else { // If already onboarded, send to dashboard
                 router.replace("/dashboard");
