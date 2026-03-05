@@ -13,20 +13,50 @@ router.get("/", requireAuth, async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
 router.get("/ping", (req, res) => res.send("onboarding mounted"));
 
 // POST create/update onboarding profile
 router.post("/", requireAuth, async (req, res) => {
   try {
-    const { styleTags, ventureLevel, comfortLevel, casualLevel, completed } = req.body;
+    const {
+      styleTags,
+      silhouetteTags,
+      comfort,
+      experimental,
+      completed,
+    } = req.body;
 
-    const update = {
-      ...(styleTags !== undefined ? { styleTags } : {}),
-      ...(ventureLevel !== undefined ? { ventureLevel } : {}),
-      ...(comfortLevel !== undefined ? { comfortLevel } : {}),
-      ...(casualLevel !== undefined ? { casualLevel } : {}),
-      ...(completed !== undefined ? { completed: Boolean(completed) } : {})
-    };
+    const update = {};
+
+    // Multi-select arrays
+    if (styleTags !== undefined) {
+      update.styleTags = Array.isArray(styleTags)
+        ? styleTags.map((s) => String(s).trim()).filter(Boolean)
+        : [];
+    }
+
+    if (silhouetteTags !== undefined) {
+      update.silhouetteTags = Array.isArray(silhouetteTags)
+        ? silhouetteTags.map((s) => String(s).trim()).filter(Boolean)
+        : [];
+    }
+
+    // Sliders (0..1)
+    if (comfort !== undefined) {
+      const v = Number(comfort);
+      if (Number.isNaN(v)) return res.status(400).json({ error: "comfort level must be a number" });
+      update.comfortVsTrendy = Math.max(0, Math.min(1, v));
+    }
+
+    if (experimental !== undefined) {
+      const v = Number(experimental);
+      if (Number.isNaN(v)) return res.status(400).json({ error: "experimental level must be a number" });
+      update.experimentalVsBold = Math.max(0, Math.min(1, v));
+    }
+
+    // Completion flag
+    if (completed !== undefined) update.completed = Boolean(completed);
 
     const profile = await OnboardingProfile.findOneAndUpdate(
       { user: req.user.id },
