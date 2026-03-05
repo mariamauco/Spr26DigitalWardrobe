@@ -9,7 +9,7 @@ import OmbreBackground from "../components/features/ombrebackground";
 import GridOverlay from "../components/features/gridoverlay";
 import TextBox from "../components/ui/textBox";
 import Dropdown from "../components/ui/dropdown";
-import GlassPanel from "../components/ui/glassPanel";
+import PlaceholderCard from "../components/ui/card";
 
 // when sign up button is pressed this function is called
 // sends user info to backend
@@ -216,6 +216,7 @@ export default function SignUpScreen() {
 		{ label: "Zimbabwe", value: "ZW" },
 	];
 
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const router = useRouter();
 
 	const signUp = async () => {
@@ -223,10 +224,22 @@ export default function SignUpScreen() {
 		console.log("SIGNUP FUNCTION CALLED");
 
 		// check to see if user entered in all values
-		if (!name || !email || !password || !zipCode || !country) {
-			Alert.alert("Error", "All fields are required");
+		if (!name.trim() || !email.trim() || !password.trim() || !zipCode.trim() || !country) {
+  			setErrorMessage("All fields are required.");
+			return;
+		}
+
+		if (!confirmPassword.trim()) {
+			setErrorMessage("Please confirm your password.");
+			return;
+		}
+
+		if (password !== confirmPassword) {
+			setErrorMessage("Passwords do not match.");
 			return;
 		}	
+
+		setErrorMessage(null); // clear error if everything is valid
 
 		const payload = {
 			name,
@@ -247,6 +260,7 @@ export default function SignUpScreen() {
 			body: JSON.stringify(payload),
 		});
 
+		console.log({ name, email, password, zipCode, country });
       	console.log("Status:", response.status);
 
 		const data = await response.json();
@@ -254,15 +268,9 @@ export default function SignUpScreen() {
 
 		// this alert is not triggering ;-; the status is 201 when logged
 		if (response.status === 201) {
-			Alert.alert("Success", "Sign up successful!",
-				[
-					{ 
-						text: "OK", 
-						onPress: () => router.replace("../onboarding")
-					}
-				]
-			);
-			router.replace("../onboarding"); // added this to get rerouted since alert doesnt happen
+			Alert.alert("Success", "Sign up successful!", [
+				{ text: "OK", onPress: () => router.replace("../onboarding") }
+			]);
 			return;
 		} else {
 			Alert.alert("SignUp Failed", data.message || "Invalid credentials");
@@ -270,8 +278,8 @@ export default function SignUpScreen() {
 		}
 		} 
 		catch (error) {
-		Alert.alert("Error", "Signup failed. Please try again.");
-		console.error("Error:", error);
+			window.alert("Signup failed. Please try again.");
+			console.error("Error:", error);
 		}
 	};
 
@@ -282,62 +290,86 @@ export default function SignUpScreen() {
 			<GridOverlay />
 			
 			<View style={styles.glassWrapper}>
-				<GlassPanel />
+				<PlaceholderCard 
+					width="90%" 
+					height="80%" 
+					backgroundColor="rgba(255,255,255,0.35)"
+				>
+					<KeyboardAvoidingView 
+						behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+						style={{ flex: 1 }}
+					>
+						<ScrollView contentContainerStyle={styles.scrollContent}>
+								<View style={styles.header}>
+									<Text style={styles.title}>Create Account</Text>
+								</View>
+
+								<View style={styles.container}>
+									<TextBox 
+										placeholder='name' 
+										value={name} 
+										onChangeText={(text) => {
+											setName(text);
+											setErrorMessage(null);
+										}}
+									/>
+									<TextBox 
+										placeholder='email' 
+										value={email} 
+										onChangeText={(text) => {
+											setEmail(text);
+											setErrorMessage(null);
+										}}								
+										keyboardType="email-address"
+										autoCapitalize="none"
+									/>
+									<TextBox 
+										placeholder='password' 
+										secureTextEntry 
+										value={password} 
+										onChangeText={(text) => {
+											setPassword(text);
+											setErrorMessage(null);
+										}}
+									/>
+									<TextBox 
+										placeholder='retype password' 
+										secureTextEntry 
+										value={confirmPassword} 
+										onChangeText={(text) => {
+											setConfirmPassword(text);
+											setErrorMessage(null);
+										}}							/>
+									<TextBox 
+										placeholder='zip code' 
+										value={zipCode} 
+										onChangeText={(text) => {
+											setZipCode(text);
+											setErrorMessage(null);
+										}}							/>
+									
+									<View style={styles.pickerWrapper}>
+										<Dropdown
+											value={country}
+											onValueChange={setCountry}
+											items={countries}
+											placeholder="Select a country"
+										/>
+									</View>
+									
+									{errorMessage && (
+										<View style={styles.errorBox}>
+										<Text style={styles.errorText}>{errorMessage}</Text>
+										</View>
+									)}
+
+									<Button title="Sign up" onPress={signUp} />
+								</View>
+						</ScrollView>
+					</KeyboardAvoidingView>
+				</PlaceholderCard>
 			</View>
 
-			<KeyboardAvoidingView 
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
-            >
-				<ScrollView contentContainerStyle={styles.scrollContent}>
-						<View style={styles.header}>
-							<Text style={styles.title}>Create Account</Text>
-						</View>
-
-						<View style={styles.container}>
-							<TextBox 
-								placeholder='name' 
-								value={name} 
-								onChangeText={setName}
-							/>
-							<TextBox 
-								placeholder='email' 
-								value={email} 
-								onChangeText={setEmail}
-								keyboardType="email-address"
-								autoCapitalize="none"
-							/>
-							<TextBox 
-								placeholder='password' 
-								secureTextEntry 
-								value={password} 
-								onChangeText={setPassword}
-							/>
-							<TextBox 
-								placeholder='retype password' 
-								secureTextEntry 
-								value={confirmPassword} 
-								onChangeText={setConfirmPassword}
-							/>
-							<TextBox 
-								placeholder='zip code' 
-								value={zipCode} 
-								onChangeText={setZipCode}
-							/>
-							
-							<View style={styles.pickerWrapper}>
-								<Dropdown
-									value={country}
-									onValueChange={setCountry}
-									items={countries}
-									placeholder="Select a country"
-								/>
-							</View>
-							
-							<Button title="Sign up" onPress={signUp} />
-						</View>
-				</ScrollView>
-            </KeyboardAvoidingView>
 		</View>
 		</>
 	);
@@ -382,5 +414,18 @@ const styles = StyleSheet.create({
         width: "80%", 
         alignSelf: "center", 
         marginVertical: 10 
-    }
+    },
+	errorBox: {
+		backgroundColor: "#f7b0b6",
+		borderRadius: 8,
+		padding: 10,
+		width: "80%",
+		alignSelf: "center",
+	},
+
+	errorText: {
+		color: "#842029",
+		fontSize: 14,
+		textAlign: "center",
+	}
 });

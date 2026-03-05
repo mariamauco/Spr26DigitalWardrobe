@@ -15,16 +15,19 @@ export default function LogInScreen() {
 	const [password, setPassword] = useState("");	
 	const [token, setToken] = useState("");
 	const router = useRouter();
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const login = async () => {
 
     	console.log("LOGIN FUNCTION CALLED");
 
 		// check to see if user entered in all values
-		if (!email || !password) {
-			Alert.alert("Error", "All fields are required");
+		if (!email.trim() || !password.trim()) {
+  			setErrorMessage("All fields are required.");
 			return;
 		}
+
+		setErrorMessage(null); // clear error if everything is valid
 
 		const payload = {
 			email,
@@ -52,7 +55,7 @@ export default function LogInScreen() {
 		const authToken = data.token;
 		setToken(authToken);
 
-		Alert.alert("Success", "Login successful!"); // sends notification to user that login was succesful
+		console.log("Success, login successful!"); // sends notification to user that login was succesful
 
 		const onboardingRes = await fetch("http://138.197.16.179:5050/api/onboarding", {
                 method: "GET",
@@ -74,8 +77,8 @@ export default function LogInScreen() {
             }
 
 		} catch (error) {
-		Alert.alert("Error", "Login failed. Please try again."); // sends notification to user that login was NOT succesful
-		console.error("Error:", error);
+			window.alert("Error, login failed. Please try again."); // sends notification to user that login was NOT succesful
+			console.error("Error:", error);
 		}
 	};
 
@@ -99,7 +102,10 @@ export default function LogInScreen() {
 							<TextBox 
 								placeholder='email' 
 								value={email} 
-								onChangeText={setEmail}
+								onChangeText={(text) => {
+									setEmail(text);
+									setErrorMessage(null);
+								}}								
 								keyboardType="email-address"
 								autoCapitalize="none"
 							/>
@@ -107,8 +113,18 @@ export default function LogInScreen() {
 								placeholder='password' 
 								secureTextEntry 
 								value={password} 
-								onChangeText={setPassword}
+								onChangeText={(text) => {
+									setPassword(text);
+									setErrorMessage(null);
+								}}
 							/>
+
+							{errorMessage && (
+								<View style={styles.errorBox}>
+								<Text style={styles.errorText}>{errorMessage}</Text>
+								</View>
+							)}				
+
 							<Button title="Log In" onPress={login} />
 						</View>
 				</ScrollView>
@@ -147,5 +163,18 @@ const styles = StyleSheet.create({
 		width: "80%", 
 		alignSelf: "center", 
 		marginVertical: 10 
-	}
+	},
+	errorBox: {
+		backgroundColor: "#f7b0b6",
+		borderRadius: 8,
+		padding: 10,
+		width: "80%",
+		alignSelf: "center",
+	},
+
+	errorText: {
+		color: "#842029",
+		fontSize: 14,
+		textAlign: "center",
+	}	
 });	
