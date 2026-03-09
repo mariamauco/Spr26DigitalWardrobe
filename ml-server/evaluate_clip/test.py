@@ -2,6 +2,8 @@ from rembg import remove
 from PIL import Image
 import requests
 from transformers import CLIPProcessor, CLIPModel
+import numpy as np
+import torch
 
 
 # Fine category examples (expand later)
@@ -91,8 +93,8 @@ STYLE_PROMPTS = {
 #TODO: add seasonalities and other attributes
 
 
-with open('test_images/inputskirt1.jpg', 'rb') as i:
-    with open('test_images/outputskirt1.jpg', 'wb') as o:
+with open('inputskirt1.png', 'rb') as i:
+    with open('outputskirt1.png', 'wb') as o:
         input = i.read()
         output = remove(input)
         o.write(output)
@@ -100,7 +102,7 @@ with open('test_images/inputskirt1.jpg', 'rb') as i:
 model = CLIPModel.from_pretrained("patrickjohncyh/fashion-clip")
 processor = CLIPProcessor.from_pretrained("patrickjohncyh/fashion-clip")
 
-image = Image.open('test_images/outputskirt1.jpg').convert("RGB")
+image = Image.open('outputskirt1.png').convert("RGB")
 
 labels = []
 all_prompts = []
@@ -121,5 +123,15 @@ best_idx = probs.argmax()
 best_category = labels[best_idx]
 confidence = float(probs[best_idx])
 
+#obtain the feautre vector from the image to return to the backend
+#resizing, normalization, and tensor conversion
+image_inputs = processor(images=image, return_tensors="pt")
+image_features = model.get_image_features(**image_inputs)
+image_features = image_features.detach().numpy().flatten()
+image_features = image_features / np.linalg.norm(image_features)
+feature_vector = image_features.tolist()
+
+
+print(feature_vector)
 print("Predicted coarse category:", best_category)
 print("Confidence:", confidence)
