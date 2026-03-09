@@ -53,7 +53,8 @@ export default function LogInScreen() {
 			return;
 		}
 		const authToken = data.token;
-		setToken(authToken);
+		await setToken(authToken);
+		localStorage.setItem('token',authToken);
 
 		console.log("Success, login successful!"); // sends notification to user that login was succesful
 
