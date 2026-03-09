@@ -13,7 +13,7 @@ The ML server is responsible for heavy AI processing including:
 🧪 Future virtual try-on experiments
 
 This server works alongside the MERN backend and React frontend as part of the system architecture described in the project documentation
-=======
+
 # How to run app:
 
 1. **Update package manager**
