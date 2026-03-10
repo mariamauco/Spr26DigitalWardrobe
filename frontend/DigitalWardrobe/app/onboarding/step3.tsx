@@ -24,8 +24,6 @@ export default function Step3() {
 
     // route them to dashboard
     router.replace("/dashboard");
-
-
   };
 
   return (
