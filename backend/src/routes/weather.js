@@ -126,7 +126,7 @@ export const dailyOutfit = async (userId) => {
 };
 
 // weather route which calls weather API
-router.get("/weather", authMiddleware, async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         const data = await getUserWeather(user);

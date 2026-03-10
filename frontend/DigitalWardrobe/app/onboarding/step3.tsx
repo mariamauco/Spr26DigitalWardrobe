@@ -18,8 +18,6 @@ export default function Step3() {
       completed: true,
     };
 
-    console.log(data);
-
     await update(data);
 
     // route them to dashboard
