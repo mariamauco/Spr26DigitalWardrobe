@@ -2,16 +2,50 @@ import mongoose from "mongoose";
 
 const OnboardingProfileSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", unique: true, required: true },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      unique: true,
+      required: true,
+    },
 
-    styleTags: [{ type: String, trim: true }],
-    ventureLevel: { type: Number, min: 0, max: 10, default: 5 },
-    comfortLevel: { type: Number, min: 0, max: 10, default: 5 },
-    casualLevel: { type: Number, min: 0, max: 10, default: 5 },
+    // Q1: "What style describes you best?" (multi-select)
+    styleTags: {
+      type: [String],
+      default: [],
+      trim: true,
+    },
 
-    completed: { type: Boolean, default: false }
+    // Q2: "What silhouettes do you prefer?" (multi-select)
+    silhouetteTags: {
+      type: [String],
+      default: [],
+      trim: true,
+    },
+
+    // Q3: Comfort (0) <-> Trendy (1)
+    comfort: {
+      type: Number,
+      min: 0,
+      max: 10,
+      default: 5,
+    },
+
+    // Q4: Not at all (0) <-> Bold (1)
+    experimental: {
+      type: Number,
+      min: 0,
+      max: 10,
+      default: 5,
+    },
+
+    // Optional: mark onboarding completion
+    completed: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
+
+//OnboardingProfileSchema.index({ user: 1 });
+
 
 export default mongoose.model("OnboardingProfile", OnboardingProfileSchema);
