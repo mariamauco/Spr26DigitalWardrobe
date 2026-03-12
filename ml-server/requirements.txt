@@ -10,13 +10,7 @@ Werkzeug==3.1.5
 rembg[cpu]
 torch
 tensorflow
-<<<<<<< HEAD
-transformers[torch]
 pandas
 kaggle
-=======
 transformers[torch] 
 transformers==4.42.4
-
-
->>>>>>> 8716441e930fd77a0b7c39f89dec1178e2ce35f4

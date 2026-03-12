@@ -3,7 +3,7 @@ from PIL import Image
 import requests
 from transformers import CLIPProcessor, CLIPModel
 import numpy as np
-import torch
+
 
 
 # Fine category examples (expand later)

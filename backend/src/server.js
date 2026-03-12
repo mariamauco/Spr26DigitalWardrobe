@@ -42,7 +42,7 @@ app.use("/api/clothing", clothingRoutes);
 // ONBOARDING ROUTES //
 app.use("/api/onboarding", onboardingRoutes);
 
-app.use("/api", weatherRoutes);
+app.use("/api/weather", weatherRoutes);
 
 
 //https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=a136e95903135fc736e4af312c8d23bc&units=imperial

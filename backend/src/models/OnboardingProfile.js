@@ -27,16 +27,16 @@ const OnboardingProfileSchema = new mongoose.Schema(
     comfort: {
       type: Number,
       min: 0,
-      max: 1,
-      default: 0.5,
+      max: 10,
+      default: 5,
     },
 
     // Q4: Not at all (0) <-> Bold (1)
     experimental: {
       type: Number,
       min: 0,
-      max: 1,
-      default: 0.5,
+      max: 10,
+      default: 5,
     },
 
     // Optional: mark onboarding completion
@@ -46,5 +46,6 @@ const OnboardingProfileSchema = new mongoose.Schema(
 );
 
 //OnboardingProfileSchema.index({ user: 1 });
+
 
 export default mongoose.model("OnboardingProfile", OnboardingProfileSchema);

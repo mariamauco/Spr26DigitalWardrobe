@@ -42,17 +42,17 @@ router.post("/", requireAuth, async (req, res) => {
         : [];
     }
 
-    // Sliders (0..1)
+    // Sliders (0..10)
     if (comfort !== undefined) {
       const v = Number(comfort);
       if (Number.isNaN(v)) return res.status(400).json({ error: "comfort level must be a number" });
-      update.comfortVsTrendy = Math.max(0, Math.min(1, v));
+      update.comfort = Math.max(0, Math.min(10, v));
     }
 
     if (experimental !== undefined) {
       const v = Number(experimental);
       if (Number.isNaN(v)) return res.status(400).json({ error: "experimental level must be a number" });
-      update.experimentalVsBold = Math.max(0, Math.min(1, v));
+      update.experimental = Math.max(0, Math.min(10, v));
     }
 
     // Completion flag
