@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { Button, Chip, Text } from "react-native-paper";
 import { router } from "expo-router";
 import OnboardingProgress from "@/components/features/OnboardingProgress";
+import { update } from "./_layout";
 
 export default function Step2() {
   const [styles, setStyles] = useState<string[]>([]);
@@ -13,6 +14,16 @@ export default function Step2() {
   };
 
   const canNext = styles.length > 0;
+
+    const handleNext = async () => {
+      const data = {
+        styleTags: styles,
+      };
+  
+      await update(data);
+      router.push("/onboarding/step3");
+      
+    };
 
   return (
     <View style={{ flex: 1, padding: 24, justifyContent: "center", gap: 16 }}>
@@ -36,7 +47,7 @@ export default function Step2() {
           mode="contained"
           style={{ flex: 1 }}
           disabled={!canNext}
-          onPress={() => router.push("/onboarding/step3")}
+          onPress={handleNext}
         >
           Next
         </Button>
