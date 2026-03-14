@@ -1,12 +1,17 @@
 import React from "react";
 import RNPickerSelect from "react-native-picker-select";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, ViewStyle, TextStyle, StyleProp } from "react-native";
 
 interface DropdownProps {
   value: string | null;
   onValueChange: (value: string) => void;
   items: { label: string; value: string }[];
   placeholder?: string;
+  containerStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<TextStyle>; // input style override
+  placeholderStyle?: StyleProp<TextStyle>;
+  name?: string;
+  id?: string;
 }
 
 export default function Dropdown({
@@ -14,7 +19,16 @@ export default function Dropdown({
   onValueChange,
   items,
   placeholder = "Select an option",
+  containerStyle,
+  style,
+  placeholderStyle,
+  name,
+  id,
 }: DropdownProps) {
+  const inputIOS = StyleSheet.flatten([pickerStyles.inputBase, pickerStyles.inputIOS, style]);
+  const inputAndroid = StyleSheet.flatten([pickerStyles.inputBase, pickerStyles.inputAndroid, style]);
+  const inputWeb = StyleSheet.flatten([pickerStyles.inputBase, pickerStyles.inputWeb, style]);
+
   return (
     <View style={styles.wrapper}>
       <RNPickerSelect
@@ -22,7 +36,14 @@ export default function Dropdown({
         onValueChange={onValueChange}
         items={items}
         placeholder={{ label: placeholder, value: null }}
-        style={pickerStyles}
+        style={{
+          inputIOS,
+          inputAndroid,
+          inputWeb,
+          placeholder: StyleSheet.flatten([pickerStyles.placeholder, placeholderStyle]),
+          viewContainer: styles.viewContainer,
+        }}
+        pickerProps={{}}
         useNativeAndroidPickerStyle={false}
       />
     </View>
@@ -31,31 +52,41 @@ export default function Dropdown({
 
 const styles = StyleSheet.create({
   wrapper: {
-    width: "85%",
+    width: "100%",
+  },
+  viewContainer: {
+    width: "100%",
   },
 });
 
-const pickerStyles = {
-  inputIOS: {
+const pickerStyles = StyleSheet.create({
+  inputBase: {
     height: 48,
     borderRadius: 10,
     backgroundColor: "#FEFDF4",
-    paddingHorizontal: 12,
-
-    // iOS shadow
+    paddingHorizontal: 10,
+    color: "#7d7373",
+    fontSize: 16,
+  },
+  inputIOS: {
     shadowColor: "#DCA0A0",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 4,
   },
   inputAndroid: {
-    height: 48,
-    borderRadius: 10,
-    backgroundColor: "#FEFDF4",
-    paddingHorizontal: 12,
-    elevation: 4, // Android shadow
+    elevation: 4,
+  },
+  inputWeb: {
+    borderWidth: 0,
+    shadowColor: "#DCA0A0",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    fontSize: 15,
   },
   placeholder: {
-    color: "#999",
+    color: "#7d7373",
+    fontSize: 16,
   },
-};
+});
