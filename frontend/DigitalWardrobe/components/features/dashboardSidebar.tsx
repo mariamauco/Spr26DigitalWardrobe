@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
   logo: {
     color: "#8A5F5F",
     fontSize: 24,
+    fontFamily: "DMSerifDisplay_400Regular",
     marginBottom: 48,
   },
 
@@ -117,6 +118,7 @@ const styles = StyleSheet.create({
   username: {
     color: "#4E4E4E",
     fontSize: 20,
+    fontFamily: "DMSerifDisplay_400Regular",
   },
 
   navSection: {
@@ -164,5 +166,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#8A5F5F",
     fontSize: 24,
+    fontFamily: "DMSerifDisplay_400Regular",
   },
 });

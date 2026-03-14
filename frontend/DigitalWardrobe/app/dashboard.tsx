@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   greeting: {
     color: "#4E4E4E",
     fontSize: 40,
-    fontWeight: "400",
+    fontFamily: "EncodeSansSemiCondensed_400Regular",
     marginBottom: 30,
   },
 
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   cardText: {
     color: "#8A5F5F",
     fontSize: 24,
-    fontWeight: "400",
+    fontFamily: "DMSerifDisplay_400Regular",
     textAlign: "center",
   },
 });
