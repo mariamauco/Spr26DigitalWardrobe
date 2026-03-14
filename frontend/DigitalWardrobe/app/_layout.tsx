@@ -23,7 +23,7 @@ export default function RootLayout() {
         <Stack.Screen name="landing" options={{ headerShown: false }} />
         <Stack.Screen name="dashboard" options={{ title: 'Dashboard' }} />
         <Stack.Screen name="logIn" options={{ title: 'Log In' }} />
-        <Stack.Screen name="signUp" options={{ title: 'Sign Up' }} />
+        <Stack.Screen name="signUp" options={{ headerShown: false, title: 'Sign Up' }} />
         <Stack.Screen name="onboarding" options={{ title: 'Onboarding' }} />
 
       </Stack>

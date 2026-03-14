@@ -11,6 +11,8 @@ import TextBox from "../components/ui/textBox";
 import Dropdown from "../components/ui/dropdown";
 import PlaceholderCard from "../components/ui/card";
 import { countries } from "../components/features/countryCodes";
+import NavBar from "../components/features/navbar";
+import { replace } from 'expo-router/build/global-state/routing';
 
 // when sign up button is pressed this function is called
 // sends user info to backend
@@ -96,87 +98,134 @@ export default function SignUpScreen() {
 		<>
 		<View style={styles.mainContainer}>
 			<OmbreBackground />
-			<GridOverlay />
+			<GridOverlay />			
+			<NavBar />
 			
-			<View style={styles.glassWrapper}>
-				<PlaceholderCard 
-					width="90%" 
-					height="80%" 
-					backgroundColor="rgba(255,255,255,0.35)"
-				>
-					<KeyboardAvoidingView 
-						behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-						style={{ flex: 1 }}
+			
+			<View style={styles.signUpContainer}>
+				<View style={styles.glassWrapper}>
+					<PlaceholderCard 
+						width="100%" 
+						height="100%"
+						backgroundColor="rgba(255,255,255,0.35)"
+						style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
 					>
-						<ScrollView contentContainerStyle={styles.scrollContent}>
-								<View style={styles.header}>
-									<Text style={styles.title}>Create Account</Text>
-								</View>
-
-								<View style={styles.container}>
-									<TextBox 
-										placeholder='name' 
-										value={name} 
-										onChangeText={(text) => {
-											setName(text);
-											setErrorMessage(null);
-										}}
-									/>
-									<TextBox 
-										placeholder='email' 
-										value={email} 
-										onChangeText={(text) => {
-											setEmail(text);
-											setErrorMessage(null);
-										}}								
-										keyboardType="email-address"
-										autoCapitalize="none"
-									/>
-									<TextBox 
-										placeholder='password' 
-										secureTextEntry 
-										value={password} 
-										onChangeText={(text) => {
-											setPassword(text);
-											setErrorMessage(null);
-										}}
-									/>
-									<TextBox 
-										placeholder='retype password' 
-										secureTextEntry 
-										value={confirmPassword} 
-										onChangeText={(text) => {
-											setConfirmPassword(text);
-											setErrorMessage(null);
-										}}							/>
-									<TextBox 
-										placeholder='zip code' 
-										value={zipCode} 
-										onChangeText={(text) => {
-											setZipCode(text);
-											setErrorMessage(null);
-										}}							/>
-									
-									<View style={styles.pickerWrapper}>
-										<Dropdown
-											value={country}
-											onValueChange={setCountry}
-											items={countries}
-											placeholder="Select a country"
-										/>
+						<KeyboardAvoidingView 
+							behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+							style={{ flex: 1, marginBottom:340 }}
+						>
+							<ScrollView contentContainerStyle={styles.scrollContent}>
+									<View style={styles.header}>
+										<Text style={styles.title}>Let's Get Started</Text>
 									</View>
-									
-									{errorMessage && (
-										<View style={styles.errorBox}>
-										<Text style={styles.errorText}>{errorMessage}</Text>
-										</View>
-									)}
+									<View style={{margin:10, marginBottom:50}}>
+										<Text style={{fontSize:16, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,}}>Already have an account?</Text>
+									</View>
+									<Button title="Log In" onPress={() => router.replace("/logIn")} />
+							</ScrollView>
+						</KeyboardAvoidingView>
 
-									<Button title="Sign up" onPress={signUp} />
-								</View>
-						</ScrollView>
-					</KeyboardAvoidingView>
-				</PlaceholderCard>
+					</PlaceholderCard>
+				</View>
+				<View style={[styles.glassWrapper]}>
+					<PlaceholderCard 
+						width="100%" 
+						height="100%" 
+						backgroundColor="rgba(220, 160, 160, 0.5)"
+						style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+					>
+						<KeyboardAvoidingView 
+							behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+							style={{ flex: 1 }}
+						>
+							<ScrollView contentContainerStyle={styles.scrollContent}>
+									<View style={styles.header}>
+										<Text style={styles.title}>Create Account</Text>
+									</View>
+
+									<View style={styles.container}>
+										<TextBox 
+											placeholder='name' 
+											value={name} 
+											onChangeText={(text) => {
+												setName(text);
+												setErrorMessage(null);
+											}}
+										/>
+										<TextBox 
+											placeholder='email' 
+											value={email} 
+											onChangeText={(text) => {
+												setEmail(text);
+												setErrorMessage(null);
+											}}								
+											keyboardType="email-address"
+											autoCapitalize="none"
+										/>
+										<TextBox 
+											placeholder='password' 
+											secureTextEntry 
+											value={password} 
+											onChangeText={(text) => {
+												setPassword(text);
+												setErrorMessage(null);
+											}}
+										/>
+										<TextBox 
+											placeholder='retype password' 
+											secureTextEntry 
+											value={confirmPassword} 
+											onChangeText={(text) => {
+												setConfirmPassword(text);
+												setErrorMessage(null);
+											}}							/>
+										
+										
+										
+										
+										<View style={{
+											display:"flex",
+											flexDirection:"row",
+											width:"52%",
+											alignContent:"center",
+											justifyContent:"center"
+											}}>
+											<TextBox 
+											placeholder='zip code' 
+											value={zipCode} 
+											onChangeText={(text) => {
+												setZipCode(text);
+												setErrorMessage(null);
+											}}/>
+
+											<View style={{ width: "65%", marginLeft: 10 }}>
+												<Dropdown
+													value={country}
+													onValueChange={setCountry}
+													items={countries}
+													placeholder="Select a country"
+													containerStyle={{}}
+													style={{ backgroundColor: "#FEFDF4", borderRadius: 10, height: 48 }}
+													placeholderStyle={{ color: "#7d7373", fontSize: 16 }}
+													name="country"
+													id="country"
+												/>
+											</View>
+										</View>
+										
+										{errorMessage && (
+											<View style={styles.errorBox}>
+											<Text style={styles.errorText}>{errorMessage}</Text>
+											</View>
+										)}
+
+										<Button title="Sign up" onPress={signUp} variant='white' />
+									</View>
+							</ScrollView>
+						</KeyboardAvoidingView>
+					</PlaceholderCard>
+			
+				</View>
 			</View>
 
 		</View>
@@ -187,16 +236,36 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
 	mainContainer: {
         flex: 1, // This ensures the background covers the whole screen
+		justifyContent: "center",
     },
+
+	signUpContainer:{
+		display: "flex",
+		flex: 1,
+		flexDirection: "row",
+		justifyContent: "center",
+		alignContent: "center",
+		width: "70%",
+		alignItems: "center",
+		alignSelf:"center",
+		margin:100
+
+	},
+
 	glassWrapper: {
-		position: "absolute",
+		//position: "absolute",
+		display:"flex",
+		flexDirection:"column",
+		height:"100%",
 		top: 0,
 		bottom: 0,
 		left: 0,
 		right: 0,
+		width:"50%",
 		justifyContent: "center",
 		alignItems: "center",
 		zIndex: 1, // places it on top of the background
+		
   	},
 	scrollContent: {
         flexGrow: 1,
@@ -205,7 +274,7 @@ const styles = StyleSheet.create({
         paddingVertical: 40,
     },
     header: {
-        marginBottom: 20,
+        marginBottom: 30,
         alignItems: 'center',
     },
 	title: {
@@ -220,15 +289,28 @@ const styles = StyleSheet.create({
 		gap: 24,
 	},
 	pickerWrapper: {
-        width: "80%", 
         alignSelf: "center", 
-        marginVertical: 10 
+        marginVertical: 10,
+		width: 438,
+		height: 48,
+		borderRadius: 10,
+		backgroundColor: "#FEFDF4",
+		paddingHorizontal: 12,
+
+		// iOS shadow
+		shadowColor: "#DCA0A0",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 1,
+		shadowRadius: 4,
+
+		// Android shadow
+		elevation: 4,
     },
 	errorBox: {
 		backgroundColor: "#f7b0b6",
 		borderRadius: 8,
 		padding: 10,
-		width: "80%",
+		width: "63%",
 		alignSelf: "center",
 	},
 

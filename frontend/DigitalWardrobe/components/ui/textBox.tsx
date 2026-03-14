@@ -7,7 +7,7 @@ export default function TextBox({ style, ...props }: TextBoxProps) {
   return (
     <TextInput
       style={[styles.textBox, style]} // allows external overrides
-      placeholderTextColor="#999"
+      placeholderTextColor="#7d7373"
       {...props}
     />
   );
