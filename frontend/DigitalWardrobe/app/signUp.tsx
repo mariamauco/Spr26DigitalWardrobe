@@ -115,11 +115,11 @@ export default function SignUpScreen() {
 							style={{ flex: 1, marginBottom:340 }}
 						>
 							<ScrollView contentContainerStyle={styles.scrollContent}>
-									<View style={styles.header}>
+									<View style={[styles.header, {marginTop:27}]}>
 										<Text style={styles.title}>Let's Get Started</Text>
 									</View>
 									<View style={{margin:10, marginBottom:50}}>
-										<Text style={{fontSize:16, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,}}>Already have an account?</Text>
+										<Text style={{fontSize:24, fontFamily: "PlusJakartaSans_700Bold",letterSpacing:1,}}>Already have an account?</Text>
 									</View>
 									<Button title="Log In" onPress={() => router.replace("/logIn")} />
 							</ScrollView>
@@ -146,7 +146,8 @@ export default function SignUpScreen() {
 									<View style={styles.container}>
 										<TextBox 
 											placeholder='name' 
-											value={name} 
+											value={name}
+											style={{fontSize:20}} 
 											onChangeText={(text) => {
 												setName(text);
 												setErrorMessage(null);
@@ -183,22 +184,26 @@ export default function SignUpScreen() {
 										
 										
 										
-										<View style={{
-											display:"flex",
-											flexDirection:"row",
-											width:"52%",
-											alignContent:"center",
-											justifyContent:"center"
-											}}>
-											<TextBox 
-											placeholder='zip code' 
-											value={zipCode} 
-											onChangeText={(text) => {
-												setZipCode(text);
-												setErrorMessage(null);
-											}}/>
+										<View
+											style={{
+												display: "flex",
+												flexDirection: "row",
+												width: "72%",
+												alignItems: "center",
+												justifyContent: "center",
+											}}
+										>
+											<TextBox
+												style={{ marginRight: 20, width: "35%" }}
+												placeholder="zip code"
+												value={zipCode}
+												onChangeText={(text) => {
+													setZipCode(text);
+													setErrorMessage(null);
+												}}
+											/>
 
-											<View style={{ width: "65%", marginLeft: 10 }}>
+											<View style={{ width: "65%" }}>
 												<Dropdown
 													value={country}
 													onValueChange={setCountry}
@@ -206,7 +211,7 @@ export default function SignUpScreen() {
 													placeholder="Select a country"
 													containerStyle={{}}
 													style={{ backgroundColor: "#FEFDF4", borderRadius: 10, height: 48 }}
-													placeholderStyle={{ color: "#7d7373", fontSize: 16 }}
+													placeholderStyle={{ color: "#7d7373", fontSize: 20 }}
 													name="country"
 													id="country"
 												/>
@@ -218,7 +223,7 @@ export default function SignUpScreen() {
 											<Text style={styles.errorText}>{errorMessage}</Text>
 											</View>
 										)}
-
+										<View style={{marginTop:20}}/>
 										<Button title="Sign up" onPress={signUp} variant='white' />
 									</View>
 							</ScrollView>
@@ -274,13 +279,13 @@ const styles = StyleSheet.create({
         paddingVertical: 40,
     },
     header: {
-        marginBottom: 30,
+        marginBottom: 50,
         alignItems: 'center',
     },
 	title: {
 		color: "#8A5F5F",
-		fontFamily: "Poppins_700Bold", // see note below
-		fontSize: 36,
+		fontFamily: "PlusJakartaSans_700Bold", // see note below
+		fontSize: 52,
 		fontWeight: "700",
 	},	
 	container: {
@@ -310,13 +315,13 @@ const styles = StyleSheet.create({
 		backgroundColor: "#f7b0b6",
 		borderRadius: 8,
 		padding: 10,
-		width: "63%",
+		width: "73%",
 		alignSelf: "center",
 	},
 
 	errorText: {
 		color: "#842029",
-		fontSize: 14,
+		fontSize: 20,
 		textAlign: "center",
 	}
 });

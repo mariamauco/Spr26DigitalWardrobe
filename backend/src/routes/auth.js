@@ -1,7 +1,8 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";  
+import User from "../models/User.js";
+import requireAuth from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -60,6 +61,15 @@ router.post("/login", async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/user", requireAuth, async (req, res) => {
+  try {
+    const profile = await User.findOne({ _id: req.user.id });
+    return res.status(200).json(profile || null);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
 });
 

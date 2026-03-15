@@ -59,8 +59,8 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   text: {
-    fontFamily: "DMSerifDisplay_400Regular",
-    fontSize: 19,
+    fontFamily: "PlusJakartaSans_700Bold",
+    fontSize: 28,
     fontWeight: "400",
     letterSpacing:1, // Add letter spacing for better readability
     textShadowColor: "rgba(214, 189, 189, 0.50)",

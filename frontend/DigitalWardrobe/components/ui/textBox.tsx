@@ -15,11 +15,15 @@ export default function TextBox({ style, ...props }: TextBoxProps) {
 
 const styles = StyleSheet.create({
   textBox: {
-    width: 438,
+    width: "72%",
     height: 48,
     borderRadius: 10,
     backgroundColor: "#FEFDF4",
     paddingHorizontal: 12,
+    fontSize:20,
+    //justifyContent:'center',
+    lineHeight:48,
+    fontFamily:'PlusJakartaSans_700Bold',
 
     // iOS shadow
     shadowColor: "#DCA0A0",

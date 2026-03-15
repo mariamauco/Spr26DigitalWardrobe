@@ -67,6 +67,7 @@ const pickerStyles = StyleSheet.create({
     paddingHorizontal: 10,
     color: "#7d7373",
     fontSize: 16,
+    fontFamily:'PlusJakartaSans_700Bold',
   },
   inputIOS: {
     shadowColor: "#DCA0A0",
@@ -83,10 +84,10 @@ const pickerStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 4,
-    fontSize: 15,
+    fontSize: 20,
   },
   placeholder: {
     color: "#7d7373",
-    fontSize: 16,
+    fontSize: 20,
   },
 });
