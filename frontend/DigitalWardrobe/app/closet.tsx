@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
 
 export default function ClosetScreen() {
@@ -9,8 +10,9 @@ export default function ClosetScreen() {
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
       style={styles.container}
     >
+      <GridOverlay />
       <View style={styles.contentWrapper}>
-        <DashboardSidebar username="Samantha" activeScreen="closet" />
+      <DashboardSidebar activeScreen="closet" />
 
         <View style={styles.main}>
           <Text style={styles.title}>MY CLOSET</Text>
@@ -73,7 +75,7 @@ const styles = StyleSheet.create({
   title: {
     color: "#4E4E4E",
     fontSize: 40,
-    fontWeight: "400",
+    fontFamily: "EncodeSansSemiCondensed_400Regular",
     marginBottom: 10,
   },
 
@@ -81,6 +83,7 @@ const styles = StyleSheet.create({
     color: "#8A7A7A",
     fontSize: 18,
     marginBottom: 28,
+    fontFamily: "EncodeSansSemiCondensed_400Regular",
   },
 
   grid: {
@@ -102,7 +105,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: "#8A5F5F",
     fontSize: 24,
-    fontWeight: "400",
+    fontFamily: "DMSerifDisplay_400Regular",
     textAlign: "center",
   },
 });

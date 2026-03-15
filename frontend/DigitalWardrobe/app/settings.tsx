@@ -1,16 +1,21 @@
 import React from "react";
 import { View, Text, StyleSheet, Switch } from "react-native";
+import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
+import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
 
 export default function SettingsScreen() {
-  return (
+    const { user } = useUser();
+
+    return (
     <LinearGradient
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
       style={styles.container}
     >
+        <GridOverlay />
       <View style={styles.contentWrapper}>
-        <DashboardSidebar username="Samantha" activeScreen="settings" />
+        <DashboardSidebar activeScreen="settings" />
 
         <View style={styles.main}>
           <Text style={styles.title}>SETTINGS</Text>
@@ -25,18 +30,14 @@ export default function SettingsScreen() {
             </View>
 
             <View style={styles.settingRow}>
-              <Text style={styles.settingLabel}>Dark Mode</Text>
-              <Switch value={false} />
-            </View>
-
-            <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Weather-Based Suggestions</Text>
               <Switch value={true} />
             </View>
 
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Account</Text>
-              <Text style={styles.settingValue}>Samantha</Text>
+              <Text style={styles.settingValue}>
+                {user?.name ?? "User"}</Text>
             </View>
           </View>
         </View>
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
   title: {
     color: "#4E4E4E",
     fontSize: 40,
-    fontWeight: "400",
+    fontFamily: "EncodeSansSemiCondensed_400Regular",
     marginBottom: 10,
   },
 
@@ -74,6 +75,7 @@ const styles = StyleSheet.create({
     color: "#8A7A7A",
     fontSize: 18,
     marginBottom: 28,
+    fontFamily: "EncodeSansSemiCondensed_400Regular",
   },
 
   settingsCard: {
@@ -98,11 +100,12 @@ const styles = StyleSheet.create({
   settingLabel: {
     color: "#8A5F5F",
     fontSize: 20,
-    fontWeight: "400",
+    fontFamily: "DMSerifDisplay_400Regular",
   },
 
   settingValue: {
     color: "#4E4E4E",
     fontSize: 18,
+    fontFamily: "EncodeSansSemiCondensed_400Regular",
   },
 });

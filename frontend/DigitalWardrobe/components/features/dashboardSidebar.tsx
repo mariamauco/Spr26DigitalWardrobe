@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useUser } from "./userContext";
+import { removeToken } from "../../app/authStorage";
 
 type DashboardSidebarProps = {
     username?: string;
@@ -27,7 +28,7 @@ export default function DashboardSidebar({
       <View style={styles.profileRow}>
         <View style={styles.avatar} />
         <Text style={styles.username}>
-          {user?.name ?? username ?? "User"}
+          {user?.name ?? "User"}
         </Text>
       </View>
 
@@ -51,7 +52,13 @@ export default function DashboardSidebar({
         />
       </View>
 
-      <Pressable style={styles.logoutButton} onPress={handleLogout}>
+      <Pressable
+        style={styles.logoutButton}
+        onPress={async () => {
+          await removeToken();
+          router.replace("/logIn");
+        }}
+      >
         <Text style={styles.buttonText}>Log Out</Text>
       </Pressable>
     </View>

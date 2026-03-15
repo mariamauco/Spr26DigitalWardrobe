@@ -15,8 +15,6 @@ import { PlusJakartaSans_700Bold } from "@expo-google-fonts/plus-jakarta-sans";
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-
-
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 const [fontsLoaded] = useFonts({
@@ -25,20 +23,19 @@ const [fontsLoaded] = useFonts({
   PlusJakartaSans_700Bold,
 });
 
-  if (!fontsLoaded) 
-    return null;
+  if (!fontsLoaded) return null;
 
   return (
     <UserProvider>
       <ThemeProvider value={DefaultTheme}>
-        <Stack initialRouteName="landing">
-          <Stack.Screen name="landing" options={{ headerShown: false }} />
-          <Stack.Screen name="dashboard" options={{ headerShown: false, title: "Dashboard" }} />
-          <Stack.Screen name="login" options={{ title: "Log In" }} />
-          <Stack.Screen name="signUp" options={{ headerShown: false, title: "Sign Up" }} />
-          <Stack.Screen name="onboarding" options={{ title: "Onboarding" }} />
+        <Stack initialRouteName="landing" screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="landing" />
+          <Stack.Screen name="dashboard" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="signUp" />
+          <Stack.Screen name="onboarding" />
         </Stack>
-    
+
         <StatusBar style="auto" />
       </ThemeProvider>
     </UserProvider>

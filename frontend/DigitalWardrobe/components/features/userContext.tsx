@@ -7,17 +7,16 @@ type User = {
 
 type UserContextType = {
   user: User;
-  setUser: React.Dispatch<React.SetStateAction<User>>;
+  setUser: (user: User) => void;
   logout: () => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>({
-    name: "Samantha",
-    email: "samantha@example.com",
-  });
+
+  // start empty 
+  const [user, setUser] = useState<User>(null);
 
   const logout = () => {
     setUser(null);

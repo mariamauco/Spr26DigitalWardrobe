@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Pressable } from "react-native";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
+import { saveToken } from "../app/authStorage";
 // imports for components
 import Button from "../components/ui/button";
 import OmbreBackground from "../components/features/ombrebackground";
@@ -53,8 +54,8 @@ export default function LogInScreen() {
 			return;
 		}
 		const authToken = data.token;
-		await setToken(authToken);
-		localStorage.setItem('token',authToken);
+		setToken(authToken);
+		await saveToken(authToken);
 
 		console.log("Success, login successful!"); // sends notification to user that login was succesful
 
