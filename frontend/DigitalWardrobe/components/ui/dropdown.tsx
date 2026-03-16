@@ -61,12 +61,13 @@ const styles = StyleSheet.create({
 
 const pickerStyles = StyleSheet.create({
   inputBase: {
-    height: 48,
+    height: 44,
     borderRadius: 10,
     backgroundColor: "#FEFDF4",
     paddingHorizontal: 10,
     color: "#7d7373",
-    fontSize: 16,
+    fontSize: 18,
+    fontFamily:'DMSerifDisplay_400Regular',
   },
   inputIOS: {
     shadowColor: "#DCA0A0",
@@ -83,10 +84,10 @@ const pickerStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 4,
-    fontSize: 15,
+    fontSize: 18,
   },
   placeholder: {
     color: "#7d7373",
-    fontSize: 16,
+    fontSize: 18,
   },
 });

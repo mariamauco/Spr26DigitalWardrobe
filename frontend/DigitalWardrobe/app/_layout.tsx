@@ -1,33 +1,43 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { UserProvider } from "../components/features/userContext";
 import 'react-native-reanimated';
 
-import { useFonts, DMSerifDisplay_400Regular } from "@expo-google-fonts/dm-serif-display";
+import {
+  useFonts,
+  DMSerifDisplay_400Regular,
+} from "@expo-google-fonts/dm-serif-display";
+import { EncodeSansSemiCondensed_400Regular } from "@expo-google-fonts/encode-sans-semi-condensed";
+import { PlusJakartaSans_700Bold } from "@expo-google-fonts/plus-jakarta-sans";
+
+
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-
-
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [fontsLoaded] = useFonts({
-    DMSerifDisplay_400Regular,
-  });
+const [fontsLoaded] = useFonts({
+  DMSerifDisplay_400Regular,
+  EncodeSansSemiCondensed_400Regular,
+  PlusJakartaSans_700Bold,
+});
 
   if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider value={DefaultTheme}>
-      <Stack initialRouteName="landing">
-        <Stack.Screen name="landing" options={{ headerShown: false }} />
-        <Stack.Screen name="dashboard" options={{ title: 'Dashboard' }} />
-        <Stack.Screen name="logIn" options={{ title: 'Log In' }} />
-        <Stack.Screen name="signUp" options={{ headerShown: false, title: 'Sign Up' }} />
-        <Stack.Screen name="onboarding" options={{ title: 'Onboarding' }} />
+    <UserProvider>
+      <ThemeProvider value={DefaultTheme}>
+        <Stack initialRouteName="landing" screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="landing" />
+          <Stack.Screen name="dashboard" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="signUp" />
+          <Stack.Screen name="onboarding" />
+        </Stack>
 
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </UserProvider>
   );
 }

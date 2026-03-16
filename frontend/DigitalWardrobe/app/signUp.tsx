@@ -1,6 +1,7 @@
 import { Text, View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import React, { useState } from "react";
-import { Pressable } from "react-native";
+
+import { Pressable, useWindowDimensions } from "react-native";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 // imports for components
@@ -17,6 +18,9 @@ import { replace } from 'expo-router/build/global-state/routing';
 // when sign up button is pressed this function is called
 // sends user info to backend
 export default function SignUpScreen() {
+
+	const {width} = useWindowDimensions();
+	const isMobile = width < 768;
 
 	const [name, setName] = useState("");
   	const [email, setEmail] = useState("");
@@ -100,50 +104,52 @@ export default function SignUpScreen() {
 			<OmbreBackground />
 			<GridOverlay />			
 			<NavBar />
-			
-			
-			<View style={styles.signUpContainer}>
-				<View style={styles.glassWrapper}>
-					<PlaceholderCard 
-						width="100%" 
-						height="100%"
-						backgroundColor="rgba(255,255,255,0.35)"
-						style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
-					>
-						<KeyboardAvoidingView 
+			<ScrollView 
+				contentContainerStyle={styles.mainScrollContent}
+				showsVerticalScrollIndicator={false}
+			>
+				<KeyboardAvoidingView 
 							behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-							style={{ flex: 1, marginBottom:340 }}
-						>
-							<ScrollView contentContainerStyle={styles.scrollContent}>
-									<View style={styles.header}>
+							style={[styles.keyboardView]}
+				>
+					<View style={styles.signUpContainer}>
+						{/* Left panel - Login redirect section */}
+						<View style={[styles.glassWrapper, ]}>
+					
+							<PlaceholderCard 
+								width="100%" 
+								height="100%"
+								backgroundColor="rgba(255,255,255,0.35)"
+								style={{...styles.innerContent, borderTopRightRadius:0, borderBottomRightRadius:0}}
+							>
+								<View style={{height:545, alignItems:'center'}}>
+									<View style={[styles.header]}>
 										<Text style={styles.title}>Let's Get Started</Text>
 									</View>
-									<View style={{margin:10, marginBottom:50}}>
-										<Text style={{fontSize:16, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,}}>Already have an account?</Text>
+									{/* Prompt existing users to log in */}
+									<View style={{marginBottom:20}}>
+										<Text style={{fontSize:20, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,marginBottom:20}}>Already have an account?</Text>
 									</View>
 									<Button title="Log In" onPress={() => router.replace("/logIn")} />
-							</ScrollView>
-						</KeyboardAvoidingView>
+								</View>
+							</PlaceholderCard>
+						</View>
 
-					</PlaceholderCard>
-				</View>
-				<View style={[styles.glassWrapper]}>
-					<PlaceholderCard 
-						width="100%" 
-						height="100%" 
-						backgroundColor="rgba(220, 160, 160, 0.5)"
-						style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
-					>
-						<KeyboardAvoidingView 
-							behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-							style={{ flex: 1 }}
-						>
-							<ScrollView contentContainerStyle={styles.scrollContent}>
+						{/* Right panel - Sign up form section */}
+						<View style={[styles.glassWrapper]}>
+							<PlaceholderCard 
+								width="100%" 
+								height="100%" 
+								backgroundColor="rgba(220, 160, 160, 0.5)"
+								style={{...styles.innerContent, borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}
+							>
+								<View style={{height:545}}>
 									<View style={styles.header}>
 										<Text style={styles.title}>Create Account</Text>
 									</View>
 
 									<View style={styles.container}>
+										{/* Name input field */}
 										<TextBox 
 											placeholder='name' 
 											value={name} 
@@ -152,6 +158,7 @@ export default function SignUpScreen() {
 												setErrorMessage(null);
 											}}
 										/>
+										{/* Email input field */}
 										<TextBox 
 											placeholder='email' 
 											value={email} 
@@ -162,6 +169,7 @@ export default function SignUpScreen() {
 											keyboardType="email-address"
 											autoCapitalize="none"
 										/>
+										{/* Password input field */}
 										<TextBox 
 											placeholder='password' 
 											secureTextEntry 
@@ -171,6 +179,7 @@ export default function SignUpScreen() {
 												setErrorMessage(null);
 											}}
 										/>
+										{/* Confirm password input field */}
 										<TextBox 
 											placeholder='retype password' 
 											secureTextEntry 
@@ -180,25 +189,29 @@ export default function SignUpScreen() {
 												setErrorMessage(null);
 											}}							/>
 										
-										
-										
-										
-										<View style={{
-											display:"flex",
-											flexDirection:"row",
-											width:"52%",
-											alignContent:"center",
-											justifyContent:"center"
-											}}>
-											<TextBox 
-											placeholder='zip code' 
-											value={zipCode} 
-											onChangeText={(text) => {
-												setZipCode(text);
-												setErrorMessage(null);
-											}}/>
+										{/* Zip code and country selection row */}
+										<View
+											style={{
+												display: "flex",
+												flexDirection: "row",
+												width: "72%",
+												alignItems: "center",
+												justifyContent: "center",
+											}}
+										>
+											{/* Zip code input */}
+											<TextBox
+												style={{ marginRight: 20, width: "35%" }}
+												placeholder="zip code"
+												value={zipCode}
+												onChangeText={(text) => {
+													setZipCode(text);
+													setErrorMessage(null);
+												}}
+											/>
 
-											<View style={{ width: "65%", marginLeft: 10 }}>
+											{/* Country dropdown selector */}
+											<View style={{ width: "65%" }}>
 												<Dropdown
 													value={country}
 													onValueChange={setCountry}
@@ -206,38 +219,52 @@ export default function SignUpScreen() {
 													placeholder="Select a country"
 													containerStyle={{}}
 													style={{ backgroundColor: "#FEFDF4", borderRadius: 10, height: 48 }}
-													placeholderStyle={{ color: "#7d7373", fontSize: 16 }}
+													placeholderStyle={{ color: "#7d7373", fontSize: 20 }}
 													name="country"
 													id="country"
 												/>
 											</View>
 										</View>
 										
+										{/* Error message display */}
 										{errorMessage && (
 											<View style={styles.errorBox}>
 											<Text style={styles.errorText}>{errorMessage}</Text>
 											</View>
 										)}
-
+										<View style={{marginTop:20}}/>
+										{/* Sign up submission button */}
 										<Button title="Sign up" onPress={signUp} variant='white' />
 									</View>
-							</ScrollView>
-						</KeyboardAvoidingView>
-					</PlaceholderCard>
+								</View>
+							</PlaceholderCard>
 			
-				</View>
-			</View>
-
+						</View>
+					</View>
+				</KeyboardAvoidingView>
+			</ScrollView>
 		</View>
 		</>
 	);
 }
 
 const styles = StyleSheet.create({
+	
+
 	mainContainer: {
         flex: 1, // This ensures the background covers the whole screen
 		justifyContent: "center",
     },
+
+	mainScrollContent:{
+		flexGrow:1,
+		justifyContent:'center',
+		paddingVertical:40,
+	},
+
+	keyboardView:{
+		flex:1,
+	},
 
 	signUpContainer:{
 		display: "flex",
@@ -245,48 +272,51 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		justifyContent: "center",
 		alignContent: "center",
-		width: "70%",
+		width: "90%", // 90% on mobile
+		maxWidth:1150,
+		minHeight:750,
+		marginVertical:40,
 		alignItems: "center",
 		alignSelf:"center",
-		margin:100
 
 	},
 
 	glassWrapper: {
-		//position: "absolute",
-		display:"flex",
-		flexDirection:"column",
-		height:"100%",
-		top: 0,
-		bottom: 0,
-		left: 0,
-		right: 0,
+		// display:"flex",
+		// flexDirection:"column",
+		height:"90%",
 		width:"50%",
-		justifyContent: "center",
 		alignItems: "center",
-		zIndex: 1, // places it on top of the background
-		
+		flex:1, // places it on top of the background
   	},
-	scrollContent: {
-        flexGrow: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 40,
-    },
+
+	innerContent:{
+		flex:1,
+		//height:200,
+		padding:20,
+		alignItems:'center',
+		justifyContent: 'center'
+	},
+
     header: {
-        marginBottom: 30,
+		height:60,
+		//marginTop:20,
+		marginBottom:40,
         alignItems: 'center',
+		justifyContent:'center'
     },
 	title: {
 		color: "#8A5F5F",
-		fontFamily: "Poppins_700Bold", // see note below
+		fontFamily: "DMSerifDisplay_400Regular", 
+		letterSpacing:1,
 		fontSize: 36,
-		fontWeight: "700",
+		fontWeight: "600",
+		textAlign:'center',
 	},	
 	container: {
 		width: '100%',
 		alignItems: 'center',
-		gap: 24,
+		gap: 25,
 	},
 	pickerWrapper: {
         alignSelf: "center", 
@@ -310,13 +340,9 @@ const styles = StyleSheet.create({
 		backgroundColor: "#f7b0b6",
 		borderRadius: 8,
 		padding: 10,
-		width: "63%",
+		width: "73%",
 		alignSelf: "center",
 	},
 
-	errorText: {
-		color: "#842029",
-		fontSize: 14,
-		textAlign: "center",
-	}
+	errorText: { color: "#842029", fontSize: 20, textAlign: "center" }
 });
