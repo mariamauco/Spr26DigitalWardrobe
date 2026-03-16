@@ -120,7 +120,7 @@ export default function LogInScreen() {
 								style={{...styles.innerContent, borderTopRightRadius:0, borderBottomRightRadius:0}}
 							>
 						
-							<View style={{ height:310, alignItems:'center', justifyContent:'flex-start'}}>
+							<View style={{ height:350, alignItems:'center', justifyContent:'flex-start'}}>
 								<View style={[styles.header]}>
 									<Text style={styles.title}>Welcome Back</Text>
 								</View>
@@ -139,7 +139,7 @@ export default function LogInScreen() {
 								backgroundColor="rgba(255,255,255,0.35)"
 								style={{...styles.innerContent,borderTopLeftRadius: 0, borderBottomLeftRadius: 0, height:545}}
 							>
-								<View style={{height:310, width:'100%'}}>
+								<View style={{height:350, width:'100%'}}>
 									<View style={styles.header}>
 										<Text style={styles.title}>Log In</Text>
 									</View>
