@@ -104,151 +104,146 @@ export default function SignUpScreen() {
 			<OmbreBackground />
 			<GridOverlay />			
 			<NavBar />
-			
 			<ScrollView 
-                contentContainerStyle={styles.mainScrollContent}
-                showsVerticalScrollIndicator={false}
-            >
+				contentContainerStyle={styles.mainScrollContent}
+				showsVerticalScrollIndicator={false}
+			>
 				<KeyboardAvoidingView 
 							behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 							style={[styles.keyboardView]}
 				>
 					<View style={styles.signUpContainer}>
+						{/* Left panel - Login redirect section */}
 						<View style={[styles.glassWrapper, ]}>
 					
 							<PlaceholderCard 
 								width="100%" 
 								height="100%"
 								backgroundColor="rgba(255,255,255,0.35)"
-								style={[styles.innerContent, {borderTopRightRadius:0, borderBottomRightRadius:0}]}
+								style={{...styles.innerContent, borderTopRightRadius:0, borderBottomRightRadius:0}}
 							>
-						
-							{/* <ScrollView contentContainerStyle={styles.scrollContent}> */}
-							<View style={{height:545, alignItems:'center'}}>
-								<View style={[styles.header]}>
-									<Text style={styles.title}>Let's Get Started</Text>
+								<View style={{height:545, alignItems:'center'}}>
+									<View style={[styles.header]}>
+										<Text style={styles.title}>Let's Get Started</Text>
+									</View>
+									{/* Prompt existing users to log in */}
+									<View style={{marginBottom:20}}>
+										<Text style={{fontSize:20, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,marginBottom:20}}>Already have an account?</Text>
+									</View>
+									<Button title="Log In" onPress={() => router.replace("/logIn")} />
 								</View>
-								<View style={{marginBottom:20}}>
-									<Text style={{fontSize:18, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,marginBottom:20}}>Already have an account?</Text>
-								</View>
-								<Button title="Log In" onPress={() => router.replace("/logIn")} />
-							</View>
-							{/* </ScrollView> */}
-						
-
 							</PlaceholderCard>
 						</View>
-					<View style={[styles.glassWrapper]}>
-						<PlaceholderCard 
-							width="100%" 
-							height="100%" 
-							backgroundColor="rgba(220, 160, 160, 0.5)"
-							style={[styles.innerContent, { borderTopLeftRadius: 0, borderBottomLeftRadius: 0}]}
-						>
-						{/* <KeyboardAvoidingView 
-							behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-							style={{ flex: 1 }}
-						>
-							<ScrollView contentContainerStyle={styles.scrollContent}> */}
-							<View style={{height:545}}>
-								<View style={styles.header}>
-									<Text style={styles.title}>Create Account</Text>
-								</View>
 
-								<View style={styles.container}>
-									<TextBox 
-										placeholder='name' 
-										value={name} 
-										onChangeText={(text) => {
-											setName(text);
-											setErrorMessage(null);
-										}}
-									/>
-									<TextBox 
-										placeholder='email' 
-										value={email} 
-										onChangeText={(text) => {
-											setEmail(text);
-											setErrorMessage(null);
-										}}								
-										keyboardType="email-address"
-										autoCapitalize="none"
-									/>
-									<TextBox 
-										placeholder='password' 
-										secureTextEntry 
-										value={password} 
-										onChangeText={(text) => {
-											setPassword(text);
-											setErrorMessage(null);
-										}}
-									/>
-									<TextBox 
-										placeholder='retype password' 
-										secureTextEntry 
-										value={confirmPassword} 
-										onChangeText={(text) => {
-											setConfirmPassword(text);
-											setErrorMessage(null);
-										}}							/>
-									
-									
-									
-									
-									<View
-										style={{
-											display: "flex",
-											flexDirection: "row",
-											width: "72%",
-											alignItems: "center",
-											justifyContent: "center",
-										}}
-									>
-										<TextBox
-											style={{ marginRight: 20, width: "35%" }}
-											placeholder="zip code"
-											value={zipCode}
+						{/* Right panel - Sign up form section */}
+						<View style={[styles.glassWrapper]}>
+							<PlaceholderCard 
+								width="100%" 
+								height="100%" 
+								backgroundColor="rgba(220, 160, 160, 0.5)"
+								style={{...styles.innerContent, borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}
+							>
+								<View style={{height:545}}>
+									<View style={styles.header}>
+										<Text style={styles.title}>Create Account</Text>
+									</View>
+
+									<View style={styles.container}>
+										{/* Name input field */}
+										<TextBox 
+											placeholder='name' 
+											value={name} 
 											onChangeText={(text) => {
-												setZipCode(text);
+												setName(text);
 												setErrorMessage(null);
 											}}
 										/>
-
-										<View style={{ width: "65%" }}>
-											<Dropdown
-												value={country}
-												onValueChange={setCountry}
-												items={countries}
-												placeholder="Select a country"
-												containerStyle={{}}
-												style={{ backgroundColor: "#FEFDF4", borderRadius: 10, height: 48 }}
-												placeholderStyle={{ color: "#7d7373", fontSize: 20 }}
-												name="country"
-												id="country"
+										{/* Email input field */}
+										<TextBox 
+											placeholder='email' 
+											value={email} 
+											onChangeText={(text) => {
+												setEmail(text);
+												setErrorMessage(null);
+											}}								
+											keyboardType="email-address"
+											autoCapitalize="none"
+										/>
+										{/* Password input field */}
+										<TextBox 
+											placeholder='password' 
+											secureTextEntry 
+											value={password} 
+											onChangeText={(text) => {
+												setPassword(text);
+												setErrorMessage(null);
+											}}
+										/>
+										{/* Confirm password input field */}
+										<TextBox 
+											placeholder='retype password' 
+											secureTextEntry 
+											value={confirmPassword} 
+											onChangeText={(text) => {
+												setConfirmPassword(text);
+												setErrorMessage(null);
+											}}							/>
+										
+										{/* Zip code and country selection row */}
+										<View
+											style={{
+												display: "flex",
+												flexDirection: "row",
+												width: "72%",
+												alignItems: "center",
+												justifyContent: "center",
+											}}
+										>
+											{/* Zip code input */}
+											<TextBox
+												style={{ marginRight: 20, width: "35%" }}
+												placeholder="zip code"
+												value={zipCode}
+												onChangeText={(text) => {
+													setZipCode(text);
+													setErrorMessage(null);
+												}}
 											/>
-										</View>
-									</View>
-									
-									{errorMessage && (
-										<View style={styles.errorBox}>
-										<Text style={styles.errorText}>{errorMessage}</Text>
-										</View>
-									)}
-									<View style={{marginTop:20}}/>
-									<Button title="Sign up" onPress={signUp} variant='white' />
-								</View>
-							</View>
-							{/* </ScrollView>
-						</KeyboardAvoidingView> */}
-					</PlaceholderCard>
-			
-				</View>
-			</View>
-			</KeyboardAvoidingView>
-			</ScrollView>
 
+											{/* Country dropdown selector */}
+											<View style={{ width: "65%" }}>
+												<Dropdown
+													value={country}
+													onValueChange={setCountry}
+													items={countries}
+													placeholder="Select a country"
+													containerStyle={{}}
+													style={{ backgroundColor: "#FEFDF4", borderRadius: 10, height: 48 }}
+													placeholderStyle={{ color: "#7d7373", fontSize: 20 }}
+													name="country"
+													id="country"
+												/>
+											</View>
+										</View>
+										
+										{/* Error message display */}
+										{errorMessage && (
+											<View style={styles.errorBox}>
+											<Text style={styles.errorText}>{errorMessage}</Text>
+											</View>
+										)}
+										<View style={{marginTop:20}}/>
+										{/* Sign up submission button */}
+										<Button title="Sign up" onPress={signUp} variant='white' />
+									</View>
+								</View>
+							</PlaceholderCard>
+			
+						</View>
+					</View>
+				</KeyboardAvoidingView>
+			</ScrollView>
 		</View>
-		
 		</>
 	);
 }
