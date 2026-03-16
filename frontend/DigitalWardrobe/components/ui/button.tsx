@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: "PlusJakartaSans_700Bold",
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: "400",
     letterSpacing:1, // Add letter spacing for better readability
     textShadowColor: "rgba(214, 189, 189, 0.50)",
