@@ -4,14 +4,13 @@
 import cv2
 import numpy as np
 from PIL import Image
-from remove_bg import remove_bg
 
 
-def validate_single_clothing_item(image_path: str) -> Image.Image:
-    bg_removed: Image.Image = remove_bg(image_path)
+def validate_single_clothing_item(image) -> Image.Image:
+    #bg_removed: Image.Image = remove_bg(image_path)
 
     #separate the image obtained into its individual channels(RBA) as a tuple and convert from PIL to a numpy array
-    alpha = np.array(bg_removed.split()[-1])
+    alpha = np.array(image.split()[-1])
 
     #get a clean binary mask to work with by making every pixel white/foreground & disregard the first return value
     _, binary_mask = cv2.threshold(alpha, 127, 255, cv2.THRESH_BINARY)
@@ -33,13 +32,13 @@ def validate_single_clothing_item(image_path: str) -> Image.Image:
     num_items = len(significant)
 
     if num_items > 1:
-        raise ValueError(
+        return (
+            False,
             f"Multiple clothing items detected ({num_items} items found). "
-            "FashionCLIP requires a single clothing item per image. "
-            "Please upload a new image containing only ONE clothing item."
+            "Please upload an image containing only one item.",
         )
 
     if num_items == 0:
-        raise ValueError("No clothing items detected in the image.")
+        return False, "No clothing items detected in the image."
 
-    return bg_removed
+    return True, "Single clothing item detected."
