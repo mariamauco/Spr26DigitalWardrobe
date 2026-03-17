@@ -1,5 +1,9 @@
 from PIL import Image
 
+import matplotlib.pyplot as plt
+import numpy as np
+import requests
+import seaborn as sns
 import torch
 from transformers import CLIPProcessor, CLIPModel
 from util.prompts import FINE_CATEGORY_PROMPTS
@@ -36,3 +40,23 @@ def clip_classify_fine(image: Image.Image, coarse_key: str, model: CLIPModel, pr
         return None, None, {}
 
     return clip_classify(image, label_to_prompt, model, processor)
+
+def get_img_embedding(model:CLIPModel, processor:CLIPProcessor, img):
+    """
+    Gets image with background removed
+    Returns: python list of embedding
+    """
+
+    # 1. Process images (resize, normalize)
+    device = next(model.parameters()).device
+    inputs = processor(images=img, return_tensors="pt", padding=True).to(device)
+
+    # 2. Pass through the model to get features
+    img_features = model.get_image_features(**inputs)
+
+    # 3. L2 Normalize embedding
+    img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True).clamp_min(1e-12)
+
+    embedding = img_features[0].detach().cpu().float().tolist()
+
+    return embedding
