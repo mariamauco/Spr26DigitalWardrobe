@@ -6,6 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
 import GalleryCarousel from "../components/ui/galleryCard";
+import { ScrollView } from "react-native";
 
 export default function DashboardScreen() {
 	const [weather, setWeather] = useState<any>(null);
@@ -107,8 +108,11 @@ export default function DashboardScreen() {
 			  console.log("Log out pressed");
           }}
         />
-
-        <View style={styles.main}>
+		<ScrollView
+		style={styles.main}
+		contentContainerStyle={{ paddingBottom: 40 }}
+		showsVerticalScrollIndicator={false}
+		>
           <Text style={styles.greeting}>
 		  	HELLO, {user?.name ? user.name.toUpperCase() : "USER"}!
 		  </Text>
@@ -168,7 +172,7 @@ export default function DashboardScreen() {
 			<View style={styles.smallCard} />
 		</View>
 		</View>
-        </View>
+		</ScrollView>
       </View>
     </LinearGradient>
   );
