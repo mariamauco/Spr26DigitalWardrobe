@@ -10,7 +10,7 @@ from transformers import CLIPProcessor, CLIPModel
 # util functions
 from util.error_handling import validate_single_clothing_item
 from util.prompts import COARSE_PROMPTS
-from util.analyze_img import clip_classify, clip_classify_fine
+from util.analyze_img import clip_classify, clip_classify_fine, get_img_embedding
 
 # background removal function
 from util.remove_bg import remove_bg
@@ -70,6 +70,7 @@ def process_image():
 
     # use the background-removed image for both clip stages
     clip_image = result_image.convert("RGB")
+    image_embedding = get_img_embedding(model, processor, clip_image)
 
     pred_coarse, coarse_conf, coarse_probs = clip_classify(
         clip_image, COARSE_PROMPTS, model, processor
@@ -87,6 +88,8 @@ def process_image():
     bg_removed_base64 = base64.b64encode(output.getvalue()).decode("utf-8")
 
     data = jsonify({
+        "embedding_dim": len(image_embedding),
+        "image_embedding": image_embedding,
         "pred_coarse": pred_coarse,
         "coarse_conf": coarse_conf,
         "coarse_probs": coarse_probs,
