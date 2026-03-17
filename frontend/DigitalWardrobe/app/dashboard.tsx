@@ -5,6 +5,7 @@ import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
+import GalleryCarousel from "../components/ui/galleryCard";
 
 export default function DashboardScreen() {
 	const [weather, setWeather] = useState<any>(null);
@@ -112,59 +113,61 @@ export default function DashboardScreen() {
 		  	HELLO, {user?.name ? user.name.toUpperCase() : "USER"}!
 		  </Text>
 
-          <View style={styles.mainRow}>
-            <View style={styles.dailyCard}>
-              <Text style={styles.cardText}>daily outfit</Text>
+		<View style={styles.mainRow}>
+		{/* LEFT: Daily Outfit Card */}
+		<View style={styles.dailyCard}>
+			<Text style={styles.cardText}>daily outfit</Text>
 
-              <View style={styles.bottomOutfitsRow}>
-                <Text style={styles.cardText}>other outfit</Text>
-                <Text style={styles.cardText}>other outfit</Text>
-              </View>
-            </View>
+			{/* ✅ Gallery goes here */}
+			<View style={{ marginTop: 20 }}>
+			<GalleryCarousel width={400} height={500} />
+			</View>
+		</View>
 
-            <View style={styles.rightColumn}>
-              <View style={styles.weatherCard}>
-			  	{weather?.weather?.[0]?.icon ? (
-    				<Image
-      					source={{ 
-							uri: `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`,
-					 	}}
-      					style={styles.weatherIcon}
-    				/>
-  				) : null}
+		{/* RIGHT: Weather + Small Card */}
+		<View style={styles.rightColumn}>
+			<View style={styles.weatherCard}>
+			{weather?.weather?.[0]?.icon ? (
+				<Image
+				source={{
+					uri: `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`,
+				}}
+				style={styles.weatherIcon}
+				/>
+			) : null}
 
-  				<Text style={styles.cardText}>
-    				{weather?.weather?.[0]?.main || "weather forecast"}
-  				</Text>
+			<Text style={styles.cardText}>
+				{weather?.weather?.[0]?.main || "weather forecast"}
+			</Text>
 
-  				{weatherLoading ? (
-  					<Text style={styles.weatherDescription}>
-    					loading weather...
-  					</Text>
-				) : weatherError ? (
-  					<Text style={styles.weatherDescription}>
-    					{weatherError}
-  					</Text>
-				) : weather?.weather?.[0]?.description ? (
-  					<Text style={styles.weatherDescription}>
-    					{weather.weather[0].description}
-  					</Text>
-				) : (
-  					<Text style={styles.weatherDescription}>
-    					weather unavailable
-  					</Text>
-				)}
+			{weatherLoading ? (
+				<Text style={styles.weatherDescription}>
+				loading weather...
+				</Text>
+			) : weatherError ? (
+				<Text style={styles.weatherDescription}>
+				{weatherError}
+				</Text>
+			) : weather?.weather?.[0]?.description ? (
+				<Text style={styles.weatherDescription}>
+				{weather.weather[0].description}
+				</Text>
+			) : (
+				<Text style={styles.weatherDescription}>
+				weather unavailable
+				</Text>
+			)}
 
-  				{weather?.main?.temp !== undefined ? (
-    				<Text style={styles.weatherTemp}>
-      					{Math.round(weather.main.temp)}°F
-    				</Text>
-  				) : null}
-              </View>
+			{weather?.main?.temp !== undefined ? (
+				<Text style={styles.weatherTemp}>
+				{Math.round(weather.main.temp)}°F
+				</Text>
+			) : null}
+			</View>
 
-              <View style={styles.smallCard} />
-            </View>
-          </View>
+			<View style={styles.smallCard} />
+		</View>
+		</View>
         </View>
       </View>
     </LinearGradient>
