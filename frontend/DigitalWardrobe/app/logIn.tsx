@@ -1,15 +1,25 @@
 import { Text, View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import React, { useState } from "react";
 import { Pressable } from "react-native";
-import { Alert } from "react-native";
+import { Alert, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
+import { saveToken } from "../app/authStorage";
 // imports for components
 import Button from "../components/ui/button";
 import OmbreBackground from "../components/features/ombrebackground";
 import GridOverlay from "../components/features/gridoverlay";
 import TextBox from "../components/ui/textBox";
+import Dropdown from "../components/ui/dropdown";
+import PlaceholderCard from "../components/ui/card";
+import NavBar from "../components/features/navbar";
 
+// Main login screen component
 export default function LogInScreen() {
+
+
+	const {width} = useWindowDimensions();
+	const isMobile = width < 768;
+
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");	
@@ -53,8 +63,8 @@ export default function LogInScreen() {
 			return;
 		}
 		const authToken = data.token;
-		await setToken(authToken);
-		localStorage.setItem('token',authToken);
+		setToken(authToken);
+		await saveToken(authToken);
 
 		console.log("Success, login successful!"); // sends notification to user that login was succesful
 
@@ -89,93 +99,190 @@ export default function LogInScreen() {
 		<View style={styles.mainContainer}>
 			<OmbreBackground />
 			<GridOverlay />
-			
-			<KeyboardAvoidingView 
-				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-				style={{ flex: 1 }}
+			<NavBar />
+							
+			<ScrollView 
+				contentContainerStyle={styles.mainScrollContent}
+				showsVerticalScrollIndicator={false}
 			>
-				<ScrollView contentContainerStyle={styles.scrollContent}>
-						<View style={styles.header}>
-							<Text style={styles.title}>Welcome Back</Text>
-						</View>
-
-						<View style={styles.container}>
-							<TextBox 
-								placeholder='email' 
-								value={email} 
-								onChangeText={(text) => {
-									setEmail(text);
-									setErrorMessage(null);
-								}}								
-								keyboardType="email-address"
-								autoCapitalize="none"
-							/>
-							<TextBox 
-								placeholder='password' 
-								secureTextEntry 
-								value={password} 
-								onChangeText={(text) => {
-									setPassword(text);
-									setErrorMessage(null);
-								}}
-							/>
-
-							{errorMessage && (
-								<View style={styles.errorBox}>
-								<Text style={styles.errorText}>{errorMessage}</Text>
+				<KeyboardAvoidingView 
+							behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+							style={[styles.keyboardView]}
+				>
+					<View style={styles.logInContainer}>
+						{/* Left panel - Sign up prompt */}
+						<View style={[styles.glassWrapper, ]}>
+					
+							<PlaceholderCard 
+								width="100%" 
+								height="100%"
+								backgroundColor="rgba(220, 160, 160, 0.5)"
+								style={{...styles.innerContent, borderTopRightRadius:0, borderBottomRightRadius:0}}
+							>
+						
+							<View style={{ height:350, alignItems:'center', justifyContent:'flex-start'}}>
+								<View style={[styles.header]}>
+									<Text style={styles.title}>Welcome Back</Text>
 								</View>
-							)}				
-
-							<Button title="Log In" onPress={login} />
+								<View style={{marginBottom:20}}>
+									<Text style={{fontSize:20, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,marginBottom:20}}>First time here?</Text>
+								</View>
+								<Button title="Sign Up" onPress={() => router.replace("/signUp")} />
+							</View>
+							</PlaceholderCard>
 						</View>
-				</ScrollView>
-			</KeyboardAvoidingView>
+						{/* Right panel - Login form */}
+						<View style={[styles.glassWrapper]}>
+							<PlaceholderCard 
+								width="100%" 
+								height="100%" 
+								backgroundColor="rgba(255,255,255,0.35)"
+								style={{...styles.innerContent,borderTopLeftRadius: 0, borderBottomLeftRadius: 0, height:545}}
+							>
+								<View style={{height:350, width:'100%'}}>
+									<View style={styles.header}>
+										<Text style={styles.title}>Log In</Text>
+									</View>
+
+									<View style={styles.container}>
+					
+										{/* Email input field */}
+										<TextBox 
+											placeholder='email' 
+											value={email} 
+											onChangeText={(text) => {
+												setEmail(text);
+												setErrorMessage(null);
+											}}								
+											keyboardType="email-address"
+											autoCapitalize="none"
+										/>
+										{/* Password input field */}
+										<TextBox 
+											placeholder='password' 
+											secureTextEntry 
+											value={password} 
+											onChangeText={(text) => {
+												setPassword(text);
+												setErrorMessage(null);
+											}}
+										/>
+
+										{/* Error message display */}
+										{errorMessage && (
+											<View style={styles.errorBox}>
+											<Text style={styles.errorText}>{errorMessage}</Text>
+											</View>
+										)}				
+									<View style={{marginTop:20}}/>
+									{/* Submit login button */}
+									<Button title="Log In" onPress={login} />
+								</View>
+							</View>
+							</PlaceholderCard>
+						</View>
+					</View>
+				</KeyboardAvoidingView>
+			</ScrollView>
 		</View>
 		</>
 	);
 }
 
 const styles = StyleSheet.create({
+	
 	mainContainer: {
-		flex: 1, // This ensures the background covers the whole screen
+        flex: 1, // This ensures the background covers the whole screen
+		justifyContent: "center",
+    },
+
+	mainScrollContent:{
+		flexGrow:1,
+		justifyContent:'center',
+		paddingVertical:40,
 	},
-	scrollContent: {
-		flexGrow: 1,
-		alignItems: 'center',
+
+	keyboardView:{
+		flex:1,
+	},
+
+	logInContainer:{
+		display: "flex",
+		flex: 1,
+		flexDirection: "row",
+		justifyContent: "center",
+		alignContent: "center",
+		width: "90%", // 90% on mobile
+		maxWidth:1150,
+		minHeight:500,
+		marginVertical:40,
+		alignItems: "center",
+		alignSelf:"center",
+
+	},
+
+	glassWrapper: {
+		// display:"flex",
+		// flexDirection:"column",
+		height:"80%",
+		width:"50%",
+		alignItems: "center",
+		flex:1, // places it on top of the background
+  	},
+
+	innerContent:{
+		flex:1,
+		//height:200,
+		padding:20,
+		alignItems:'center',
 		justifyContent: 'center',
-		paddingVertical: 40,
 	},
-	header: {
-		marginBottom: 20,
-		alignItems: 'center',
-	},
+
+    header: {
+		height:60,
+		//marginTop:20,
+		marginBottom:40,
+        alignItems: 'center',
+		justifyContent:'center'
+    },
 	title: {
 		color: "#8A5F5F",
-		fontFamily: "Poppins_700Bold", // see note below
+		fontFamily: "DMSerifDisplay_400Regular", 
+		letterSpacing:1,
 		fontSize: 36,
-		fontWeight: "700",
+		fontWeight: "600",
+		textAlign:'center',
 	},	
 	container: {
 		width: '100%',
 		alignItems: 'center',
-		gap: 24,
+		gap: 25,
 	},
 	pickerWrapper: {
-		width: "80%", 
-		alignSelf: "center", 
-		marginVertical: 10 
-	},
+        alignSelf: "center", 
+        marginVertical: 10,
+		width: 438,
+		height: 48,
+		borderRadius: 10,
+		backgroundColor: "#FEFDF4",
+		paddingHorizontal: 12,
+
+		// iOS shadow
+		shadowColor: "#DCA0A0",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 1,
+		shadowRadius: 4,
+
+		// Android shadow
+		elevation: 4,
+    },
 	errorBox: {
 		backgroundColor: "#f7b0b6",
 		borderRadius: 8,
 		padding: 10,
-		width: "80%",
+		width: "73%",
 		alignSelf: "center",
 	},
 
-	errorText: {
-		color: "#842029",
-		fontSize: 14,
-		textAlign: "center",
-	}	
+	errorText: { color: "#842029", fontSize: 20, textAlign: "center" }
 });	

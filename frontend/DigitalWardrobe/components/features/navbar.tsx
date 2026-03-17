@@ -8,7 +8,9 @@ const router = useRouter();
   return (
     <View style={styles.outer}>
       <View style={styles.inner}>
-        <Text style={styles.title}>Digital Wardrobe</Text>
+        <Pressable onPress={() => router.push("/")}>
+          <Text style={styles.title}>Digital Wardrobe</Text>
+        </Pressable>
 
         <Pressable
           style={({ pressed }) => [
