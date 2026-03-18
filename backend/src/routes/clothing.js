@@ -7,6 +7,8 @@ import path from "path";
 
 const router = express.Router();
 
+
+
 //     CREATE CLOTHING ITEM     //
 router.post("/", auth, upload.single("image"), async (req, res) => {
   try {
