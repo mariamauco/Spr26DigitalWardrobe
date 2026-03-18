@@ -51,11 +51,11 @@ FINE_CATEGORY_PROMPTS = {
     "top": {
         "t-shirt":          "a photo of a t-shirt or short sleeve top with no collar or buttons",
         "long sleeve shirt": "a photo of a long sleeve shirt or fitted long sleeve top",
-        "shirt":            "a photo of a button-down shirt or woven shirt with a collar",
+        #"shirt":            "a photo of a button-down shirt or woven shirt with a collar",
         "blouse":           "a photo of a blouse with soft fabric, feminine details or ruffles",
         "tank top":         "a photo of a sleeveless tank top or camisole with thin straps",
-        "sweater":          "a photo of a knit sweater or pullover with no hood",
-        "hoodie":           "a photo of a hoodie sweatshirt with a hood",
+        "sweater":          "a photo of a knit sweater, hoodie, or pullover",
+        #"hoodie":           "a photo of a hoodie sweatshirt with a hood",
     },
     "bottom": {
         "jeans":        "a photo of denim jeans with visible stitching and pockets",
