@@ -11,7 +11,7 @@ const ClothingItemSchema = new mongoose.Schema(
         },
 
         // clothing item details
-        name: {type: String, required: true}, // ex: Blue Jean Jacket
+        name: {type: String, required: false}, // ex: Blue Jean Jacket
         type: {type: String, required: true, enum: ["Top", "top", "bottom", "Bottom", "shoe", "accessory", "outerwear", "one_piece"]}, 
         subtype: {type: String, required:false, enum: [
             "t-shirt", "long sleeve shirt", "tank top", "sweater", // top

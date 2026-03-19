@@ -2,6 +2,7 @@ import express from "express";
 import User from "../models/User.js";
 import authMiddleware from "../middleware/auth.js";
 import fetch from "node-fetch";
+import { callModel, modelRoutes } from "../middleware/model.js";
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ export const weatherTags = (data) => {
     const description = weather?.description || ""
     const main = data?.main || {};
     const wind = data?.wind || {};
-    const clouds = data?.clouds?.all || {};
+    const clouds = data?.clouds?.all || -1;
     const visibility = data?.visibility || -1;
     const temp = Number(main.temp);
     const humidity = Number(main.humidity);
@@ -61,8 +62,8 @@ export const weatherTags = (data) => {
     else tags.push("mostly clear");
 
     // DAY TIME TAGS
-    if (data.dt && data.sys.sunrise && data.sys.sunset)
-        tags.push(data.dt >= data.sys.sunrise && dt <= data.sys.sunset ? "daytime" : "nighttime"); 
+    if (data?.dt && data?.sys?.sunrise && data?.sys?.sunset)
+        tags.push(data.dt >= data.sys.sunrise && data.dt <= data.sys.sunset ? "daytime" : "nighttime"); 
 
     return tags;
 };
@@ -86,11 +87,6 @@ const getUserWeather = async (user) => {
         throw err;
     }
     return data;
-};
-
-// TO DO: call flask app with the user's closet, preferences, and weather info
-const callModel = async (payload) => {
-    const endpoint = "138.197.16.179:5000";
 };
 
 export const dailyOutfit = async (userId) => {
@@ -119,10 +115,8 @@ export const dailyOutfit = async (userId) => {
         slots: ["top", "bottom", "outerwear", "footwear", "accessories"],
     };
 
-    // const modelResponse = await callOutfitModel(payload);
-    // check ids
-
-    // return outfit and images
+    const modelResponse = await callModel(modelRoutes.dailyOutfit, payload);
+    return modelResponse;
 };
 
 // weather route which calls weather API
