@@ -8,10 +8,14 @@ import DashboardSidebar from "../components/features/dashboardSidebar";
 import GalleryCarousel from "../components/ui/galleryCard";
 import { ScrollView } from "react-native";
 
+import * as ImagePicker from "expo-image-picker";
+import { Pressable, Alert } from "react-native";
+
 export default function DashboardScreen() {
 	const [weather, setWeather] = useState<any>(null);
 	const [weatherLoading, setWeatherLoading] = useState(true);
   	const [weatherError, setWeatherError] = useState<string | null>(null);
+	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   
   	const { user, setUser } = useUser();	
 	
@@ -94,6 +98,32 @@ export default function DashboardScreen() {
 	  
 		  loadDashboardData();
 		}, []);
+
+		const handlePickImage = async () => {
+			try {
+			  const permission =
+				await ImagePicker.requestMediaLibraryPermissionsAsync();
+		  
+			  if (!permission.granted) {
+				Alert.alert("Permission required", "Allow photo access to upload.");
+				return;
+			  }
+		  
+			  const result = await ImagePicker.launchImageLibraryAsync({
+				mediaTypes: ["images"],
+				allowsEditing: true,
+				aspect: [4,5],
+				quality: 1,
+			  });
+		  
+			  if (!result.canceled) {
+				setUploadedImage(result.assets[0].uri);
+			  }
+		  
+			} catch (error) {
+			  console.log("Image picker error:", error);
+			}
+		  };
   return (
     <LinearGradient
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
@@ -169,7 +199,26 @@ export default function DashboardScreen() {
 			) : null}
 			</View>
 
-			<View style={styles.smallCard} />
+			<Pressable style={styles.smallCard} onPress={handlePickImage}>
+  				{uploadedImage ? (
+    				<>
+      					<Image source={{ uri: uploadedImage }} style={styles.uploadPreview} />
+      					<View style={styles.uploadButton}>
+        					<Text style={styles.uploadButtonText}>change photo</Text>
+     					 </View>
+	  				</>
+  				) : (
+    				<View style={styles.uploadContent}>
+      					<Text style={styles.uploadTitle}>add item</Text>
+      					<Text style={styles.uploadDescription}>upload a photo to your wardrobe
+      					</Text>
+
+      					<View style={styles.uploadButton}>
+        					<Text style={styles.uploadButtonText}>choose photo</Text>
+      					</View>
+    				</View>
+  				)}
+			</Pressable>
 		</View>
 		</View>
 		</ScrollView>
@@ -275,5 +324,54 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginTop: 6,
     fontFamily: "EncodeSansSemiCondensed_400Regular",
+  },
+  
+  uploadContent: {
+	flex: 1,
+	justifyContent: "center",
+	alignItems: "center",
+	paddingHorizontal: 20,
+  },
+  
+  uploadTitle: {
+	color: "#8A5F5F",
+	fontSize: 24,
+	fontFamily: "DMSerifDisplay_400Regular",
+	textAlign: "center",
+	marginBottom: 8,
+  },
+  
+  uploadDescription: {
+	color: "#8A5F5F",
+	fontSize: 15,
+	textAlign: "center",
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
+	marginBottom: 22,
+	opacity: 0.85,
+  },
+  
+  uploadButton: {
+	backgroundColor: "#8A5F5F",
+	paddingVertical: 12,
+	paddingHorizontal: 24,
+	borderRadius: 20,
+	minWidth: 150,
+	alignItems: "center",
+  },
+  
+  uploadButtonText: {
+	color: "#FEFDF4",
+	fontSize: 16,
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
+	textTransform: "lowercase",
+  },
+  
+  uploadPreview: {
+	width: "82%",
+	height: 170,
+	borderRadius: 20,
+	resizeMode: "cover",
+	marginTop: 18,
+	marginBottom: 18,
   },
 });
