@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import authMiddleware from "../middleware/auth.js";
 import fetch from "node-fetch";
 import { callModel, modelRoutes } from "../middleware/model.js";
+import OnboardingProfile from "../models/OnboardingProfile.js";
 
 const router = express.Router();
 
@@ -91,7 +92,7 @@ const getUserWeather = async (user) => {
 
 export const dailyOutfit = async (userId) => {
 
-    // get the user
+    // 1. Get the user's profile from the database using their ID.
     const user = await User.findById(userId);
     if (!user) {
         const err = new Error("User not found");
@@ -99,23 +100,40 @@ export const dailyOutfit = async (userId) => {
         throw err;
     }
 
+    // 2. Fetch current weather for the user's zipcode/country.
     const weatherData = await getUserWeather(user);
+
+    // 3. Convert raw weather response into ML-friendly weather tags.
     const tags = weatherTags(weatherData);
-    // get user preferneces, might be in onboarding profile
-    // const preferences;
 
-    // get user's closet. call get api
-    // const closet;
+    // 4. Find this user's onboarding profile to read styling preferences.
+    const onboarding = await OnboardingProfile.findById(userId);
 
+    // 5. Keep only preference fields needed by the model.
+    //    These labels shape outfit generation style and comfort level.
+    const preferences = {
+        comfort: onboarding.comfort,
+        experimental: onboarding.experimental,
+        silhouetteTags: onboarding.silhouetteTags,
+        styleTags: onboarding.styleTags
+    }
+
+    // 6. Load all clothing items in the user's closet.
+    const closet = await ClothingItem.find(userId).sort({ createdAt: -1 });
+
+    // 7. Build the request payload for the daily outfit model route.
     const payload = {
         userId,
-        //preferences,
-        //closet,
+        preferences,
+        closet,
         weatherTags: tags,
         slots: ["top", "bottom", "outerwear", "footwear", "accessories"],
     };
 
+    // 8. Call the ML model with preferences, closet items, and weather tags.
     const modelResponse = await callModel(modelRoutes.dailyOutfit, payload);
+
+    // 9. Return the model response back to the route handler.
     return modelResponse;
 };
 

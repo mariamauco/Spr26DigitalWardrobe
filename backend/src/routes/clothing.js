@@ -82,6 +82,7 @@ router.get("/", auth, async (req, res) => {
         if (tag) query.tags = tag;         // matches array containing tag
 
         const items = await ClothingItem.find(query).sort({ createdAt: -1 });
+
         res.json(items);
     } catch (err) {
         res.status(500).json({ message: err.message });
