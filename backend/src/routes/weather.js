@@ -4,6 +4,7 @@ import authMiddleware from "../middleware/auth.js";
 import fetch from "node-fetch";
 import { callModel, modelRoutes } from "../middleware/model.js";
 import OnboardingProfile from "../models/OnboardingProfile.js";
+import { model } from "mongoose";
 
 const router = express.Router();
 
@@ -133,8 +134,37 @@ export const dailyOutfit = async (userId) => {
     // 8. Call the ML model with preferences, closet items, and weather tags.
     const modelResponse = await callModel(modelRoutes.dailyOutfit, payload);
 
+    const response = modelResponse;
+    
+    // DUMMY Data
+    if (modelResponse.status != 200){
+        response = {
+            first:{
+                top,
+                bottom,
+                accessories,
+                footwear,
+                outerwear
+            }, 
+            second: {
+                top: null,
+                bottom: null,
+                accessories: null,
+                footwear: null,
+                outerwear: null
+            }, 
+            third: {
+                top: null,
+                bottom: null,
+                accessories: null,
+                footwear: null,
+                outerwear: null
+            }
+        }
+    }
+
     // 9. Return the model response back to the route handler.
-    return modelResponse;
+    return response;
 };
 
 // weather route which calls weather API
