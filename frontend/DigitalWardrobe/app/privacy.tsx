@@ -60,7 +60,7 @@ export default function PrivacyScreen(){
 					<Text style={styles.sectionTitle}>4. Contact Us</Text>
 					<Text style={styles.paragraph}>
 						If you have any questions about this privacy policy or our academic project&apos;s data handling,
-						please contact our project lead at:
+						 contact our project lead at:
 					</Text>
 					<Text style={styles.contact}>maria.mauco@ucf.edu</Text>
 				</View>
