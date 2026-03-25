@@ -1,3 +1,6 @@
+// when user opens in file picker, open card that loads until the data gets recognized :we detected this as a 
+//blue longsleeve shirt([color][subtype]) with __ accurancy(accuracy is for later)
+
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { getToken } from "../app/authStorage";
@@ -16,6 +19,8 @@ export default function DashboardScreen() {
 	const [weatherLoading, setWeatherLoading] = useState(true);
   	const [weatherError, setWeatherError] = useState<string | null>(null);
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+	const [imageFile, setImageFile] = useState<any>(null);
+	const [uploadedItem, setUploadedItem] = useState<any>(null);
   
   	const { user, setUser } = useUser();	
 	
@@ -29,6 +34,7 @@ export default function DashboardScreen() {
 			  console.log("No token found");
 			  return;
 			}
+			// authenticating user (make sure user is logged in when in dashboard)
 			try{
 				const userResponse = await fetch("http://138.197.16.179:5050/api/auth/user", {
 					method: "GET",
@@ -116,12 +122,66 @@ export default function DashboardScreen() {
 				quality: 1,
 			  });
 		  
-			  if (!result.canceled) {
-				setUploadedImage(result.assets[0].uri);
+			  if (!result.canceled && result.assets?.length > 0) {
+				const asset = result.assets[0];
+			  
+				setUploadedImage(asset.uri);
+			  
+				setImageFile({
+				  uri: asset.uri,
+				  name: "upload.jpg",
+				  type: "image/jpeg",
+				});
+			  
+				console.log("Prepared image file:", {
+				  uri: asset.uri,
+				  name: "upload.jpg",
+				  type: "image/jpeg",
+				});
 			  }
 		  
 			} catch (error) {
 			  console.log("Image picker error:", error);
+			}
+		  };
+		  
+		  const uploadImage = async () => {
+			try {
+			  const token = await getToken();
+		  
+			  if (!token) {
+				console.log("No token found");
+				return;
+			  }
+		  
+			  if (!imageFile) {
+				console.log("No image selected");
+				return;
+			  }
+		  
+			  const formData = new FormData();
+		  
+			  formData.append("image", {
+				uri: imageFile.uri,
+				name: imageFile.name,
+				type: imageFile.type,
+			  } as any);
+		  
+			  const response = await fetch("http://138.197.16.179:5050/api/clothing", {
+				method: "POST",
+				headers: {
+				  Authorization: `Bearer ${token}`,
+				},
+				body: formData,
+			  });
+			  
+			  const data = await response.json(); // returns name, type, subtype, color,tags,imagepath
+			  setUploadedItem(data);
+
+			  console.log("Upload status:", response.status);
+			  console.log("Upload response:", data);
+			} catch (error) {
+			  console.error("Upload error:", error);
 			}
 		  };
   return (
@@ -148,18 +208,18 @@ export default function DashboardScreen() {
 		  </Text>
 
 		<View style={styles.mainRow}>
-		{/* LEFT: Daily Outfit Card */}
+		{/* Daily Outfit Card */}
 		<View style={styles.dailyCard}>
 			<Text style={styles.cardText}>daily outfit</Text>
 
-			{/* ✅ Gallery goes here */}
+			{/* img */}
 			<View style={{ marginTop: 20 }}>
 			<GalleryCarousel width={400} height={500} />
 			</View>
 		</View>
 
-		{/* RIGHT: Weather + Small Card */}
 		<View style={styles.rightColumn}>
+			{/* weather widget*/}
 			<View style={styles.weatherCard}>
 			{weather?.weather?.[0]?.icon ? (
 				<Image
@@ -198,14 +258,17 @@ export default function DashboardScreen() {
 				</Text>
 			) : null}
 			</View>
-
-			<Pressable style={styles.smallCard} onPress={handlePickImage}>
+			{/* upload widget*/}
+			<Pressable
+  				style={styles.smallCard}
+  				onPress={!uploadedImage ? handlePickImage : undefined}
+			>
   				{uploadedImage ? (
     				<>
       					<Image source={{ uri: uploadedImage }} style={styles.uploadPreview} />
-      					<View style={styles.uploadButton}>
-        					<Text style={styles.uploadButtonText}>change photo</Text>
-     					 </View>
+      					<Pressable style={styles.testButton} onPress={uploadImage}>
+  							<Text style={styles.testButtonText}>test upload</Text>
+						</Pressable>
 	  				</>
   				) : (
     				<View style={styles.uploadContent}>
@@ -216,6 +279,7 @@ export default function DashboardScreen() {
       					<View style={styles.uploadButton}>
         					<Text style={styles.uploadButtonText}>choose photo</Text>
       					</View>
+						  
     				</View>
   				)}
 			</Pressable>
@@ -373,5 +437,19 @@ const styles = StyleSheet.create({
 	resizeMode: "cover",
 	marginTop: 18,
 	marginBottom: 18,
+  },
+  testButton: {
+	marginTop: 10,
+	backgroundColor: "#4E4E4E",
+	paddingVertical: 10,
+	paddingHorizontal: 16,
+	borderRadius: 14,
+	alignItems: "center",
+  },
+  
+  testButtonText: {
+	color: "#FEFDF4",
+	fontSize: 14,
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
   },
 });
