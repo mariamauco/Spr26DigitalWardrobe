@@ -38,7 +38,7 @@ export default function DashboardScreen() {
 			}
 			// authenticating user (make sure user is logged in when in dashboard)
 			try{
-				const userResponse = await fetch("http://138.197.16.179:5050/api/auth/user", {
+				const userResponse = await fetch("/api/auth/user", {
 					method: "GET",
 					headers: {
 					  Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ export default function DashboardScreen() {
 				setWeatherLoading(true);
 				setWeatherError(null);
 	  
-				const weatherResponse = await fetch("http://138.197.16.179:5050/api/weather", {
+				const weatherResponse = await fetch("/api/weather", {
 				  method: "GET",
 				  headers: {
 					Authorization: `Bearer ${token}`,
@@ -172,7 +172,7 @@ export default function DashboardScreen() {
 				type: imageFile.type,
 			  } as any);
 			 
-			  const response = await fetch("http://138.197.16.179:5050/api/clothing", {
+			  const response = await fetch("/api/clothing", {
 				method: "POST",
 				headers: {
 				  Authorization: `Bearer ${token}`,

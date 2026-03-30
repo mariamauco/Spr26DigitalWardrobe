@@ -66,7 +66,7 @@ export default function SignUpScreen() {
 		console.log("Selected country:", country);
 		
 		try {
-		const response = await fetch("http://138.197.16.179:5050/api/auth/register", {
+		const response = await fetch("/api/auth/register", {
 			method: "POST",
 			headers: {
 			"Content-Type": "application/json",
