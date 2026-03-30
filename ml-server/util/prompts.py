@@ -1,3 +1,8 @@
+PERSON_CHECK_PROMPTS = {
+    "no_person":  "a clothing item alone with no person, isolated garment",
+    "on_person":  "a clothing item worn by a person or model",
+}
+
 COARSE_PROMPTS = {
     "top": "a photo of an upper body base layer garment such as a t-shirt, blouse, sweater, or tank top, worn directly on the torso",
     "bottom": "a photo of a lower body garment such as jeans, trousers, shorts, leggings, or a skirt, worn on the legs or waist",
@@ -58,4 +63,24 @@ FINE_CATEGORY_PROMPTS = {
         "jewelry":      "a photo of jewelry such as earrings, necklace, bracelet, or ring",
         "sunglasses":   "a photo of sunglasses worn on the face",
     },
+}
+
+SLEEVE_PROMPTS = {
+    "sleeveless":   "a photo of a sleeveless garment with no sleeves, such as a tank top, camisole, or strapless top",
+    "short_sleeve": "a photo of a garment with short sleeves ending above the elbow",
+    "long_sleeve":  "a photo of a garment with long sleeves extending to the wrist",
+}
+
+LEG_COVERAGE_PROMPTS = {
+    "shorts":     "a photo of shorts with a hemline well above the knee",
+    "mini_skirt": "a photo of a mini skirt with a hemline at mid-thigh or above",
+    "midi_skirt": "a photo of a midi skirt with a hemline between the knee and ankle",
+    "maxi_skirt": "a photo of a maxi skirt or long skirt reaching the ankle or floor",
+    "pants":      "a photo of full-length pants or trousers reaching the ankle",
+}
+
+OUTERWEAR_COVERAGE_PROMPTS = {
+    "light_layer":  "a photo of a lightweight outer layer such as a cardigan, thin jacket, or shirt jacket",
+    "medium_layer": "a photo of a medium-weight outer layer such as a denim jacket, blazer, or fleece",
+    "heavy_layer":  "a photo of a heavy outer layer such as a coat, parka, puffer jacket, or trench coat",
 }
