@@ -18,6 +18,7 @@ export default function LandingScreen() {
 				<Link href="/logIn" style={styles.link}>Go to log in</Link>
 				<Link href="/dashboard" style={styles.link}>Go to Dashboard</Link>
 				<Link href="../onboarding" style={styles.link}>Go to Onboarding</Link>
+				<Link href="/privacy" style={styles.link}>Go to our Privacy Policy</Link>
 			</View>
 		</View>
 	);

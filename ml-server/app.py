@@ -1,5 +1,6 @@
 import base64
 import io
+import os
 
 from flask import Flask, jsonify, request
 from PIL import Image, UnidentifiedImageError
@@ -30,6 +31,24 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)  # enables CORS for development
 
+# the dir in backend where photos are stored
+UPLOADS_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "backend", "uploads")
+)
+
+def _read_upload_from_shared_dir(image_path: str):
+    # Accept either /uploads/<file> or just <file>, then read from shared uploads dir.
+    filename = os.path.basename(str(image_path or "").strip())
+    if not filename:
+        raise FileNotFoundError("Invalid imagePath")
+
+    full_path = os.path.join(UPLOADS_DIR, filename)
+    if not os.path.isfile(full_path):
+        raise FileNotFoundError("Image file not found in shared uploads directory")
+
+    with open(full_path, "rb") as f:
+        return f.read(), filename
+
 
 @app.get("/")
 def home():
@@ -41,16 +60,27 @@ def health():
 
 @app.post("/process-image")
 def process_image():
-    # checks if an image file field was sent
-    if "image" not in request.files:
-        return jsonify(error="Missing form-data file field 'image'"), 400
+    raw_bytes = b""
 
-    image_file = request.files["image"]
-    if not image_file or not image_file.filename:
-        return jsonify(error="No file selected for 'image'"), 400
+    # for postman testing: accept multipart upload if present.
+    if "image" in request.files:
+        image_file = request.files["image"]
+        if not image_file or not image_file.filename:
+            return jsonify(error="No file selected for 'image'"), 400
+        raw_bytes = image_file.read()
+    else:
+        payload = request.get_json(silent=True) or {}
+        image_path = payload.get("imagePath") or payload.get("image_path")
+        if not image_path:
+            return jsonify(error="Missing imagePath in JSON body"), 400
+        try:
+            raw_bytes, _ = _read_upload_from_shared_dir(image_path)
+        except FileNotFoundError as e:
+            return jsonify(error=str(e)), 400
+        except OSError:
+            return jsonify(error="Could not read image from shared uploads directory"), 400
 
     # Read bytes first so we can validate empty uploads and decode failures.
-    raw_bytes = image_file.read()
     if not raw_bytes:
         return jsonify(error="Uploaded file is empty"), 400
 
@@ -89,7 +119,7 @@ def process_image():
 
     data = jsonify({
         "embedding_dim": len(image_embedding),
-        "image_embedding": image_embedding,
+        "imageEmbedding": image_embedding,
         "pred_coarse": pred_coarse,
         "coarse_conf": coarse_conf,
         "coarse_probs": coarse_probs,
