@@ -2,11 +2,24 @@ import express from "express";
 import ClothingItem from "../models/ClothingItem.js";
 import auth from "../middleware/auth.js";
 import { upload } from "../middleware/upload.js";
+import { callModel, modelRoutes } from "../middleware/model.js";
 import fs from "fs";
 import path from "path";
 
 const router = express.Router();
 
+const processImage = async (imagePath) => {
+  const modelResult = await callModel(modelRoutes.processImage, { imagePath });
+
+  const type = modelResult?.pred_coarse;
+  const subtype = modelResult?.pred_fine;
+  const imageEmbedding = modelResult?.image_embedding;
+  
+  // store confidence percentage
+
+  // error handling for no type or sub type detected
+  return { type, subtype, imageEmbedding };
+};
 
 
 //     CREATE CLOTHING ITEM     //
@@ -32,21 +45,26 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
       }
     };
 
-    const { name, type } = req.body;
+    const imagePath = `/uploads/${req.file.filename}`;
+    const { type, subtype, imageEmbedding } = await processImage(imagePath);
+
+    const { name } = req.body; // make name the image path if no input
     const colors = parseList(req.body.colors);
     const tags = parseList(req.body.tags);
     if (!name)
         name = req.file.filename;
 
-    const imagePath = `/uploads/${req.file.filename}`;
+    //const imagePath = `/uploads/${req.file.filename}`;
 
     const item = await ClothingItem.create({
       user: req.user.id,
       name,
       type,
+      subtype,
       colors,
       tags,
       imagePath,
+      imageEmbedding
     });
 
     res.status(201).json(item);
@@ -66,6 +84,7 @@ router.get("/", auth, async (req, res) => {
         if (tag) query.tags = tag;         // matches array containing tag
 
         const items = await ClothingItem.find(query).sort({ createdAt: -1 });
+
         res.json(items);
     } catch (err) {
         res.status(500).json({ message: err.message });
