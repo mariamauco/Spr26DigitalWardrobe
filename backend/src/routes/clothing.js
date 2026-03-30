@@ -51,6 +51,8 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
     const { name } = req.body; // make name the image path if no input
     const colors = parseList(req.body.colors);
     const tags = parseList(req.body.tags);
+    if (!name)
+        name = req.file.filename;
 
     //const imagePath = `/uploads/${req.file.filename}`;
 
