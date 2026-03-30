@@ -21,6 +21,8 @@ export default function DashboardScreen() {
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 	const [imageFile, setImageFile] = useState<any>(null);
 	const [uploadedItem, setUploadedItem] = useState<any>(null);
+	const [showPopup, setShowPopup] = useState(false);
+	const [analysisText, setAnalysisText] = useState("loading...");
   
   	const { user, setUser } = useUser();	
 	
@@ -132,6 +134,9 @@ export default function DashboardScreen() {
 				  name: "upload.jpg",
 				  type: "image/jpeg",
 				});
+
+				setShowPopup(true);
+				setAnalysisText("loading...");
 			  
 				console.log("Prepared image file:", {
 				  uri: asset.uri,
@@ -158,7 +163,7 @@ export default function DashboardScreen() {
 				console.log("No image selected");
 				return;
 			  }
-		  
+
 			  const formData = new FormData();
 		  
 			  formData.append("image", {
@@ -166,7 +171,7 @@ export default function DashboardScreen() {
 				name: imageFile.name,
 				type: imageFile.type,
 			  } as any);
-		  
+			 
 			  const response = await fetch("http://138.197.16.179:5050/api/clothing", {
 				method: "POST",
 				headers: {
@@ -177,6 +182,11 @@ export default function DashboardScreen() {
 			  
 			  const data = await response.json(); // returns name, type, subtype, color,tags,imagepath
 			  setUploadedItem(data);
+
+			  setAnalysisText("temp text");
+			  //setAnalysisText(
+				//`we detected this as a ${data.color} ${data.subtype}`
+			  //);
 
 			  console.log("Upload status:", response.status);
 			  console.log("Upload response:", data);
@@ -287,6 +297,49 @@ export default function DashboardScreen() {
 		</View>
 		</ScrollView>
       </View>
+	  {showPopup && (
+  		<View style={styles.popupOverlay}>
+    		<View style={styles.popupCard}>
+
+      		{/* image */}
+      			{uploadedImage && (
+        			<Image source={{ uri: uploadedImage }} style={styles.popupImage} />
+      			)}
+
+      		{/* text */}
+      			<View style={styles.popupTextBox}>
+        			<Text style={styles.popupText}>
+          				{analysisText}
+        			</Text>
+
+        	{/* buttons */}
+        		<View style={styles.popupButtons}>
+          			<Pressable
+            			style={styles.confirmButton}
+            			onPress={() => {
+							setShowPopup(false);
+              				console.log("Confirmed upload");
+            			}}
+          			>
+            			<Text style={styles.popupButtonText}>confirm</Text>
+          			</Pressable>
+
+          			<Pressable
+            			style={styles.cancelButton}
+            			onPress={() => {
+              				setShowPopup(false);
+              				setUploadedImage(null);
+              				setImageFile(null);
+            			}}
+          			>
+            			<Text style={styles.popupButtonText}>cancel</Text>
+          			</Pressable>
+        		</View>
+      		</View>
+
+    	</View>
+  	</View>
+)}
     </LinearGradient>
   );
 }
@@ -451,5 +504,67 @@ const styles = StyleSheet.create({
 	color: "#FEFDF4",
 	fontSize: 14,
 	fontFamily: "EncodeSansSemiCondensed_400Regular",
+  },
+  
+  popupOverlay: {
+	position: "absolute",
+	top: 0,
+	left: 0,
+	right: 0,
+	bottom: 0,
+	backgroundColor: "rgba(0,0,0,0.3)",
+	justifyContent: "center",
+	alignItems: "center",
+  },
+  
+  popupCard: {
+	width: 1000,
+	height: 500,
+	backgroundColor: "#FEFDF4",
+	borderRadius: 30,
+	flexDirection: "row",
+	padding: 20,
+	gap: 20,
+  },
+  
+  popupImage: {
+	width: 250,
+	height: "75%",
+	borderRadius: 20,
+  },
+  
+  popupTextBox: {
+	flex: 1,
+	justifyContent: "space-between",
+  },
+  
+  popupText: {
+	color: "#4E4E4E",
+	fontSize: 18,
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
+  },
+  
+  popupButtons: {
+	flexDirection: "row",
+	gap: 10,
+  },
+  
+  confirmButton: {
+	backgroundColor: "#8A5F5F",
+	paddingVertical: 10,
+	paddingHorizontal: 16,
+	borderRadius: 16,
+  },
+  
+  cancelButton: {
+	backgroundColor: "#8A5F5F",
+	paddingVertical: 10,
+	paddingHorizontal: 16,
+	borderRadius: 16,
+  },
+  
+  popupButtonText: {
+	color: "#FEFDF4",
+	fontSize: 14,
   },
 });
