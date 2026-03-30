@@ -45,7 +45,7 @@ export default function LogInScreen() {
 		};
 
 		try {
-		const response = await fetch("http://138.197.16.179:5050/api/auth/login", {
+		const response = await fetch("/api/auth/login", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -68,7 +68,7 @@ export default function LogInScreen() {
 
 		console.log("Success, login successful!"); // sends notification to user that login was succesful
 
-		const onboardingRes = await fetch("http://138.197.16.179:5050/api/onboarding", {
+		const onboardingRes = await fetch("/api/onboarding", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

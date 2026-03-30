@@ -4,7 +4,7 @@ export const update = async (data: Record<string, unknown>) => {
   let response;
   // sends what the user puts in onboarding to backend
   try {
-    response = await fetch('http://138.197.16.179:5050/api/onboarding', {
+    response = await fetch('/api/onboarding', {
       method: 'POST', // sending to backend
       headers: {
         'Content-Type': 'application/json',
