@@ -14,6 +14,8 @@ import { ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Pressable, Alert } from "react-native";
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
 export default function DashboardScreen() {
 	const [weather, setWeather] = useState<any>(null);
 	const [weatherLoading, setWeatherLoading] = useState(true);
@@ -38,7 +40,7 @@ export default function DashboardScreen() {
 			}
 			// authenticating user (make sure user is logged in when in dashboard)
 			try{
-				const userResponse = await fetch("/api/auth/user", {
+				const userResponse = await fetch(`${API_URL}/api/auth/user`, {
 					method: "GET",
 					headers: {
 					  Authorization: `Bearer ${token}`,
@@ -65,7 +67,7 @@ export default function DashboardScreen() {
 				setWeatherLoading(true);
 				setWeatherError(null);
 	  
-				const weatherResponse = await fetch("/api/weather", {
+				const weatherResponse = await fetch(`${API_URL}/api/weather`, {
 				  method: "GET",
 				  headers: {
 					Authorization: `Bearer ${token}`,
@@ -172,7 +174,7 @@ export default function DashboardScreen() {
 				type: imageFile.type,
 			  } as any);
 			 
-			  const response = await fetch("/api/clothing", {
+			  const response = await fetch(`${API_URL}/api/clothing`, {
 				method: "POST",
 				headers: {
 				  Authorization: `Bearer ${token}`,
