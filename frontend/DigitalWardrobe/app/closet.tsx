@@ -4,6 +4,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
 export default function ClosetScreen() {
   return (
     <LinearGradient
