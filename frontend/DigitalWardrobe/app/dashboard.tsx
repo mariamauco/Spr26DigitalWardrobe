@@ -2,7 +2,7 @@
 //blue longsleeve shirt([color][subtype]) with __ accurancy(accuracy is for later)
 
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Platform } from "react-native";
 import { getToken } from "../app/authStorage";
 import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
@@ -16,12 +16,19 @@ import { Pressable, Alert } from "react-native";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
+type UploadImage = {
+	uri: string;
+	name: string;
+	type: string;
+	file?: Blob;
+};
+
 export default function DashboardScreen() {
 	const [weather, setWeather] = useState<any>(null);
 	const [weatherLoading, setWeatherLoading] = useState(true);
   	const [weatherError, setWeatherError] = useState<string | null>(null);
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-	const [imageFile, setImageFile] = useState<any>(null);
+	const [imageFile, setImageFile] = useState<UploadImage | null>(null);
 	const [uploadedItem, setUploadedItem] = useState<any>(null);
 	const [showPopup, setShowPopup] = useState(false);
 	const [analysisText, setAnalysisText] = useState("loading...");
@@ -135,6 +142,7 @@ export default function DashboardScreen() {
 				  uri: asset.uri,
 				  name: "upload.jpg",
 				  type: "image/jpeg",
+				  file: (asset as { file?: Blob }).file,
 				});
 
 				setShowPopup(true);
@@ -167,12 +175,24 @@ export default function DashboardScreen() {
 			  }
 
 			  const formData = new FormData();
-		  
-			  formData.append("image", {
-				uri: imageFile.uri,
-				name: imageFile.name,
-				type: imageFile.type,
-			  } as any);
+
+			  // Web needs a Blob/File, native uses uri/name/type.
+			  if (Platform.OS === "web") {
+				let blob = imageFile.file;
+
+				if (!blob) {
+				  const fileResponse = await fetch(imageFile.uri);
+				  blob = await fileResponse.blob();
+				}
+
+				formData.append("image", blob, imageFile.name);
+			  } else { // check if backend accepts this
+				formData.append("image", {
+				  uri: imageFile.uri,
+				  name: imageFile.name,
+				  type: imageFile.type,
+				} as any);
+			  }
 			 
 			  const response = await fetch(`${API_URL}/api/clothing`, {
 				method: "POST",
