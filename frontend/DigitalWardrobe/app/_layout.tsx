@@ -34,6 +34,7 @@ const [fontsLoaded] = useFonts({
           <Stack.Screen name="login" />
           <Stack.Screen name="signUp" />
           <Stack.Screen name="onboarding" />
+          <Stack.Screen name= "privacy" />
         </Stack>
 
         <StatusBar style="auto" />
