@@ -31,6 +31,7 @@ export default function SettingsScreen() {
       console.log("Saved locally:", { name, zipcode });
     };
 
+
     return (
     <LinearGradient
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
