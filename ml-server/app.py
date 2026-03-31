@@ -60,8 +60,12 @@ def health():
 
 @app.post("/process-image")
 def process_image():
+
+    print("--- Request Received ---")
+
     raw_bytes = b""
 
+    image_path=''
     # for postman testing: accept multipart upload if present.
     if "image" in request.files:
         image_file = request.files["image"]
@@ -91,6 +95,7 @@ def process_image():
 
     # Removes background
     result_image = remove_bg(image)
+    print("Background removed...")
 
     # check num of objects on the image
     single, message = validate_single_clothing_item(result_image)
@@ -105,17 +110,30 @@ def process_image():
     pred_coarse, coarse_conf, coarse_probs = clip_classify(
         clip_image, COARSE_PROMPTS, model, processor
     )
+    print("Coarse classification done...")
 
     fine_coarse_key = pred_coarse
     pred_fine, fine_conf, fine_probs = clip_classify_fine(
         clip_image, fine_coarse_key, model, processor
     )
 
-    output = io.BytesIO()
-    result_image.save(output, format="PNG")
+    # Save result_image to backend/uploads with the same filename
+    # output = io.BytesIO()
+    # result_image.save(output, format="PNG")
+    
+    # Keep the same base filename but always save as PNG.
+    if "image" in request.files:
+        source_filename = request.files["image"].filename
+    else:
+        source_filename = os.path.basename(str(image_path or "").strip())
 
-    # change this to return a image url or the path after storing
-    bg_removed_base64 = base64.b64encode(output.getvalue()).decode("utf-8")
+    source_basename = os.path.basename(str(source_filename or "").strip())
+    base_name, _ = os.path.splitext(source_basename)
+    saved_filename = f"{base_name}.png" if base_name else "upload.png"
+
+    saved_filepath = os.path.join(UPLOADS_DIR, saved_filename)
+    result_image.save(saved_filepath, format="PNG")
+    print("Saved result image...")
 
     data = jsonify({
         "embedding_dim": len(image_embedding),
@@ -131,11 +149,12 @@ def process_image():
         "bg_removed_image": { # change this to return a image url or the path after storing
             "format": "png",
             "mime_type": "image/png",
-            "base64": bg_removed_base64,
+            "url": f"https://digitalwardrobe.xyz/uploads/{saved_filename}"
         },
     })
-    
+    print("Sending response back...")
     return data
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    # 0.0.0.0 to allow external requests (Postman/Frontend)
+    app.run(host="0.0.0.0", port=5000, debug=True)
