@@ -1,10 +1,11 @@
 import express from "express";
 import User from "../models/User.js";
+import requireAuth from "../middleware/auth.js";
 
 const router = express.Router();
 
 // PUT /api/users/:id - update name and/or zipCode
-router.put("/users/:id", async (req, res) => {
+router.put("/", requireAuth, async (req, res) => {
   try {
     const { name, zipCode } = req.body;
 
@@ -17,7 +18,7 @@ router.put("/users/:id", async (req, res) => {
     }
 
     const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
+      req.user.id,
       updateFields,
       { new: true }
     );

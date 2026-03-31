@@ -45,6 +45,8 @@ app.use("/api/onboarding", onboardingRoutes);
 
 app.use("/api/weather", weatherRoutes);
 
+app.use("/api/users", userRoutes);
+
 
 
 //https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=a136e95903135fc736e4af312c8d23bc&units=imperial

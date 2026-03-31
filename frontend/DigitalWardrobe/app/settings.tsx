@@ -19,14 +19,21 @@ export default function SettingsScreen() {
       setZipcode(user?.zipcode ?? "");
     }, [user]);
 
+    // function that triggers when clicking Save button
     const handleSave = () => {
       if (!user) return;
 
-      setUser({
-        ...user,
-        name,
-        zipcode,
-      });
+      // const token = await getToken();
+
+      // setUser({
+      //   ...user,
+      //   name,
+      //   zipcode,
+      // });
+
+      // CALL API to /api/users/:id here
+
+
 
       console.log("Saved locally:", { name, zipcode });
     };
