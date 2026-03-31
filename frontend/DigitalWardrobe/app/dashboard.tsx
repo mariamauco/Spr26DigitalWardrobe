@@ -202,20 +202,26 @@ export default function DashboardScreen() {
 				body: formData,
 			  });
 			  
-			  const data = await response.json(); // returns name, type, subtype, color,tags,imagepath
-			  setUploadedItem(data);
-
-			  setAnalysisText("temp text");
-			  //setAnalysisText(
-				//`we detected this as a ${data.color} ${data.subtype}`
-			  //);
-
-			  console.log("Upload status:", response.status);
-			  console.log("Upload response:", data);
-			} catch (error) {
-			  console.error("Upload error:", error);
-			}
-		  };
+				  const data = await response.json();
+				  setUploadedItem(data);
+			  
+				  console.log("Upload status:", response.status);
+				  console.log("Upload response:", data);
+			  
+				  if (!response.ok) {
+					setAnalysisText("upload failed");
+					return;
+				  }
+			  
+				  setAnalysisText("temp text");
+				  setShowPopup(false);
+				  setUploadedImage(null);
+				  setImageFile(null);
+				} catch (error) {
+				  console.error("Upload error:", error);
+				  setAnalysisText("upload failed");
+				}
+			  };
   return (
     <LinearGradient
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
@@ -336,29 +342,25 @@ export default function DashboardScreen() {
 
         	{/* buttons */}
         		<View style={styles.popupButtons}>
-          			<Pressable
-            			style={styles.confirmButton}
-            			onPress={() => {
-							setShowPopup(false);
-              				console.log("Confirmed upload");
-            			}}
-          			>
-            			<Text style={styles.popupButtonText}>confirm</Text>
-          			</Pressable>
+				<Pressable
+  					style={styles.confirmButton}
+  					onPress={uploadImage}
+				>
+  					<Text style={styles.popupButtonText}>confirm</Text>
+				</Pressable>
 
-          			<Pressable
-            			style={styles.cancelButton}
-            			onPress={() => {
-              				setShowPopup(false);
-              				setUploadedImage(null);
-              				setImageFile(null);
-            			}}
-          			>
-            			<Text style={styles.popupButtonText}>cancel</Text>
-          			</Pressable>
+          		<Pressable
+            		style={styles.cancelButton}
+            		onPress={() => {
+              			setShowPopup(false);
+              			setUploadedImage(null);
+              			setImageFile(null);
+            		}}
+          		>
+            		<Text style={styles.popupButtonText}>cancel</Text>
+          		</Pressable>
         		</View>
       		</View>
-
     	</View>
   	</View>
 )}
