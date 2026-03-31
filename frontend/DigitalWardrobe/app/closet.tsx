@@ -41,7 +41,7 @@ export default function ClosetScreen() {
           return;
         }
 
-        const response = await fetch("http://138.197.16.179:5050/api/clothing/", {
+        const response = await fetch(`${API_URL}/api/clothing/`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
