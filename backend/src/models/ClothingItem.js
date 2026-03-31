@@ -22,7 +22,7 @@ const ClothingItemSchema = new mongoose.Schema(
              "sneakers", "boots", "heels", "sandals", // shoe
              "handbag", "backpack", "belt", "hat", "scarf", "jewelry", "sunglasses" // accessory
             ]},
-        subtypeConfidence: {type: floa, required: false},
+        subtypeConfidence: {type: Number, required: false, min:0, max:1},
         colors: {type: [String], default: []}, // ex: ["blue", "white"],
         tags: {type: [String], enum: ["casual", "formal", "summer", "winter", "workout"], default: []},
 
