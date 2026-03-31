@@ -105,8 +105,7 @@ def process_image():
 
     # use the background-removed image for both clip stages
     clip_image = result_image.convert("RGB")
-    if torch.is_tensor(image_embedding):
-        image_embedding = image_embedding.detach().cpu().tolist()
+    image_embedding = get_img_embedding(model, processor, clip_image)
 
     pred_coarse, coarse_conf, coarse_probs = clip_classify(
         clip_image, COARSE_PROMPTS, model, processor
