@@ -4,7 +4,7 @@ import NavBar from "../components/features/navbar";
 import OmbreBackground from "../components/features/ombrebackground";
 import GridOverlay from "../components/features/gridoverlay";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+const API_URL = process.env.API_URL ?? '';
 
 export default function LandingScreen() {
 	return (
@@ -19,7 +19,7 @@ export default function LandingScreen() {
 				<Link href="/signUp" style={styles.link}>Go to sign up</Link>
 				<Link href="/logIn" style={styles.link}>Go to log in</Link>
 				<Link href="/dashboard" style={styles.link}>Go to Dashboard</Link>
-				<Link href="/privacy" style={styles.link}>Go to our Privacy Policy</Link>
+				<Link href="/" style={styles.link}>Go to our Privacy Policy</Link>
 				<Link href="../onboarding" style={styles.link}>Go to Onboarding</Link>
 			</View>
 		</View>

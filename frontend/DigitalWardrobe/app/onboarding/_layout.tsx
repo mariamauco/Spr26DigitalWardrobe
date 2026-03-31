@@ -1,10 +1,13 @@
 import { Stack } from "expo-router";
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
 export const update = async (data: Record<string, unknown>) => {
   let response;
+  // sends what the user puts in onboarding to backend
   try {
-    response = await fetch('http://138.197.16.179:5050/api/onboarding', {
-      method: 'POST',
+    response = await fetch(`${API_URL}/api/onboarding`, {
+      method: 'POST', // sending to backend
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
