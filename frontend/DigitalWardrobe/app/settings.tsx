@@ -1,12 +1,35 @@
-import React from "react";
-import { View, Text, StyleSheet, Switch } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
+import { TextInput } from "react-native-paper";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 export default function SettingsScreen() {
-    const { user } = useUser();
+  const { user, setUser } = useUser();
+
+    const [name, setName] = useState("");
+    const [zipcode, setZipcode] = useState("");
+
+    useEffect(() => {
+      setName(user?.name ?? "");
+      setZipcode(user?.zipcode ?? "");
+    }, [user]);
+
+    const handleSave = () => {
+      if (!user) return;
+
+      setUser({
+        ...user,
+        name,
+        zipcode,
+      });
+
+      console.log("Saved locally:", { name, zipcode });
+    };
 
     return (
     <LinearGradient
@@ -15,30 +38,44 @@ export default function SettingsScreen() {
     >
         <GridOverlay />
       <View style={styles.contentWrapper}>
-        <DashboardSidebar activeScreen="settings" />
+        <DashboardSidebar 
+          activeScreen="settings" 
+          username={user?.name || "User"}
+        />
 
         <View style={styles.main}>
           <Text style={styles.title}>SETTINGS</Text>
           <Text style={styles.subtitle}>
-            Manage your account and wardrobe preferences.
+            Manage your account.
           </Text>
 
           <View style={styles.settingsCard}>
-            <View style={styles.settingRow}>
-              <Text style={styles.settingLabel}>Notifications</Text>
-              <Switch value={true} />
+            <View style={styles.settingBlock}>
+              <Text style={styles.settingLabel}>Name</Text>
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="Enter your name"
+                placeholderTextColor="#B7A6A6"
+              />
             </View>
 
-            <View style={styles.settingRow}>
-              <Text style={styles.settingLabel}>Weather-Based Suggestions</Text>
-              <Switch value={true} />
+            <View style={styles.settingBlock}>
+              <Text style={styles.settingLabel}>Zip Code</Text>
+              <TextInput
+                style={styles.input}
+                value={zipcode}
+                onChangeText={setZipcode}
+                placeholder="Enter your zip code"
+                placeholderTextColor="#B7A6A6"
+                keyboardType="number-pad"
+                maxLength={5}
+              />
             </View>
-
-            <View style={styles.settingRow}>
-              <Text style={styles.settingLabel}>Account</Text>
-              <Text style={styles.settingValue}>
-                {user?.name ?? "User"}</Text>
-            </View>
+            <Pressable style={styles.saveButton} onPress={handleSave}>
+              <Text style={styles.saveButtonText}>save</Text>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -102,10 +139,34 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "DMSerifDisplay_400Regular",
   },
+  
+  settingBlock: {
+    gap: 10,
+  },
 
-  settingValue: {
+  input: {
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: "rgba(245, 237, 237, 0.55)",
+    paddingHorizontal: 20,
     color: "#4E4E4E",
     fontSize: 18,
     fontFamily: "EncodeSansSemiCondensed_400Regular",
+  },
+
+  saveButton: {
+    marginTop: 8,
+    alignSelf: "flex-start",
+    backgroundColor: "#8A5F5F",
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 20,
+  },
+
+  saveButtonText: {
+    color: "#FEFDF4",
+    fontSize: 16,
+    fontFamily: "EncodeSansSemiCondensed_400Regular",
+    textTransform: "lowercase",
   },
 });

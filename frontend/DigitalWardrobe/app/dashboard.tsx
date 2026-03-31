@@ -1,5 +1,8 @@
+// when user opens in file picker, open card that loads until the data gets recognized :we detected this as a 
+//blue longsleeve shirt([color][subtype]) with __ accurancy(accuracy is for later)
+
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Platform } from "react-native";
 import { getToken } from "../app/authStorage";
 import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
@@ -8,10 +11,27 @@ import DashboardSidebar from "../components/features/dashboardSidebar";
 import GalleryCarousel from "../components/ui/galleryCard";
 import { ScrollView } from "react-native";
 
+import * as ImagePicker from "expo-image-picker";
+import { Pressable, Alert } from "react-native";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
+type UploadImage = {
+	uri: string;
+	name: string;
+	type: string;
+	file?: Blob;
+};
+
 export default function DashboardScreen() {
 	const [weather, setWeather] = useState<any>(null);
 	const [weatherLoading, setWeatherLoading] = useState(true);
   	const [weatherError, setWeatherError] = useState<string | null>(null);
+	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+	const [imageFile, setImageFile] = useState<UploadImage | null>(null);
+	const [uploadedItem, setUploadedItem] = useState<any>(null);
+	const [showPopup, setShowPopup] = useState(false);
+	const [analysisText, setAnalysisText] = useState("loading...");
   
   	const { user, setUser } = useUser();	
 	
@@ -25,8 +45,9 @@ export default function DashboardScreen() {
 			  console.log("No token found");
 			  return;
 			}
+			// authenticating user (make sure user is logged in when in dashboard)
 			try{
-				const userResponse = await fetch("http://138.197.16.179:5050/api/auth/user", {
+				const userResponse = await fetch(`${API_URL}/api/auth/user`, {
 					method: "GET",
 					headers: {
 					  Authorization: `Bearer ${token}`,
@@ -53,7 +74,7 @@ export default function DashboardScreen() {
 				setWeatherLoading(true);
 				setWeatherError(null);
 	  
-				const weatherResponse = await fetch("http://138.197.16.179:5050/api/weather", {
+				const weatherResponse = await fetch(`${API_URL}/api/weather`, {
 				  method: "GET",
 				  headers: {
 					Authorization: `Bearer ${token}`,
@@ -94,6 +115,113 @@ export default function DashboardScreen() {
 	  
 		  loadDashboardData();
 		}, []);
+
+		const handlePickImage = async () => {
+			try {
+			  const permission =
+				await ImagePicker.requestMediaLibraryPermissionsAsync();
+		  
+			  if (!permission.granted) {
+				Alert.alert("Permission required", "Allow photo access to upload.");
+				return;
+			  }
+		  
+			  const result = await ImagePicker.launchImageLibraryAsync({
+				mediaTypes: ["images"],
+				allowsEditing: true,
+				aspect: [4,5],
+				quality: 1,
+			  });
+		  
+			  if (!result.canceled && result.assets?.length > 0) {
+				const asset = result.assets[0];
+			  
+				setUploadedImage(asset.uri);
+			  
+				setImageFile({
+				  uri: asset.uri,
+				  name: "upload.jpg",
+				  type: "image/jpeg",
+				  file: (asset as { file?: Blob }).file,
+				});
+
+				setShowPopup(true);
+				setAnalysisText("loading...");
+			  
+				console.log("Prepared image file:", {
+				  uri: asset.uri,
+				  name: "upload.jpg",
+				  type: "image/jpeg",
+				});
+			  }
+		  
+			} catch (error) {
+			  console.log("Image picker error:", error);
+			}
+		  };
+		  
+		  const uploadImage = async () => {
+			try {
+			  const token = await getToken();
+		  
+			  if (!token) {
+				console.log("No token found");
+				return;
+			  }
+		  
+			  if (!imageFile) {
+				console.log("No image selected");
+				return;
+			  }
+
+			  const formData = new FormData();
+
+			  // Web needs a Blob/File, native uses uri/name/type.
+			  if (Platform.OS === "web") {
+				let blob = imageFile.file;
+
+				if (!blob) {
+				  const fileResponse = await fetch(imageFile.uri);
+				  blob = await fileResponse.blob();
+				}
+
+				formData.append("image", blob, imageFile.name);
+			  } else { // check if backend accepts this
+				formData.append("image", {
+				  uri: imageFile.uri,
+				  name: imageFile.name,
+				  type: imageFile.type,
+				} as any);
+			  }
+			 
+			  const response = await fetch(`${API_URL}/api/clothing`, {
+				method: "POST",
+				headers: {
+				  Authorization: `Bearer ${token}`,
+				},
+				body: formData,
+			  });
+			  
+				  const data = await response.json();
+				  setUploadedItem(data);
+			  
+				  console.log("Upload status:", response.status);
+				  console.log("Upload response:", data);
+			  
+				  if (!response.ok) {
+					setAnalysisText("upload failed");
+					return;
+				  }
+			  
+				  setAnalysisText("temp text");
+				  setShowPopup(false);
+				  setUploadedImage(null);
+				  setImageFile(null);
+				} catch (error) {
+				  console.error("Upload error:", error);
+				  setAnalysisText("upload failed");
+				}
+			  };
   return (
     <LinearGradient
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
@@ -118,18 +246,18 @@ export default function DashboardScreen() {
 		  </Text>
 
 		<View style={styles.mainRow}>
-		{/* LEFT: Daily Outfit Card */}
+		{/* Daily Outfit Card */}
 		<View style={styles.dailyCard}>
 			<Text style={styles.cardText}>daily outfit</Text>
 
-			{/* ✅ Gallery goes here */}
+			{/* img */}
 			<View style={{ marginTop: 20 }}>
 			<GalleryCarousel width={400} height={500} />
 			</View>
 		</View>
 
-		{/* RIGHT: Weather + Small Card */}
 		<View style={styles.rightColumn}>
+			{/* weather widget*/}
 			<View style={styles.weatherCard}>
 			{weather?.weather?.[0]?.icon ? (
 				<Image
@@ -168,12 +296,74 @@ export default function DashboardScreen() {
 				</Text>
 			) : null}
 			</View>
+			{/* upload widget*/}
+			<Pressable
+  				style={styles.smallCard}
+  				onPress={!uploadedImage ? handlePickImage : undefined}
+			>
+  				{uploadedImage ? (
+    				<>
+      					<Image source={{ uri: uploadedImage }} style={styles.uploadPreview} />
+      					<Pressable style={styles.testButton} onPress={uploadImage}>
+  							<Text style={styles.testButtonText}>test upload</Text>
+						</Pressable>
+	  				</>
+  				) : (
+    				<View style={styles.uploadContent}>
+      					<Text style={styles.uploadTitle}>add item</Text>
+      					<Text style={styles.uploadDescription}>upload a photo to your wardrobe
+      					</Text>
 
-			<View style={styles.smallCard} />
+      					<View style={styles.uploadButton}>
+        					<Text style={styles.uploadButtonText}>choose photo</Text>
+      					</View>
+						  
+    				</View>
+  				)}
+			</Pressable>
 		</View>
 		</View>
 		</ScrollView>
       </View>
+	  {showPopup && (
+  		<View style={styles.popupOverlay}>
+    		<View style={styles.popupCard}>
+
+      		{/* image */}
+      			{uploadedImage && (
+        			<Image source={{ uri: uploadedImage }} style={styles.popupImage} />
+      			)}
+
+      		{/* text */}
+      			<View style={styles.popupTextBox}>
+        			<Text style={styles.popupText}>
+          				{analysisText}
+        			</Text>
+
+        	{/* buttons */}
+        		<View style={styles.popupButtons}>
+				<Pressable
+  					style={styles.confirmButton}
+  					onPress={uploadImage}
+				>
+  					<Text style={styles.popupButtonText}>confirm</Text>
+				</Pressable>
+
+          		<Pressable
+            		style={styles.cancelButton}
+            		onPress={() => {
+              			setShowPopup(false);
+              			setUploadedImage(null);
+              			setImageFile(null);
+            		}}
+          		>
+            		<Text style={styles.popupButtonText}>cancel</Text>
+          		</Pressable>
+        		</View>
+      		</View>
+    	</View>
+  	</View>
+)}
     </LinearGradient>
   );
 }
@@ -275,5 +465,130 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginTop: 6,
     fontFamily: "EncodeSansSemiCondensed_400Regular",
+  },
+  
+  uploadContent: {
+	flex: 1,
+	justifyContent: "center",
+	alignItems: "center",
+	paddingHorizontal: 20,
+  },
+  
+  uploadTitle: {
+	color: "#8A5F5F",
+	fontSize: 24,
+	fontFamily: "DMSerifDisplay_400Regular",
+	textAlign: "center",
+	marginBottom: 8,
+  },
+  
+  uploadDescription: {
+	color: "#8A5F5F",
+	fontSize: 15,
+	textAlign: "center",
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
+	marginBottom: 22,
+	opacity: 0.85,
+  },
+  
+  uploadButton: {
+	backgroundColor: "#8A5F5F",
+	paddingVertical: 12,
+	paddingHorizontal: 24,
+	borderRadius: 20,
+	minWidth: 150,
+	alignItems: "center",
+  },
+  
+  uploadButtonText: {
+	color: "#FEFDF4",
+	fontSize: 16,
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
+	textTransform: "lowercase",
+  },
+  
+  uploadPreview: {
+	width: "82%",
+	height: 170,
+	borderRadius: 20,
+	resizeMode: "cover",
+	marginTop: 18,
+	marginBottom: 18,
+  },
+  testButton: {
+	marginTop: 10,
+	backgroundColor: "#4E4E4E",
+	paddingVertical: 10,
+	paddingHorizontal: 16,
+	borderRadius: 14,
+	alignItems: "center",
+  },
+  
+  testButtonText: {
+	color: "#FEFDF4",
+	fontSize: 14,
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
+  },
+  
+  popupOverlay: {
+	position: "absolute",
+	top: 0,
+	left: 0,
+	right: 0,
+	bottom: 0,
+	backgroundColor: "rgba(0,0,0,0.3)",
+	justifyContent: "center",
+	alignItems: "center",
+  },
+  
+  popupCard: {
+	width: 1000,
+	height: 500,
+	backgroundColor: "#FEFDF4",
+	borderRadius: 30,
+	flexDirection: "row",
+	padding: 20,
+	gap: 20,
+  },
+  
+  popupImage: {
+	width: 250,
+	height: "75%",
+	borderRadius: 20,
+  },
+  
+  popupTextBox: {
+	flex: 1,
+	justifyContent: "space-between",
+  },
+  
+  popupText: {
+	color: "#4E4E4E",
+	fontSize: 18,
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
+  },
+  
+  popupButtons: {
+	flexDirection: "row",
+	gap: 10,
+  },
+  
+  confirmButton: {
+	backgroundColor: "#8A5F5F",
+	paddingVertical: 10,
+	paddingHorizontal: 16,
+	borderRadius: 16,
+  },
+  
+  cancelButton: {
+	backgroundColor: "#8A5F5F",
+	paddingVertical: 10,
+	paddingHorizontal: 16,
+	borderRadius: 16,
+  },
+  
+  popupButtonText: {
+	color: "#FEFDF4",
+	fontSize: 14,
   },
 });

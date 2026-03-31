@@ -13,6 +13,8 @@ import Dropdown from "../components/ui/dropdown";
 import PlaceholderCard from "../components/ui/card";
 import NavBar from "../components/features/navbar";
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
 // Main login screen component
 export default function LogInScreen() {
 
@@ -45,7 +47,7 @@ export default function LogInScreen() {
 		};
 
 		try {
-		const response = await fetch("http://138.197.16.179:5050/api/auth/login", {
+		const response = await fetch(`${API_URL}/api/auth/login`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -68,7 +70,7 @@ export default function LogInScreen() {
 
 		console.log("Success, login successful!"); // sends notification to user that login was succesful
 
-		const onboardingRes = await fetch("http://138.197.16.179:5050/api/onboarding", {
+		const onboardingRes = await fetch(`${API_URL}/api/onboarding`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",

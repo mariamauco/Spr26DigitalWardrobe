@@ -15,6 +15,8 @@ import { countries } from "../components/features/countryCodes";
 import NavBar from "../components/features/navbar";
 import { replace } from 'expo-router/build/global-state/routing';
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL
+
 // when sign up button is pressed this function is called
 // sends user info to backend
 export default function SignUpScreen() {
@@ -66,7 +68,7 @@ export default function SignUpScreen() {
 		console.log("Selected country:", country);
 		
 		try {
-		const response = await fetch("http://138.197.16.179:5050/api/auth/register", {
+		const response = await fetch(`${API_URL}/api/auth/register`, {
 			method: "POST",
 			headers: {
 			"Content-Type": "application/json",
