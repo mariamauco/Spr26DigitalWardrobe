@@ -5,6 +5,7 @@ import { upload } from "../middleware/upload.js";
 import { callModel, modelRoutes } from "../middleware/model.js";
 import fs from "fs";
 import path from "path";
+import { model } from "mongoose";
 
 const router = express.Router();
 
@@ -14,11 +15,13 @@ const processImage = async (imagePath) => {
   const type = modelResult?.pred_coarse;
   const subtype = modelResult?.pred_fine;
   const imageEmbedding = modelResult?.image_embedding;
+  const typeConfidence = modelResult?.coarse_conf;
+  const subtypeConfidence = modelResult?.fine_conf;
   
   // store confidence percentage
 
   // error handling for no type or sub type detected
-  return { type, subtype, imageEmbedding };
+  return { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence };
 };
 
 
@@ -46,7 +49,7 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
     };
 
     const imagePath = `/uploads/${req.file.filename}`;
-    const { type, subtype, imageEmbedding } = await processImage(imagePath);
+    const { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence } = await processImage(imagePath);
 
     let name = req.body.name; // make name the image path if no input
     const colors = parseList(req.body.colors);
@@ -60,7 +63,9 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
       user: req.user.id,
       name,
       type,
+      typeConfidence,
       subtype,
+      subtypeConfidence,
       colors,
       tags,
       imagePath,
