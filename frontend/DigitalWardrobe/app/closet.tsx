@@ -124,7 +124,7 @@ export default function ClosetScreen() {
           {sectionItems.map((item) => (
             <View key={item._id} style={styles.itemCard}>
               <Image
-                source={{ uri: `http://138.197.16.179:5050${item.imagePath}` }}
+                source={{ uri: `${API_URL}}${item.imagePath}` }}
                 style={styles.itemImage}
               />
               <Text style={styles.itemName} numberOfLines={1}>
