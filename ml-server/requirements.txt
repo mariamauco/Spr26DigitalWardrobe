@@ -16,3 +16,4 @@ transformers[torch]
 transformers==4.42.4
 matplotlib
 seaborn
+beautifulsoup4
