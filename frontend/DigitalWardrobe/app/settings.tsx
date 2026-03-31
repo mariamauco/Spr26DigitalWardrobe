@@ -6,6 +6,8 @@ import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
 import { TextInput } from "react-native-paper";
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
 export default function SettingsScreen() {
   const { user, setUser } = useUser();
 

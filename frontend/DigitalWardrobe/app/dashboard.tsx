@@ -2,7 +2,7 @@
 //blue longsleeve shirt([color][subtype]) with __ accurancy(accuracy is for later)
 
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Platform } from "react-native";
 import { getToken } from "../app/authStorage";
 import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,12 +14,21 @@ import { ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Pressable, Alert } from "react-native";
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
+type UploadImage = {
+	uri: string;
+	name: string;
+	type: string;
+	file?: Blob;
+};
+
 export default function DashboardScreen() {
 	const [weather, setWeather] = useState<any>(null);
 	const [weatherLoading, setWeatherLoading] = useState(true);
   	const [weatherError, setWeatherError] = useState<string | null>(null);
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-	const [imageFile, setImageFile] = useState<any>(null);
+	const [imageFile, setImageFile] = useState<UploadImage | null>(null);
 	const [uploadedItem, setUploadedItem] = useState<any>(null);
 	const [showPopup, setShowPopup] = useState(false);
 	const [analysisText, setAnalysisText] = useState("loading...");
@@ -38,7 +47,7 @@ export default function DashboardScreen() {
 			}
 			// authenticating user (make sure user is logged in when in dashboard)
 			try{
-				const userResponse = await fetch("http://138.197.16.179:5050/api/auth/user", {
+				const userResponse = await fetch(`${API_URL}/api/auth/user`, {
 					method: "GET",
 					headers: {
 					  Authorization: `Bearer ${token}`,
@@ -65,7 +74,7 @@ export default function DashboardScreen() {
 				setWeatherLoading(true);
 				setWeatherError(null);
 	  
-				const weatherResponse = await fetch("http://138.197.16.179:5050/api/weather", {
+				const weatherResponse = await fetch(`${API_URL}/api/weather`, {
 				  method: "GET",
 				  headers: {
 					Authorization: `Bearer ${token}`,
@@ -133,6 +142,7 @@ export default function DashboardScreen() {
 				  uri: asset.uri,
 				  name: "upload.jpg",
 				  type: "image/jpeg",
+				  file: (asset as { file?: Blob }).file,
 				});
 
 				setShowPopup(true);
@@ -165,14 +175,26 @@ export default function DashboardScreen() {
 			  }
 
 			  const formData = new FormData();
-		  
-			  formData.append("image", {
-				uri: imageFile.uri,
-				name: imageFile.name,
-				type: imageFile.type,
-			  } as any);
+
+			  // Web needs a Blob/File, native uses uri/name/type.
+			  if (Platform.OS === "web") {
+				let blob = imageFile.file;
+
+				if (!blob) {
+				  const fileResponse = await fetch(imageFile.uri);
+				  blob = await fileResponse.blob();
+				}
+
+				formData.append("image", blob, imageFile.name);
+			  } else { // check if backend accepts this
+				formData.append("image", {
+				  uri: imageFile.uri,
+				  name: imageFile.name,
+				  type: imageFile.type,
+				} as any);
+			  }
 			 
-			  const response = await fetch("http://138.197.16.179:5050/api/clothing", {
+			  const response = await fetch(`${API_URL}/api/clothing`, {
 				method: "POST",
 				headers: {
 				  Authorization: `Bearer ${token}`,
@@ -180,20 +202,26 @@ export default function DashboardScreen() {
 				body: formData,
 			  });
 			  
-			  const data = await response.json(); // returns name, type, subtype, color,tags,imagepath
-			  setUploadedItem(data);
-
-			  setAnalysisText("temp text");
-			  //setAnalysisText(
-				//`we detected this as a ${data.color} ${data.subtype}`
-			  //);
-
-			  console.log("Upload status:", response.status);
-			  console.log("Upload response:", data);
-			} catch (error) {
-			  console.error("Upload error:", error);
-			}
-		  };
+				  const data = await response.json();
+				  setUploadedItem(data);
+			  
+				  console.log("Upload status:", response.status);
+				  console.log("Upload response:", data);
+			  
+				  if (!response.ok) {
+					setAnalysisText("upload failed");
+					return;
+				  }
+			  
+				  setAnalysisText("temp text");
+				  setShowPopup(false);
+				  setUploadedImage(null);
+				  setImageFile(null);
+				} catch (error) {
+				  console.error("Upload error:", error);
+				  setAnalysisText("upload failed");
+				}
+			  };
   return (
     <LinearGradient
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
@@ -314,29 +342,25 @@ export default function DashboardScreen() {
 
         	{/* buttons */}
         		<View style={styles.popupButtons}>
-          			<Pressable
-            			style={styles.confirmButton}
-            			onPress={() => {
-							setShowPopup(false);
-              				console.log("Confirmed upload");
-            			}}
-          			>
-            			<Text style={styles.popupButtonText}>confirm</Text>
-          			</Pressable>
+				<Pressable
+  					style={styles.confirmButton}
+  					onPress={uploadImage}
+				>
+  					<Text style={styles.popupButtonText}>confirm</Text>
+				</Pressable>
 
-          			<Pressable
-            			style={styles.cancelButton}
-            			onPress={() => {
-              				setShowPopup(false);
-              				setUploadedImage(null);
-              				setImageFile(null);
-            			}}
-          			>
-            			<Text style={styles.popupButtonText}>cancel</Text>
-          			</Pressable>
+          		<Pressable
+            		style={styles.cancelButton}
+            		onPress={() => {
+              			setShowPopup(false);
+              			setUploadedImage(null);
+              			setImageFile(null);
+            		}}
+          		>
+            		<Text style={styles.popupButtonText}>cancel</Text>
+          		</Pressable>
         		</View>
       		</View>
-
     	</View>
   	</View>
 )}
