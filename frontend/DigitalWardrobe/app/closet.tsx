@@ -124,7 +124,7 @@ export default function ClosetScreen() {
           {sectionItems.map((item) => (
             <View key={item._id} style={styles.itemCard}>
               <Image
-                source={{ uri: `${API_URL}}${item.imagePath}` }}
+                source={{ uri: `https://digitalwardrobe.xyz${item.imagePath}` }} // use the domain all images are accessible there
                 style={styles.itemImage}
               />
               <Text style={styles.itemName} numberOfLines={1}>
