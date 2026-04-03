@@ -1,7 +1,31 @@
-#use the pinterest API to find boards for different styles for each category
+# Pinterest Scraping Script version 2!
+'''
+this script attempts to reverse engineer the API
+
+it works to solve the issue with the first script by:
+1. set up fake user-agents to trick pinterest into thinking the script is someone using chrome or firefox
+2. it requests the main page and looks for the first batch of pins
+3. inside that, it looks for a bookmark, a password/token that tells Pinterest, "Hey, I'm at the end of page 1, give me page 2."
+4. it sends the GET reqauest to the pinterest API endpoint to get the next pins, until all have been sent
+
+current issue with script:
+requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+pinterest's anti bot is blocking the attempt and returns a 403 forbidden error
+'''
+
 from bs4 import BeautifulSoup
-import requests, json
-import time
+import requests, json, time, random
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+]
 
 # SCRAPING HTML 
 session = requests.Session()
@@ -75,8 +99,23 @@ while bookmark and bookmark != "-end-":
         },
         timeout=30,
     )
-    # print(r)
-    j = r.json()
+    if not r.ok:
+        print(f"Request failed with status {r.status_code}")
+        print(r.text[:500])
+        break
+
+    content_type = r.headers.get("Content-Type", "")
+    if "application/json" not in content_type:
+        print(f"Expected JSON but got {content_type or 'no content type'}")
+        print(r.text[:500])
+        break
+
+    try:
+        j = r.json()
+    except json.JSONDecodeError:
+        print("Failed to decode JSON response")
+        print(r.text[:500])
+        break
 
     items = j.get("resource_response", {}).get("data", [])
     for item in items:
