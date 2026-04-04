@@ -48,7 +48,7 @@ CLIP_CONFIDENCE_THRESHOLD = 0.70
 STYLES = ["y2k", "goth", "cottagecore", "athleisure", "coquette", "business_casual"]
 
 # Categories map to coarse CLIP keys — must match keys in COARSE_PROMPTS and FINE_CATEGORY_PROMPTS
-CATEGORIES = ["top", "bottom", "one_piece", "outerwear", "shoe"]
+CATEGORIES = ["top", "bottom", "one_piece", "outerwear", "shoe", "accessory"]
 
 # Target images per (style, coarse_category) combo, divided evenly among fine subcategories
 DEFAULT_TARGET = 20
