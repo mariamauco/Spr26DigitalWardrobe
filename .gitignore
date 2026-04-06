@@ -31,3 +31,4 @@ __pycache__
 
 # photos uploaded
 backend/uploads/
+ml-server/custom_dataset/scraping/pinterest_profile
