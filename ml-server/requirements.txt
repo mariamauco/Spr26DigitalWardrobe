@@ -17,3 +17,5 @@ transformers==4.42.4
 matplotlib
 seaborn
 beautifulsoup4
+inference_sdk
+python-dotenv
