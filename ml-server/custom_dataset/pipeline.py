@@ -204,8 +204,10 @@ def process_image(
         coverage_label, _, _ = clip_classify(rgb, OUTERWEAR_COVERAGE_PROMPTS, model, processor)
     elif best_label in ("bottom", "one_piece"):
         coverage_label, _, _ = clip_classify(rgb, LEG_COVERAGE_PROMPTS, model, processor)
+    #Step 7 : color label
+    
 
-    # Step 7: embedding
+    # Step 8: embedding
     embedding = get_img_embedding(model, processor, rgb)
 
     return True, f"accepted as '{best_label}' conf={confidence:.2f}", bg_removed, best_label, confidence, sleeve_label, coverage_label, embedding
