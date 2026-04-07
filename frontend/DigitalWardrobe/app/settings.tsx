@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
 import { TextInput } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
@@ -20,23 +21,34 @@ export default function SettingsScreen() {
     }, [user]);
 
     // function that triggers when clicking Save button
-    const handleSave = () => {
-      if (!user) return;
+    const handleSave = async () => {
+  if (!user) return;
 
-      // const token = await getToken();
+  try {
+    const token = await AsyncStorage.getItem("token");
 
-      // setUser({
-      //   ...user,
-      //   name,
-      //   zipcode,
-      // });
+    const response = await fetch(`${API_URL}/api/users`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name, zipCode: zipcode }),  
+    });
 
-      // CALL API to /api/users/:id here
+    if (!response.ok) {
+      console.error("Failed to update user:", await response.text());
+      return;
+    }
 
+    const updatedUser = await response.json();
+    setUser(updatedUser);
+    console.log("Saved to backend:", updatedUser);
 
-
-      console.log("Saved locally:", { name, zipcode });
-    };
+  } catch (err) {
+    console.error("Error saving user:", err);
+  }
+};
 
 
     return (
