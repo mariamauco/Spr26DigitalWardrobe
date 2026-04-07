@@ -17,6 +17,23 @@ from bs4 import BeautifulSoup
 
 driver = None
 
+
+def print_progress(current, total, prefix="Progress", bar_len=30):
+    """Print a single-line progress bar for cumulative scrape progress."""
+    if total <= 0:
+        print(f"\r{prefix}: {current}", end="", flush=True)
+        return
+
+    bounded_current = min(current, total)
+    ratio = bounded_current / total
+    filled = int(bar_len * ratio)
+    bar = "#" * filled + "-" * (bar_len - filled)
+    print(
+        f"\r{prefix}: [{bar}] {bounded_current}/{total} ({ratio * 100:5.1f}%)",
+        end="",
+        flush=True,
+    )
+
 def loadCookies():
     global driver # use and update the driver
 
@@ -51,12 +68,11 @@ def loadCookies():
 
 def scrapeBoard(url, pinCount):
 
-    global driver
+    global driver # use global driver
 
-    driver.get(url)
+    driver.get(url) # open the url
     time.sleep(3)
 
-    count = 0
     pinIDs = set() # set to prevent dupes
     height = driver.execute_script("return document.body.scrollHeight")
     scroll_attempt = 0
@@ -149,12 +165,12 @@ def getPin(id):
     return pin
 
 # stores pin to end of csv
-def addToCSV(pin, style, cat, count):
+def addToCSV(pin, style, cat):
 
     if cat == None:
         img_path = None
     else:
-        img_path = f'{style}/{cat}/{style}_{cat}_{count:03d}'
+        img_path = f'{style}/{cat}/{style}_{cat}_{pin['pin_id']}.jpg'
     
     row_data = [
         pin['pin_id'], pin['source_url'], pin['image_url'], img_path, 
@@ -174,6 +190,10 @@ it goes through the boards csv and scrapes each board, then scraping the info in
 def scrapeAll(boards):
 
     df = pd.read_csv(boards)
+    total_boards = len(df)
+    total_target_pins = int(df["pins_count"].fillna(0).sum()) if "pins_count" in df.columns else 0
+    processed_pins = 0
+
 
     # go through each board/row
     for index, row in df.iterrows():
@@ -181,20 +201,41 @@ def scrapeAll(boards):
         board_url = row["board_url"]
         style = row['style']
         category = row['category']
-        pinCount = row['pins_count']
+        pinCount = int(row['pins_count'])
 
-        print(f"Scraping board: {board_url}...")
+        print(
+            f"\n[Board {index + 1}/{total_boards}] Scraping: {board_url} "
+            f"(target pins: {pinCount})"
+        )
 
-        count = 0
         # get all pins from the board
         pin_ids = scrapeBoard(board_url, pinCount)
+        board_processed = 0
 
         for pin_id in pin_ids:
-            count += 1
             pin = getPin(pin_id)
             if pin:
-                addToCSV(pin, style, category, count)
+                addToCSV(pin, style, category)
+
+            board_processed += 1
+            processed_pins += 1
+            print_progress(
+                processed_pins,
+                total_target_pins,
+                prefix=f"Pins (board {index + 1}/{total_boards})"
+            )
+
             time.sleep(random.uniform(0.5, 2)) # small wait between pins -> and make it random to seem human
+
+        print()
+        print(
+            f"Finished board {index + 1}/{total_boards}: "
+            f"processed {board_processed}/{pinCount} pins"
+        )
+
+    if total_target_pins > 0:
+        print_progress(total_target_pins, total_target_pins, prefix="Pins total")
+        print()
 
 # Initializes metadata.csv file to save dataset
 def initMetadata():
@@ -215,19 +256,13 @@ def initMetadata():
 # Load cookies to log into pinterest
 loadCookies()
 
+# initialize csv
+initMetadata()
+
+# scrape all boards
+scrapeAll("boards.csv")
+
 # TESTING
 
-board_url = "https://www.pinterest.com/imbervintage/y2k-aesthetic/"
-pins = scrapeBoard(board_url)
-
-# print(pins)
-
-# print(getPin(920634348802505304))
-
-# scrapeAll("y2k.csv")
-
-
-
-
-
-
+# board_url = "https://www.pinterest.com/imbervintage/y2k-aesthetic/"
+# pins = scrapeBoard(board_url,158)

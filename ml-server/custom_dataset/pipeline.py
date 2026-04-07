@@ -7,7 +7,7 @@ Filters applied per image:
   3. FashionCLIP coarse category confidence check (noise filter)
 
 Output structure:
-  custom_dataset/dataset/{style}/{category}/{style}_{category}_{n:03d}.png
+    custom_dataset/dataset/{style}/{category}/{id}.png   (id: 001, 002, ...)
   custom_dataset/dataset/metadata.csv
 
 Usage:
@@ -323,7 +323,8 @@ def scrape_combo(
                     process_image(img_path, model, processor)
 
                 if ok:
-                    dest = out_dir / f"{style}_{category}_{total_accepted + 1:03d}.png"
+                    item_id = f"{total_accepted + 1:03d}"
+                    dest = out_dir / f"{item_id}.png"
                     processed.save(dest, format="PNG")
                     total_accepted += 1
                     fine_accepted += 1
@@ -333,7 +334,7 @@ def scrape_combo(
                         "pin_id":        "",
                         "source_url":    "",
                         "image_url":     "",
-                        "image_path":      f"{style}/{category}/{dest.name}",
+                        "image_path":      f"{style}/{category}/{item_id}.png",
                         "title":          "",
                         "description":    "",
                         "style":           style,
