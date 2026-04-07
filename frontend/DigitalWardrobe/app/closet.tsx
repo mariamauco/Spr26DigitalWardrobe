@@ -122,8 +122,12 @@ function ItemEditModal({
         },
         body: JSON.stringify({ name: editName, type: editType, subtype: editSubtype, colors: editColors, tags: editTags }),
       });
+      
+      console.log(editName, editType, editSubtype, editColors, editTags)
+
       const data = await res.json();
       if (res.ok) {
+        console.log()
         onSave(data);
         onClose();
       } else {
