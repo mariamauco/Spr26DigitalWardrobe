@@ -265,6 +265,25 @@ def _count_saved(folder: Path) -> int:
     return len(list(folder.glob("*.png"))) + len(list(folder.glob("*.jpg")))
 
 
+def _get_starting_global_id() -> int:
+    """Return next global numeric ID from metadata.csv (defaults to 1)."""
+    if not CSV_PATH.exists():
+        return 1
+
+    max_id = 0
+    with open(CSV_PATH, "r", newline="", encoding="utf-8") as fh:
+        reader = csv.DictReader(fh)
+        if not reader.fieldnames or "pin_id" not in reader.fieldnames:
+            return 1
+
+        for row in reader:
+            raw_id = (row.get("pin_id") or "").strip()
+            if raw_id.isdigit():
+                max_id = max(max_id, int(raw_id))
+
+    return max_id + 1
+
+
 def scrape_combo(
     style: str,
     category: str,
@@ -273,6 +292,7 @@ def scrape_combo(
     processor: CLIPProcessor,
     csv_writer: "csv.DictWriter",
     csv_fh,
+    global_next_id: list[int],
 ) -> int:
     out_dir = OUTPUT_DIR / style / category
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -323,13 +343,14 @@ def scrape_combo(
                     process_image(img_path, model, processor)
 
                 if ok:
-                    item_id = f"{total_accepted + 1:03d}"
+                    item_id = f"{global_next_id[0]:03d}"
                     dest = out_dir / f"{item_id}.png"
                     processed.save(dest, format="PNG")
+                    global_next_id[0] += 1
                     total_accepted += 1
                     fine_accepted += 1
 
-                    source_url = url_map.get(img_path.name, "")
+                    #source_url = url_map.get(img_path.name, "")
                     csv_writer.writerow({
                         "pin_id":        f"{item_id}",
                         "source_url":    "",
@@ -397,6 +418,8 @@ def main() -> None:
         csv_writer.writeheader()
         csv_fh.flush()
 
+    global_next_id = [_get_starting_global_id()]
+
     total = 0
     try:
         for style in args.styles:
@@ -404,7 +427,7 @@ def main() -> None:
             print(f"  STYLE: {style.upper()}")
             print(f"{'=' * 50}")
             for category in args.categories:
-                saved = scrape_combo(style, category, args.target, model, processor, csv_writer, csv_fh)
+                saved = scrape_combo(style, category, args.target, model, processor, csv_writer, csv_fh, global_next_id)
                 total += saved
     finally:
         csv_fh.close()
