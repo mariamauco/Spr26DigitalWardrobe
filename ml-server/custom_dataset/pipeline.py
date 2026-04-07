@@ -331,7 +331,7 @@ def scrape_combo(
 
                     source_url = url_map.get(img_path.name, "")
                     csv_writer.writerow({
-                        "pin_id":        "",
+                        "pin_id":        f"{item_id}",
                         "source_url":    "",
                         "image_url":     "",
                         "image_path":      f"{style}/{category}/{item_id}.png",
