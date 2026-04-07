@@ -112,7 +112,6 @@ def scrapeBoard(url, pinCount):
         else:
             scroll_attempt = 0       
             height = new_height
-    driver.quit()
 
     print(f"\nTotal unique pins found: {len(pinIDs)}")
     return list(pinIDs)
@@ -170,7 +169,7 @@ def addToCSV(pin, style, cat):
     if cat == None:
         img_path = None
     else:
-        img_path = f'{style}/{cat}/{style}_{cat}_{pin['pin_id']}.jpg'
+        img_path = img_path = f"{style}/{cat}/{style}_{cat}_{pin['pin_id']}.jpg"
     
     row_data = [
         pin['pin_id'], pin['source_url'], pin['image_url'], img_path, 
@@ -236,6 +235,9 @@ def scrapeAll(boards):
     if total_target_pins > 0:
         print_progress(total_target_pins, total_target_pins, prefix="Pins total")
         print()
+    
+    global driver
+    driver.quit()
 
 # Initializes metadata.csv file to save dataset
 def initMetadata():
