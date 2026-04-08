@@ -126,7 +126,10 @@ router.get("/:id", auth, async (req, res) => {
 
 //      UPDATE ITEM     //
 router.put("/:id", auth, async (req, res) => {
+
+
   try {
+
     const updated = await ClothingItem.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },
       req.body,

@@ -114,18 +114,20 @@ function ItemEditModal({
     setSaving(true);
     try {
       const token = await getToken();
+
       const res = await fetch(`${API_URL}/api/clothing/${item._id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: editName, type: editType, subtype: editSubtype, colors: editColors, tags: editTags }),
+        body: JSON.stringify({ name: editName, type: editType.toLowerCase(), subtype: editSubtype.toLowerCase(), colors: editColors, tags: editTags }),
       });
       
       console.log(editName, editType, editSubtype, editColors, editTags)
 
       const data = await res.json();
+      console.log(data);
       if (res.ok) {
         console.log()
         onSave(data);
