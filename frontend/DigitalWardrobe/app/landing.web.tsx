@@ -3,6 +3,7 @@ import { Link } from 'expo-router';
 import NavBar from "../components/features/navbar";
 import OmbreBackground from "../components/features/ombrebackground";
 import GridOverlay from "../components/features/gridoverlay";
+import closetImage from '../assets/images/closet_graphic.png';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
@@ -13,14 +14,21 @@ export default function LandingScreen() {
 			<GridOverlay />
 			<NavBar />
 
-			<View style={styles.content}>
-				<Text style={styles.title}>Welcome to DigitalWardrobe</Text>
+			<View style={styles.landingContainer}>
+				<View style={styles.content}> 
 
-				<Link href="/signUp" style={styles.link}>Go to sign up</Link>
-				<Link href="/logIn" style={styles.link}>Go to log in</Link>
-				<Link href="/dashboard" style={styles.link}>Go to Dashboard</Link>
-				<Link href="/privacy" style={styles.link}>Go to our Privacy Policy</Link>
-				<Link href="../onboarding" style={styles.link}>Go to Onboarding</Link>
+					<Text style={styles.title}>Welcome to DigitalWardrobe</Text>
+
+					<Link href="/signUp" style={styles.link}>Go to sign up</Link>
+					<Link href="/logIn" style={styles.link}>Go to log in</Link>
+					<Link href="/dashboard" style={styles.link}>Go to Dashboard</Link>
+					<Link href="/privacy" style={styles.link}>Go to our Privacy Policy</Link>
+					<Link href="../onboarding" style={styles.link}>Go to Onboarding</Link>
+				</View>
+				<View style={styles.content}>
+					<img src={closetImage} alt="Graphic of a closet"></img>
+				</View>
+
 			</View>
 		</View>
 	);
@@ -30,6 +38,11 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: "#fff",
+	},
+	landingContainer:{
+		flex:1,
+		flexDirection:'row',
+		gap: 10
 	},
 
 	content: {
