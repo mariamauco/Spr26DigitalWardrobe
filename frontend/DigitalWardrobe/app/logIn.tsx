@@ -31,8 +31,6 @@ export default function LogInScreen() {
 
 	const login = async () => {
 
-    	console.log("LOGIN FUNCTION CALLED");
-
 		// check to see if user entered in all values
 		if (!email.trim() || !password.trim()) {
   			setErrorMessage("All fields are required.");
@@ -61,14 +59,14 @@ export default function LogInScreen() {
 		console.log("Response:", data);
 
 		if (!response.ok) {
-			Alert.alert("Login Failed", data.message || "Invalid credentials");
+			setErrorMessage(data.message || data.error || "Invalid email or password");
+			console.log(errorMessage);
 			return;
 		}
+
 		const authToken = data.token;
 		setToken(authToken);
 		await saveToken(authToken);
-
-		console.log("Success, login successful!"); // sends notification to user that login was succesful
 
 		const onboardingRes = await fetch(`${API_URL}/api/onboarding`, {
                 method: "GET",
@@ -78,9 +76,7 @@ export default function LogInScreen() {
                 },
             });
 
-
             const onboardingData = await onboardingRes.json();
-            console.log(onboardingData)
 
 			// If onboarding is false, send to onboarding page
             if (onboardingData == null || onboardingData.completed === false) {
@@ -90,11 +86,10 @@ export default function LogInScreen() {
             }
 
 		} catch (error) {
-			window.alert("Error, login failed. Please try again."); // sends notification to user that login was NOT succesful
+			// sends console message that login was NOT succesful
 			console.error("Error:", error);
 		}
 	};
-
 	
 	return (
 		<>
@@ -129,7 +124,15 @@ export default function LogInScreen() {
 								<View style={{marginBottom:20}}>
 									<Text style={{fontSize:20, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,marginBottom:20}}>First time here?</Text>
 								</View>
-								<Button title="Sign Up" onPress={() => router.replace("/signUp")} />
+
+								{/* wrapped button to stop it from looking like a wonky pill */}
+								<View style={{ width: 221 }}>
+									<Button 
+										title="Sign Up" 
+										onPress={() => router.replace("/signUp")}
+										variant="white"
+									/>
+								</View>
 							</View>
 							</PlaceholderCard>
 						</View>
@@ -139,9 +142,9 @@ export default function LogInScreen() {
 								width="100%" 
 								height="100%" 
 								backgroundColor="rgba(255,255,255,0.35)"
-								style={{...styles.innerContent,borderTopLeftRadius: 0, borderBottomLeftRadius: 0, height:545}}
+								style={{...styles.innerContent,borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}
 							>
-								<View style={{height:350, width:'100%'}}>
+								<View style={{width:'100%'}}>
 									<View style={styles.header}>
 										<Text style={styles.title}>Log In</Text>
 									</View>
@@ -170,12 +173,12 @@ export default function LogInScreen() {
 											}}
 										/>
 
-										{/* Error message display */}
-										{errorMessage && (
-											<View style={styles.errorBox}>
-											<Text style={styles.errorText}>{errorMessage}</Text>
-											</View>
-										)}				
+									{/* Error message display */}
+									{errorMessage && (
+										<View style={styles.errorBox}>
+										<Text style={styles.errorText}>{errorMessage}</Text>
+										</View>
+									)}				
 									<View style={{marginTop:20}}/>
 									{/* Submit login button */}
 									<Button title="Log In" onPress={login} />
@@ -233,8 +236,6 @@ const styles = StyleSheet.create({
   	},
 
 	innerContent:{
-		flex:1,
-		//height:200,
 		padding:20,
 		alignItems:'center',
 		justifyContent: 'center',
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
 	container: {
 		width: '100%',
 		alignItems: 'center',
-		gap: 25,
+		gap: 16,
 	},
 	pickerWrapper: {
         alignSelf: "center", 

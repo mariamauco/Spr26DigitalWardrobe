@@ -130,9 +130,13 @@ export default function SignUpScreen() {
 									</View>
 									{/* Prompt existing users to log in */}
 									<View style={{marginBottom:20}}>
-										<Text style={{fontSize:20, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,marginBottom:20}}>Already have an account?</Text>
+										<Text style={{fontSize:20, fontFamily: "DMSerifDisplay_400Regular", letterSpacing:1, marginBottom:20}}>Already have an account?</Text>
 									</View>
-									<Button title="Log In" onPress={() => router.replace("/logIn")} />
+
+									{/* wrapped button to stop it from looking like a wonky pill */}
+									<View style={{ width: 221 }}>
+										<Button title="Log In" onPress={() => router.replace("/logIn")} />
+									</View>
 								</View>
 							</PlaceholderCard>
 						</View>
@@ -318,7 +322,7 @@ const styles = StyleSheet.create({
 	container: {
 		width: '100%',
 		alignItems: 'center',
-		gap: 25,
+		gap: 16,
 	},
 	pickerWrapper: {
         alignSelf: "center", 

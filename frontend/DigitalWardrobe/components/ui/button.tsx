@@ -7,17 +7,22 @@ export default function Button({
   title,
   onPress,
   variant = "pink",
+  disabled = false,
+  selected = false,
 }: {
   title: string;
   onPress: () => void;
   variant?: ButtonVariant;
+  disabled?: boolean;
+  selected?: boolean;
 }) {
   return (
     <Pressable
+      disabled={disabled}
       style={({ pressed }) => [
         styles.button,
-        variant === "white" ? styles.buttonWhite : styles.buttonPink,
-        { opacity: pressed ? 0.7 : 1 },
+        selected ? styles.selected : (variant === "white" ? styles.buttonWhite : styles.buttonPink),
+        {opacity: disabled ? 0.4 : pressed ? 0.7 : 1},
       ]}
       onPress={onPress}
     >
@@ -35,7 +40,8 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    width: 221,
+    flex: 1,
+    width: 200,
     height: 51,
     paddingVertical: 4,
     paddingHorizontal: 3,
@@ -59,8 +65,8 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   text: {
-    fontFamily: "PlusJakartaSans_700Bold",
-    fontSize: 20,
+    fontFamily: "DMSerifDisplay_400Regular",
+    fontSize: 24,
     fontWeight: "400",
     letterSpacing:1, // Add letter spacing for better readability
     textShadowColor: "rgba(214, 189, 189, 0.50)",
@@ -76,4 +82,7 @@ const styles = StyleSheet.create({
   textWhite: {
     color: "#8A5F5F",
   },
+  selected: {
+  backgroundColor: "#8A5F5F", // darker / active color
+  }
 });

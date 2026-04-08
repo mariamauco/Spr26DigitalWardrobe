@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { View } from "react-native";
-import { Button, Chip, Text } from "react-native-paper";
+import { Chip, Text } from "react-native-paper";
 import { router } from "expo-router";
 import OnboardingProgress from "@/components/features/OnboardingProgress";
 import { update } from "./_layout";
+import OmbreBackground from "@/components/features/ombrebackground";
+import GridOverlay from "@/components/features/gridoverlay";
+import CustomButton from "@/components/ui/button";
+import List from "@/components/ui/selectableList";
 
 export default function Step2() {
   const [styles, setStyles] = useState<string[]>([]);
@@ -16,42 +20,49 @@ export default function Step2() {
   const canNext = styles.length > 0;
 
     const handleNext = async () => {
+      if (!canNext) return;
+
       const data = {
         styleTags: styles,
       };
-  
-      await update(data);
-      router.push("/onboarding/step3");
-      
+        
+      try {
+        await update(data);
+        router.push("/onboarding/step3");
+      } catch (error) {
+        console.error("Failed to update preferences:", error);
+      }
     };
 
   return (
     <View style={{ flex: 1, padding: 24, justifyContent: "center", gap: 16 }}>
-      <OnboardingProgress step={2} total={3} />
+      <OmbreBackground />
+      <GridOverlay />
+        <OnboardingProgress step={2} total={3} />
 
-      <Text variant="headlineSmall">What style describes you best?</Text>
+        <Text variant="headlineSmall">What style describes you best?</Text>
 
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-        {options.map((o) => (
-          <Chip key={o} selected={styles.includes(o)} onPress={() => toggle(o)}>
-            {o}
-          </Chip>
-        ))}
-      </View>
+        <List 
+          options={options} 
+          selectedValues={styles} 
+          onToggle={toggle} 
+        />
 
-      <View style={{ flexDirection: "row", gap: 12 }}>
-        <Button mode="outlined" style={{ flex: 1 }} onPress={() => router.back()}>
-          Back
-        </Button>
-        <Button
-          mode="contained"
-          style={{ flex: 1 }}
-          disabled={!canNext}
-          onPress={handleNext}
-        >
-          Next
-        </Button>
-      </View>
+      {/*Buttons*/}
+      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16, gap: 12 }}>
+          <CustomButton
+            title="Back"
+            onPress={() => router.back()}
+            variant="white"
+          />
+
+          <CustomButton
+            title="Next"
+            onPress={handleNext}
+            disabled={!canNext}
+            variant="pink"
+          />
+        </View>
     </View>
   );
 }

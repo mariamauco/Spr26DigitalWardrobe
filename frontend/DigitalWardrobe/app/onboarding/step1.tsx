@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { View } from "react-native";
-import { Button, Chip, Text } from "react-native-paper";
+import { Chip, Text } from "react-native-paper";
 import { router } from "expo-router";
 import OnboardingProgress from "@/components/features/OnboardingProgress";
 import { update } from "./_layout";
+import OmbreBackground from "@/components/features/ombrebackground";
+import GridOverlay from "@/components/features/gridoverlay";
+import CustomButton from "@/components/ui/button";
+import List from "@/components/ui/selectableList";
 
 export default function Step1() {
   const [silhouettes, setSilhouettes] = useState<string[]>([]);
@@ -17,32 +21,41 @@ export default function Step1() {
   const canNext = silhouettes.length > 0;
 
   const handleNext = async () => {
+    if (!canNext) return;
+
     const data = {
       silhouetteTags: silhouettes,
     };
-
-    await update(data);
-    router.push("/onboarding/step2");
     
+    try {
+      await update(data);
+      router.push("/onboarding/step2");
+    } catch (error) {
+      console.error("Failed to update preferences:", error);
+    }
   };
 
   return (
     <View style={{ flex: 1, padding: 24, justifyContent: "center", gap: 16 }}>
+        <OmbreBackground />
+        <GridOverlay />	
       <OnboardingProgress step={1} total={3} />
 
       <Text variant="headlineSmall">What silhouettes do you prefer?</Text>
 
-      <View style={{ gap: 8 }}>
-        {options.map((o) => (
-          <Chip key={o} selected={silhouettes.includes(o)} onPress={() => toggle(o)}>
-            {o}
-          </Chip>
-        ))}
-      </View>
+      <List 
+        options={options} 
+        selectedValues={silhouettes} 
+        onToggle={toggle} 
+      />
 
-      <Button mode="contained" disabled={!canNext} onPress={handleNext}>
-        Next
-      </Button>
+      <View style={{ alignItems: "center", marginTop: 16 }}>
+        <CustomButton
+          title="Next"
+          onPress={handleNext}
+          disabled={!canNext}
+        />
+      </View>
     </View>
   );
 }
