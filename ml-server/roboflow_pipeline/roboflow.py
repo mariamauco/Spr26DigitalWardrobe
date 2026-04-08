@@ -24,7 +24,7 @@ FOLDER_MAP = {
     "shoes": "Shoes"
 }
 
-def process_and_save_outfit(image_path, output_root="Fashion_Dataset"):
+def process_and_save_outfit(image_path, output_root="/media/maria/ubuntu_storage/Fashion_Dataset"):
     with open(image_path, "rb") as f:
         image_b64 = base64.b64encode(f.read()).decode("utf-8")
 
