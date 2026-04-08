@@ -7,7 +7,7 @@ Filters applied per image:
   3. FashionCLIP coarse category confidence check (noise filter)
 
 Output structure:
-  custom_dataset/dataset/{style}/{category}/{style}_{category}_{n:03d}.png
+    custom_dataset/dataset/{style}/{category}/{id}.png   (id: 001, 002, ...)
   custom_dataset/dataset/metadata.csv
 
 Usage:
@@ -45,10 +45,35 @@ from util.analyze_img import clip_classify, get_img_embedding
 MODEL_NAME = "patrickjohncyh/fashion-clip"
 CLIP_CONFIDENCE_THRESHOLD = 0.70
 
+COLOR_PROMPTS = {
+    "white": "a photo of white clothing with a dominant white color",
+    "black": "a photo of black clothing with a dominant black color",
+    "red": "a photo of red clothing with a dominant red color",
+    "blue": "a photo of blue clothing with a dominant blue color",
+    "green": "a photo of green clothing with a dominant green color",
+    "yellow": "a photo of yellow clothing with a dominant yellow color",
+    "pink": "a photo of pink clothing with a dominant pink color",
+    "brown": "a photo of brown clothing with a dominant brown color",
+    "grey": "a photo of grey clothing with a dominant grey color",
+    "beige": "a photo of beige clothing with a dominant beige color",
+    "purple": "a photo of purple clothing with a dominant purple color",
+    "navy": "a photo of navy blue clothing with a dominant navy color",
+    "cream": "a photo of cream clothing with a dominant cream color",
+    "orange": "a photo of orange clothing with a dominant orange color",
+    "coral": "a photo of coral clothing with a dominant coral color",
+    "lavender": "a photo of lavender clothing with a dominant lavender color",
+    "burgundy": "a photo of burgundy clothing with a dominant burgundy color",
+    "olive": "a photo of olive clothing with a dominant olive color",
+    "teal": "a photo of teal clothing with a dominant teal color",
+    "mustard": "a photo of mustard clothing with a dominant mustard color",
+    "camel": "a photo of camel clothing with a dominant camel color",
+    "rust": "a photo of rust clothing with a dominant rust color",
+}
+
 STYLES = ["y2k", "goth", "cottagecore", "athleisure", "coquette", "business_casual"]
 
 # Categories map to coarse CLIP keys — must match keys in COARSE_PROMPTS and FINE_CATEGORY_PROMPTS
-CATEGORIES = ["top", "bottom", "one_piece", "outerwear", "shoe"]
+CATEGORIES = ["top", "bottom", "one_piece", "outerwear", "shoe", "accessory"]
 
 # Target images per (style, coarse_category) combo, divided evenly among fine subcategories
 DEFAULT_TARGET = 20
@@ -60,10 +85,20 @@ OUTPUT_DIR = Path(__file__).parent / "dataset"
 
 CSV_PATH = OUTPUT_DIR / "metadata.csv"
 CSV_COLUMNS = [
-    "image_path", "style", "coarse_category", "fine_tag",
-    "source_url", "coarse_conf",
-    "sleeve_label", "coverage_label",
-    "embedding",
+    "pin_id",
+    "source_url",
+    "image_url",
+    "image_path",
+    "title",
+    "description",
+    "style",
+    "color",
+    "coarse_category",
+    "fine_tag",
+    "coarse_conf",
+    "sleeve_label",
+    "coverage_label",
+    "review",
 ]
 
 # Fine subcategories to search per (style, coarse_category).
@@ -142,6 +177,12 @@ def load_model() -> tuple[CLIPModel, CLIPProcessor, str]:
     return model, processor, device
 
 
+@torch.inference_mode()
+def classify_color(image: Image.Image, model: CLIPModel, processor: CLIPProcessor) -> tuple[str, float]:
+    best_label, confidence, _ = clip_classify(image, COLOR_PROMPTS, model, processor)
+    return best_label, confidence
+
+
 # ---------------------------------------------------------------------------
 # Per-image filter
 # ---------------------------------------------------------------------------
@@ -160,9 +201,10 @@ def process_image(
         coarse_conf     float
         sleeve_label    str   (e.g. "short_sleeve" or "")
         coverage_label  str   (e.g. "pants" or "light_layer" or "")
+        color_label     str   (e.g. "blue" or "")
         embedding       list[float] length 512 ([] on rejection)
     """
-    _reject = lambda reason: (False, reason, None, "", 0.0, "", "", [])
+    _reject = lambda reason: (False, reason, None, "", 0.0, "", "", "", [])
 
     # Open
     try:
@@ -205,10 +247,14 @@ def process_image(
     elif best_label in ("bottom", "one_piece"):
         coverage_label, _, _ = clip_classify(rgb, LEG_COVERAGE_PROMPTS, model, processor)
 
-    # Step 7: embedding
-    embedding = get_img_embedding(model, processor, rgb)
+    # Step 7: color label
+    color_label, _ = classify_color(rgb, model, processor)
+    
 
-    return True, f"accepted as '{best_label}' conf={confidence:.2f}", bg_removed, best_label, confidence, sleeve_label, coverage_label, embedding
+    # Step 8: embedding
+    _embedding = get_img_embedding(model, processor, rgb)
+
+    return True, f"accepted as '{best_label}' conf={confidence:.2f}", bg_removed, best_label, confidence, sleeve_label, coverage_label, color_label, _embedding
 
 
 # ---------------------------------------------------------------------------
@@ -219,6 +265,25 @@ def _count_saved(folder: Path) -> int:
     return len(list(folder.glob("*.png"))) + len(list(folder.glob("*.jpg")))
 
 
+def _get_starting_global_id() -> int:
+    """Return next global numeric ID from metadata.csv (defaults to 1)."""
+    if not CSV_PATH.exists():
+        return 1
+
+    max_id = 0
+    with open(CSV_PATH, "r", newline="", encoding="utf-8") as fh:
+        reader = csv.DictReader(fh)
+        if not reader.fieldnames or "pin_id" not in reader.fieldnames:
+            return 1
+
+        for row in reader:
+            raw_id = (row.get("pin_id") or "").strip()
+            if raw_id.isdigit():
+                max_id = max(max_id, int(raw_id))
+
+    return max_id + 1
+
+
 def scrape_combo(
     style: str,
     category: str,
@@ -227,6 +292,7 @@ def scrape_combo(
     processor: CLIPProcessor,
     csv_writer: "csv.DictWriter",
     csv_fh,
+    global_next_id: list[int],
 ) -> int:
     out_dir = OUTPUT_DIR / style / category
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -273,26 +339,33 @@ def scrape_combo(
                 if img_path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp"}:
                     continue
 
-                ok, reason, processed, coarse_label, coarse_conf, sleeve_label, coverage_label, embedding = \
+                ok, reason, processed, coarse_label, coarse_conf, sleeve_label, coverage_label, color_label, _embedding = \
                     process_image(img_path, model, processor)
 
                 if ok:
-                    dest = out_dir / f"{style}_{category}_{total_accepted + 1:03d}.png"
+                    item_id = f"{global_next_id[0]:03d}"
+                    dest = out_dir / f"{item_id}.png"
                     processed.save(dest, format="PNG")
+                    global_next_id[0] += 1
                     total_accepted += 1
                     fine_accepted += 1
 
-                    source_url = url_map.get(img_path.name, "")
+                    #source_url = url_map.get(img_path.name, "")
                     csv_writer.writerow({
-                        "image_path":      f"{style}/{category}/{dest.name}",
+                        "pin_id":        f"{item_id}",
+                        "source_url":    "",
+                        "image_url":     "",
+                        "image_path":      f"{style}/{category}/{item_id}.png",
+                        "title":          "",
+                        "description":    "",
                         "style":           style,
+                        "color":           color_label,
                         "coarse_category": coarse_label,
                         "fine_tag":        fine_cat,
-                        "source_url":      source_url,
                         "coarse_conf":     f"{coarse_conf:.4f}",
                         "sleeve_label":    sleeve_label,
                         "coverage_label":  coverage_label,
-                        "embedding":       json.dumps(embedding),
+                        "review":          0,
                     })
                     csv_fh.flush()
 
@@ -345,6 +418,8 @@ def main() -> None:
         csv_writer.writeheader()
         csv_fh.flush()
 
+    global_next_id = [_get_starting_global_id()]
+
     total = 0
     try:
         for style in args.styles:
@@ -352,7 +427,7 @@ def main() -> None:
             print(f"  STYLE: {style.upper()}")
             print(f"{'=' * 50}")
             for category in args.categories:
-                saved = scrape_combo(style, category, args.target, model, processor, csv_writer, csv_fh)
+                saved = scrape_combo(style, category, args.target, model, processor, csv_writer, csv_fh, global_next_id)
                 total += saved
     finally:
         csv_fh.close()
