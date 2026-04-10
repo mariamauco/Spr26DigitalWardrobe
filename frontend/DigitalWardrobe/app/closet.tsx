@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
-import { getToken } from "../app/authStorage";
+import { getToken } from "../utils/authStorage";
 import { useUser } from "../components/features/userContext";
 import { View, Text, StyleSheet, Image, ScrollView, Modal, Pressable, Alert, TouchableOpacity, TextInput } from "react-native";
 

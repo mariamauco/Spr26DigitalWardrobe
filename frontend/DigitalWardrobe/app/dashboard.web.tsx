@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, Platform } from "react-native";
-import { getToken } from "./authStorage";
+import { getToken } from "../utils/authStorage";
 import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";

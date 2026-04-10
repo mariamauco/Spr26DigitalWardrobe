@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Pressable } from "react-native";
 import { Alert, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
-import { saveToken } from "../app/authStorage";
+import { saveToken } from "../utils/authStorage";
 // imports for components
 import Button from "../components/ui/button";
 import OmbreBackground from "../components/features/ombrebackground";

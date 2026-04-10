@@ -20,15 +20,15 @@ export default function LandingScreen() {
 			<NavBar />
 
 			<ScrollView 
-							contentContainerStyle={styles.mainScrollContent}
-							showsVerticalScrollIndicator={false}>
+				contentContainerStyle={styles.mainScrollContent}
+				showsVerticalScrollIndicator={false}>
 
 			<View style={styles.landingContainer}>
 				<View style={styles.content}> 
 					<View style={styles.landingContent}>
-						<Text style={[styles.title, {marginBottom:10}]}>Your Wardrobe.<nav>Styled for your day.</nav></Text>
+						<Text style={[styles.title, {marginBottom:20}]}>Your Wardrobe.<nav>Styled for your day.</nav></Text>
 						<Text style={[styles.text, {marginVertical:10}]}>Digitize your closet, build outfits, and rediscover what you love.</Text>
-						<View style={{alignItems:'center', margin:40}}><Button title="Get Started" onPress={() => router.replace("/signUp")} /></View>
+						<View style={styles.ctaWrap}><Button buttonStyle={{width:'60%'}} title="Get Started" onPress={() => router.replace("/signUp")} /></View>
 					</View>
 
 				</View>
@@ -97,6 +97,12 @@ const styles = StyleSheet.create({
 		fontWeight: '600',
 		letterSpacing:.5,
 		wordWrap: 'break-word'
+	},
+	ctaWrap: {
+		width: '100%',
+		alignItems: 'flex-start',
+		marginTop: 56,
+		marginLeft:'10%',
 	},
 
 	link: {

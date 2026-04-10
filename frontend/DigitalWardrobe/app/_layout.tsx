@@ -31,7 +31,7 @@ const [fontsLoaded] = useFonts({
         <Stack initialRouteName="landing" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="landing" />
           <Stack.Screen name="dashboard" />
-          <Stack.Screen name="login" />
+          <Stack.Screen name="logIn" />
           <Stack.Screen name="signUp" />
           <Stack.Screen name="onboarding" />
           <Stack.Screen name= "privacy" />

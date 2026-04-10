@@ -1,6 +1,4 @@
-import { Text, View, StyleSheet, Image, ScrollView } from 'react-native';
-import { Link } from 'expo-router';
-import NavBar from "../components/features/navbar";
+import { Text, View, StyleSheet, Image, ScrollView, Pressable } from 'react-native';
 import OmbreBackground from "../components/features/ombrebackground";
 import GridOverlay from "../components/features/gridoverlay";
 import closetImage from '../assets/images/closet_graphic.png';
@@ -15,98 +13,118 @@ export default function LandingScreen() {
 	const router = useRouter();
 	return (
 		<View style={styles.container}>
+			{/* Layered background components let content stay simple while visuals remain rich. */}
 			<OmbreBackground />
 			<GridOverlay />
-			<NavBar />
 
-			<ScrollView 
-							contentContainerStyle={styles.mainScrollContent}
-							showsVerticalScrollIndicator={false}>
-
-			<View style={styles.landingContainer}>
-				<View style={styles.content}> 
-					<View style={styles.landingContent}>
-						<Text style={[styles.title, {marginBottom:10}]}>Your Wardrobe.<nav>Styled for your day.</nav></Text>
-						<Text style={[styles.text, {marginVertical:10}]}>Digitize your closet, build outfits, and rediscover what you love.</Text>
-						<View style={{alignItems:'center', margin:40}}><Button title="Get Started" onPress={() => router.replace("/signUp")} /></View>
-					</View>
-
+			{/* <ScrollView
+				contentContainerStyle={styles.mainScrollContent}
+				showsVerticalScrollIndicator={false}
+			> */}
+			<View style={styles.mainScrollContent}>
+				<View style={styles.headerWrap}>
+					<Text style={styles.brand}>Digital Wardrobe</Text>
 				</View>
-				<View style={styles.content}>
+
+				<View style={styles.contentWrap}>
+					{/* Use explicit line breaks in Text instead of HTML tags like <br/> or <nav>. */}
+					<Text style={styles.title}>Your wardrobe.{"\n"}Styled for your day.</Text>
+
 					<Image
 						source={closetImage}
 						style={styles.closetImage}
 						accessibilityLabel="Graphic of a closet"
 						resizeMode="contain"
 					/>
-				</View>
 
+					<View style={styles.ctaWrap}>
+						<Button
+							title="Get Started"
+							onPress={() => router.replace("/signUp")}
+							buttonStyle={styles.ctaButton}
+						/>
+					</View>
+
+					{/* Secondary action is lighter and text-only to keep visual design. */}
+					<Pressable onPress={() => router.replace("/logIn")}> 
+						<Text style={styles.loginText}>Log In</Text>
+					</Pressable>
+				</View>
+			{/* </ScrollView> */}
 			</View>
-			</ScrollView>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
+		/* flex: 1 means this screen fills the full device viewport. */
 		flex: 1,
-		backgroundColor: "#fff",
-		
+		backgroundColor: "#FDEDEB",
 	},
-	mainScrollContent:{
-		flexGrow:1,
-		justifyContent:'center',
-		paddingVertical:40,
+	mainScrollContent: {
+		/* flexGrow keeps content centered when there is extra vertical space. */
+		flexGrow: 1,
+		paddingTop: 100,
+		/* Bottom padding keeps actions clear of the iOS home indicator area. */
+		paddingBottom: 32,
+		paddingHorizontal: 20,
 	},
-	landingContainer:{
-		flexDirection:'row',
-		gap: 10,
-		width:'70%',
-		maxWidth: 1100,
-		alignSelf: 'center',
-		justifyContent:'center',
-		alignItems: 'center',
-		marginVertical: 40,
+	headerWrap: {
+		marginBottom: 40,
 	},
-	landingContent:{
-		width: '100%',
-		maxWidth: 420,
-		alignSelf: 'center',
-	},
-	content: {
-		flex: 1,
-		alignItems: 'center',
-		justifyContent: 'center',
-		padding: 24,
-		gap: 12,
-	},
-
-	title: {
+	brand: {
+		/* Centered title for mobile keeps first glance readable. */
+		textAlign:'center',
 		fontSize: 40,
+		lineHeight: 62,
+		fontFamily: 'DM Serif Display',
+		color: '#56414C',
+	},
+	contentWrap: {
+		/* Use percentage width + maxWidth to scale across phone sizes. */
+		width: '80%',
+		height:'100%',
+		maxWidth: 360,
+		alignSelf: 'center',
+		alignItems: 'center',
+	},
+	title: {
+		/* Mobile type should be large enough for scanability but not dominate above the image. */
+		fontSize: 24,
+		lineHeight: 32,
 		fontWeight: '600',
 		textAlign: 'left',
+		alignSelf: 'flex-start',
 		fontFamily: 'DM Serif Display',
-		color: "#534047",
-		marginBottom: 8,
-	},
-	text:{
-		// Digitize your closet, build outfits, and rediscover what you love.
-		color: '#4E4E4E',
-		fontSize: 20,
-		fontFamily: 'DM Serif Display',
-		fontWeight: '600',
-		letterSpacing:.5,
-		wordWrap: 'break-word'
-	},
+		color: '#2F3135',
+		marginBottom: 20,
 
-	link: {
-		color: "#2563eb",
-		fontSize: 16,
 	},
-
 	closetImage: {
-		width: 500,
-		height: 661,
-		maxWidth: '100%',
-	}
+		/* width: 100% keeps the image responsive inside the container. */
+		width: '100%',
+		height: 410,
+		marginBottom: 26,
+	},
+	ctaWrap: {
+		/* React Native uses numbers (dp), not CSS strings like '331px'. */
+		width: 331,
+		height: 51,
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginBottom: 20,
+	},
+	ctaButton: {
+		/* keep fixed to design: 331 x 51. */
+		width: 331,
+		height: 51,
+	},
+	loginText: {
+		fontFamily: 'DM Serif Display',
+		fontSize: 22,
+		fontWeight: '700',
+		color: '#6A6A6A',
+		textDecorationLine: 'underline',
+	},
 });
