@@ -15,11 +15,11 @@ For all images:
 import time, os, json, random, re
 import pandas as pd
 import torch
+import spacy
 from PIL import Image
 from transformers import CLIPModel, CLIPProcessor
 import csv, json, sys, argparse, tempfile
 from pathlib import Path
-
 
 # Make ml-server/util importable
 ML_SERVER_PATH = Path(__file__).parent.parent.parent
@@ -28,7 +28,7 @@ sys.path.insert(0, str(ML_SERVER_PATH))
 from util.error_handling import validate_single_clothing_item
 
 from util.remove_bg import remove_bg
-from ..pipeline import load_model
+from custom_dataset.pipeline import load_model
 
 from util.prompts import (
     COARSE_PROMPTS, PERSON_CHECK_PROMPTS, FINE_CATEGORY_PROMPTS,
@@ -40,7 +40,7 @@ from util.analyze_img import clip_classify, get_img_embedding
 MODEL_NAME = "patrickjohncyh/fashion-clip"
 CLIP_CONFIDENCE_THRESHOLD = 0.70
 
-CSV_PATH = OUTPUT_DIR / "metadata_final.csv"
+CSV_PATH = "metadata_labeled.csv"
 
 STYLES_SPECIFIC = ["y2k", "goth", "cottagecore", "athleisure", "coquette", "business casual"]
 
@@ -359,7 +359,8 @@ def process_dataset(path):
   
     """
 
-    df = pd.read_csv(path)
+    # Some scraped rows can contain broken quoting/newlines; skip only malformed rows.
+    df = pd.read_csv(path, engine="python", on_bad_lines="skip")
     #num_rows = len(df)
     num_rows = 64
 
@@ -367,6 +368,14 @@ def process_dataset(path):
 
     # load the model
     model, processor, _ = load_model()
+
+    prompts = {
+        "coarse": COARSE_PROMPTS,
+        "sleeve": SLEEVE_PROMPTS,
+        "leg_coverage": LEG_COVERAGE_PROMPTS,
+        "outerwear_coverage": OUTERWEAR_COVERAGE_PROMPTS,
+        "color": COLOR_PROMPTS,
+    }
 
     # go through all paths
     for i in range(0, num_rows, batch_size):
@@ -383,7 +392,7 @@ def process_dataset(path):
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path", type=string, default="metadata.csv",
+    parser.add_argument("--path", type=str, default="metadata.csv",
                         help="Path of the metadata.csv file")
     args = parser.parse_args()
 
