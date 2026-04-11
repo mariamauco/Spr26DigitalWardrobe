@@ -340,7 +340,7 @@ def predict_clip_batch(model, processor, rows, prompts):
     
 
 
-def process_dataset(entries, prompts, threshs):
+def process_dataset(path):
     """
     Main loop:
     1. load the csv using pandas, filter any rows out that don't have image_path.
@@ -359,7 +359,7 @@ def process_dataset(entries, prompts, threshs):
   
     """
 
-    df = pd.read_csv("metadata_cleaned.csv")
+    df = pd.read_csv(path)
     #num_rows = len(df)
     num_rows = 64
 
@@ -380,3 +380,16 @@ def process_dataset(entries, prompts, threshs):
         print(updated)
 
     pass
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path", type=string, default="metadata.csv",
+                        help="Path of the metadata.csv file")
+    args = parser.parse_args()
+
+    process_dataset(args.path)
+
+
+
+if __name__ == "__main__":
+    main()
