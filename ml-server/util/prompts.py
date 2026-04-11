@@ -84,3 +84,28 @@ OUTERWEAR_COVERAGE_PROMPTS = {
     "medium_layer": "a photo of a medium-weight outer layer such as a denim jacket, blazer, or fleece",
     "heavy_layer":  "a photo of a heavy outer layer such as a coat, parka, puffer jacket, or trench coat",
 }
+
+COLOR_PROMPTS = {
+    "white": "a photo of white clothing with a dominant white color",
+    "black": "a photo of black clothing with a dominant black color",
+    "red": "a photo of red clothing with a dominant red color",
+    "blue": "a photo of blue clothing with a dominant blue color",
+    "green": "a photo of green clothing with a dominant green color",
+    "yellow": "a photo of yellow clothing with a dominant yellow color",
+    "pink": "a photo of pink clothing with a dominant pink color",
+    "brown": "a photo of brown clothing with a dominant brown color",
+    "grey": "a photo of grey clothing with a dominant grey color",
+    "beige": "a photo of beige clothing with a dominant beige color",
+    "purple": "a photo of purple clothing with a dominant purple color",
+    "navy": "a photo of navy blue clothing with a dominant navy color",
+    "cream": "a photo of cream clothing with a dominant cream color",
+    "orange": "a photo of orange clothing with a dominant orange color",
+    "coral": "a photo of coral clothing with a dominant coral color",
+    "lavender": "a photo of lavender clothing with a dominant lavender color",
+    "burgundy": "a photo of burgundy clothing with a dominant burgundy color",
+    "olive": "a photo of olive clothing with a dominant olive color",
+    "teal": "a photo of teal clothing with a dominant teal color",
+    "mustard": "a photo of mustard clothing with a dominant mustard color",
+    "camel": "a photo of camel clothing with a dominant camel color",
+    "rust": "a photo of rust clothing with a dominant rust color",
+}
