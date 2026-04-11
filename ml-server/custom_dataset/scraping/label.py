@@ -369,10 +369,10 @@ def process_dataset(path):
     model, processor, _ = load_model()
 
     # go through all paths
-    for i, rows in range(0, num_rows, batch_size):
+    for i in range(0, num_rows, batch_size):
 
-        #batch_paths = all_paths(i : i + batch_size)
-        batch_rows = df(i : i+batch_size)
+        batch_rows = df.iloc[i : i+batch_size]
+        rows = batch_rows.to_dict('records')
 
         # predict this batch
         updated = predict_clip_batch(model, processor, rows, prompts)
