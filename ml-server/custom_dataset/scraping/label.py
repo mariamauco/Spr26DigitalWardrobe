@@ -448,6 +448,19 @@ def _clear_field(row, label_key, conf_key):
     row[conf_key] = ""
 
 
+def _has_label_conf(row, label_key, conf_key):
+    label = str(row.get(label_key, "") or "").strip()
+    conf = row.get(conf_key, "")
+    if not label:
+        return False
+    if conf in ("", None):
+        return False
+    try:
+        return float(conf) > 0.0
+    except (TypeError, ValueError):
+        return False
+
+
 def apply_row_rules(row):
     coarse_label = str(row.get("coarse_category", "") or "")
     fine_label = str(row.get("fine_tag", "") or "")
@@ -477,13 +490,26 @@ def apply_row_rules(row):
         if sleeve_conf < _min_conf(SLEEVE_MIN_CONF, coarse_label):
             _clear_field(row, "sleeve_label", "sleeve_conf")
 
+    # Coverage only applies to bottoms and outerwear.
+    if coarse_label not in ("bottom", "outerwear"):
+        _clear_field(row, "coverage_label", "coverage_conf")
+
     # Rule override: jeans should map to pants coverage.
     if coarse_label == "bottom" and fine_label == "jeans":
         row["coverage_label"] = "pants"
         row["coverage_conf"] = 1.0
 
-    # Keep everything marked for human review.
-    row["review"] = 1
+    required_fields = [
+        ("coarse_category", "coarse_conf"),
+        ("fine_tag", "fine_conf"),
+        ("color", "color_conf"),
+    ]
+    if coarse_label in ("top", "outerwear"):
+        required_fields.append(("sleeve_label", "sleeve_conf"))
+    if coarse_label in ("bottom", "outerwear"):
+        required_fields.append(("coverage_label", "coverage_conf"))
+
+    row["review"] = 0 if all(_has_label_conf(row, l, c) for l, c in required_fields) else 1
     return row
     
 
