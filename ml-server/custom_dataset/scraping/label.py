@@ -89,7 +89,7 @@ STYLE_FINE_CATEGORIES: dict[tuple[str, str], list[str]] = {
 }
 
 CSV_COLUMNS = [
-    "",
+    "row_id",
     "pin_id",
     "source_url",
     "image_url",
@@ -101,11 +101,17 @@ CSV_COLUMNS = [
     "coarse_category",
     "fine_tag",
     "coarse_conf",
+    "fine_conf",
     "sleeve_label",
+    "sleeve_conf",
     "coverage_label",
+    "coverage_conf",
+    "color_conf",
     "embedding",
     "metadata",
     "review"
+    ,"style_keywords",
+    "status"
 ]
 
 nlp = spacy.load("en_core_web_sm")
@@ -374,6 +380,7 @@ def process_dataset(path):
 
     # Some scraped rows can contain broken quoting/newlines; skip only malformed rows.
     df = pd.read_csv(path, engine="python", on_bad_lines="skip")
+    df = df.drop(columns=["Unnamed: 0"], errors="ignore")
     rows_res = []
     #num_rows = len(df)
     num_rows = 64
@@ -394,15 +401,17 @@ def process_dataset(path):
     # go through all paths
     for i in range(0, num_rows, batch_size):
 
-        batch_rows = df.iloc[i : i+batch_size]
+        batch_rows = df.iloc[i : i+batch_size].reset_index(drop=True).copy()
+        batch_rows.insert(0, "row_id", range(i, i + len(batch_rows)))
         rows = batch_rows.to_dict('records')
 
         # predict this batch
         updated = predict_clip_batch(model, processor, rows, prompts)
 
-        rows_res.append(updated) # add the row to the list
+        rows_res.extend(updated) # add the rows to the list
 
     df_res = pd.DataFrame(rows_res)
+    df_res = df_res.reindex(columns=CSV_COLUMNS)
 
     df_res.to_csv('metadata_labeled_ex.csv', index=False)
 
