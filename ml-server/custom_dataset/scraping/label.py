@@ -511,10 +511,27 @@ def apply_row_rules(row):
 
     row["review"] = 0 if all(_has_label_conf(row, l, c) for l, c in required_fields) else 1
     return row
+
+
+def _classify_final_status(row):
+    if str(row.get("status", "")).strip().lower() == "error":
+        return "error"
+    if not str(row.get("coarse_category", "") or "").strip():
+        return "deleted"
+    return "ok"
+
+
+def _render_progress(processed, total, width=32):
+    if total <= 0:
+        return "[" + ("-" * width) + "] 0.0%"
+    ratio = processed / total
+    filled = int(width * ratio)
+    bar = "#" * filled + "-" * (width - filled)
+    return f"[{bar}] {ratio * 100:5.1f}%"
     
 
 
-def process_dataset(path):
+def process_dataset(path, log_path="label_run.log"):
     """
     Main loop:
     1. load the csv using pandas, filter any rows out that don't have image_path.
@@ -537,8 +554,7 @@ def process_dataset(path):
     df = pd.read_csv(path, engine="python", on_bad_lines="skip")
     df = df.drop(columns=["Unnamed: 0"], errors="ignore")
     rows_res = []
-    #num_rows = len(df)
-    num_rows = 64
+    num_rows = len(df)
 
     batch_size = 32
 
@@ -553,6 +569,17 @@ def process_dataset(path):
         "color": COLOR_PROMPTS,
     }
 
+    log_fp = open(log_path, "w", encoding="utf-8")
+    log_fp.write(f"Label run started: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+    log_fp.write(f"Input CSV: {path}\n")
+    log_fp.write(f"Rows to process: {num_rows}\n")
+
+    processed = 0
+    stats = {"ok": 0, "error": 0, "deleted": 0}
+    review_one_count = 0
+
+    print(f"Starting label pass for {num_rows} rows...")
+
     # go through all paths
     for i in range(0, num_rows, batch_size):
 
@@ -563,20 +590,57 @@ def process_dataset(path):
         # predict this batch
         updated = predict_clip_batch(model, processor, rows, prompts)
 
-        rows_res.extend(updated) # add the rows to the list
+        for row in updated:
+            final_row = apply_row_rules(row)
+            final_status = _classify_final_status(final_row)
+            final_row["status"] = final_status
 
-    df_res = pd.DataFrame([apply_row_rules(row) for row in rows_res])
+            processed += 1
+            stats[final_status] += 1
+            if int(final_row.get("review", 1) or 1) == 1:
+                review_one_count += 1
+
+            pin_id = str(final_row.get("pin_id", ""))
+            log_line = f"[{processed}/{num_rows}] [{final_status.upper()}] pin_id={pin_id} review={final_row.get('review', 1)}"
+            log_fp.write(log_line + "\n")
+
+            progress = _render_progress(processed, num_rows)
+            print(f"\r{progress} [{final_status.upper()}] {processed}/{num_rows}", end="", flush=True)
+
+            rows_res.append(final_row)
+
+    print()
+
+    summary = (
+        "\n" + "=" * 30 + "\n"
+        "Labeling Complete\n"
+        + "=" * 30 + "\n"
+        + f" Total rows processed: {processed}\n"
+        + f" OK:                   {stats['ok']}\n"
+        + f" ERROR:                {stats['error']}\n"
+        + f" DELETED:              {stats['deleted']}\n"
+        + f" review = 1:           {review_one_count}\n"
+        + "=" * 30 + "\n"
+    )
+    print(summary)
+    log_fp.write(summary)
+    log_fp.write(f"Label run finished: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+    log_fp.close()
+
+    df_res = pd.DataFrame(rows_res)
     df_res = df_res.reindex(columns=CSV_COLUMNS)
 
-    df_res.to_csv('metadata_labeled_ex.csv', index=False)
+    df_res.to_csv('metadata_labeled.csv', index=False)
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", type=str, default="metadata.csv",
                         help="Path of the metadata.csv file")
+    parser.add_argument("--log", type=str, default="label_run.log",
+                        help="Path to run log file")
     args = parser.parse_args()
 
-    process_dataset(args.path)
+    process_dataset(args.path, args.log)
 
 
 
