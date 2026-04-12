@@ -25,6 +25,7 @@ from pathlib import Path
 ML_SERVER_PATH = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ML_SERVER_PATH))
 
+
 from util.error_handling import validate_single_clothing_item
 
 from util.remove_bg import remove_bg
@@ -40,6 +41,7 @@ from util.analyze_img import clip_classify, get_img_embedding
 MODEL_NAME = "patrickjohncyh/fashion-clip"
 CLIP_CONFIDENCE_THRESHOLD = 0.70
 
+DATASET_PATH = "/media/maria/ubuntu storage/dataset/"
 CSV_PATH = "metadata_labeled.csv"
 
 STYLES_SPECIFIC = ["y2k", "goth", "cottagecore", "athleisure", "coquette", "business casual"]
@@ -228,6 +230,7 @@ def predict_clip_batch(model, processor, rows, prompts):
             row["error"] = "missing image_path"
             continue
 
+        image_path = DATASET_PATH + image_path
         # try to bg remove the image and save it if able
         try:
             image = Image.open(image_path).convert("RGB")
