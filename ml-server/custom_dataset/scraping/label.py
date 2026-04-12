@@ -41,6 +41,22 @@ from util.analyze_img import clip_classify, get_img_embedding
 MODEL_NAME = "patrickjohncyh/fashion-clip"
 CLIP_CONFIDENCE_THRESHOLD = 0.70
 
+# Confidence gates tuned from reviewed outputs.
+COARSE_MIN_CONF = {
+    "default": 0.50,
+    "top": 0.50,
+    "accessory": 0.63,
+}
+FINE_MIN_CONF = {
+    "default": 0.50,
+    "accessory": 0.48,
+}
+SLEEVE_MIN_CONF = {
+    "default": 0.50,
+    "outerwear": 0.53,
+}
+COLOR_MIN_CONF = 0.45
+
 DATASET_PATH = "/media/maria/ubuntu storage/dataset/"
 CSV_PATH = "metadata_labeled.csv"
 
@@ -116,6 +132,40 @@ CSV_COLUMNS = [
 
 nlp = spacy.load("en_core_web_sm")
 
+PLATFORM_NOISE_TERMS = {
+    "pin", "pins", "discover", "depop", "etsy", "shop", "sold", "review", "reviews",
+    "this pin", "pinterest", "listed on"
+}
+
+SIZING_NOISE_TERMS = {
+    "size", "size tag", "fits size", "model stats", "condition", "excellent vintage condition",
+    "sizing", "tag", "chest", "bust", "waist", "hips", "length", "sleeve length",
+    "measurements", "inseam"
+}
+
+VERY_GENERIC_TERMS = {
+    "clothes", "fashion", "fashion outfits", "stylish outfits", "outfit", "outfits",
+    "accessories", "women", "tops", "pants", "bags", "purses", "pair", "person"
+}
+
+
+def _normalize_phrase(text: str) -> str:
+    text = (text or "").lower().replace("\xa0", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"^[^a-z0-9]+|[^a-z0-9]+$", "", text)
+    return text
+
+
+def _contains_noise_term(phrase: str, terms: set[str]) -> bool:
+    return any(term in phrase for term in terms)
+
+
+def _too_much_punctuation(phrase: str) -> bool:
+    punct_count = len(re.findall(r"[^\w\s]", phrase))
+    if punct_count >= 4:
+        return True
+    return punct_count / max(len(phrase), 1) > 0.18
+
 def keywords(title, description):
     """
     Cleans text and extracts meaningful noun phrases or keywords 
@@ -130,6 +180,7 @@ def keywords(title, description):
     """
     # clean and combine text
     text = (title + " " + description).lower().replace('"', '')
+    text = text.replace("\xa0", " ")
     
     # extract noun chunks with spacy
     doc = nlp(text)
@@ -141,10 +192,40 @@ def keywords(title, description):
         # filter out stop words and numbers
         tokens = [token.text for token in chunk if not token.is_stop and not token.is_digit]
         
-        # join back and filter by length
-        phrase = " ".join(tokens).strip()
-        if len(phrase) >= 3:
-            keywords_set.add(phrase)
+        # join back and apply filtering rules
+        raw_phrase = " ".join(tokens).strip()
+        phrase = _normalize_phrase(raw_phrase)
+        if len(phrase) < 3:
+            continue
+
+        # reject phrases with platform/sizing noise
+        if _contains_noise_term(phrase, PLATFORM_NOISE_TERMS):
+            continue
+        if _contains_noise_term(phrase, SIZING_NOISE_TERMS):
+            continue
+
+        # reject pipe-delimited scraps and punctuation-heavy fragments
+        if "|" in raw_phrase or _too_much_punctuation(phrase):
+            continue
+
+        words = phrase.split()
+        word_count = len(words)
+
+        # explicit upper cap requested
+        if word_count > 7:
+            continue
+
+        # keep compact, useful phrases
+        if word_count < 2 or word_count > 5:
+            continue
+
+        # drop very generic labels
+        if phrase in VERY_GENERIC_TERMS:
+            continue
+        if all(word in VERY_GENERIC_TERMS for word in words):
+            continue
+
+        keywords_set.add(phrase)
     
     return list(keywords_set) if keywords_set else []
 
@@ -224,7 +305,7 @@ def predict_clip_batch(model, processor, rows, prompts):
         row.setdefault("fine_tag", "")
         row.setdefault("fine_conf", 0.0)
         row.setdefault("sleeve_label", "")
-        row.setdefault("sleeve_conf", 0.0)
+        row.setdefault("sleeve_conf", "")
         row.setdefault("coverage_label", "")
         row.setdefault("coverage_conf", 0.0)
         row.setdefault("color", "")
@@ -356,6 +437,54 @@ def predict_clip_batch(model, processor, rows, prompts):
             rows[row_i]["fine_tag"], rows[row_i]["fine_conf"] = fine_pred[0]
 
     return rows
+
+
+def _min_conf(thresholds, key):
+    return thresholds.get(key, thresholds.get("default", 0.0))
+
+
+def _clear_field(row, label_key, conf_key):
+    row[label_key] = ""
+    row[conf_key] = ""
+
+
+def apply_row_rules(row):
+    coarse_label = str(row.get("coarse_category", "") or "")
+    fine_label = str(row.get("fine_tag", "") or "")
+
+    coarse_conf = float(row.get("coarse_conf", 0.0) or 0.0)
+    if coarse_conf < _min_conf(COARSE_MIN_CONF, coarse_label):
+        _clear_field(row, "coarse_category", "coarse_conf")
+        _clear_field(row, "fine_tag", "fine_conf")
+        _clear_field(row, "sleeve_label", "sleeve_conf")
+        _clear_field(row, "coverage_label", "coverage_conf")
+        coarse_label = ""
+        fine_label = ""
+    else:
+        fine_conf = float(row.get("fine_conf", 0.0) or 0.0)
+        if fine_conf < _min_conf(FINE_MIN_CONF, coarse_label):
+            _clear_field(row, "fine_tag", "fine_conf")
+            fine_label = ""
+
+    color_conf = float(row.get("color_conf", 0.0) or 0.0)
+    if color_conf < COLOR_MIN_CONF:
+        _clear_field(row, "color", "color_conf")
+
+    if coarse_label not in ("top", "outerwear"):
+        _clear_field(row, "sleeve_label", "sleeve_conf")
+    else:
+        sleeve_conf = float(row.get("sleeve_conf", 0.0) or 0.0)
+        if sleeve_conf < _min_conf(SLEEVE_MIN_CONF, coarse_label):
+            _clear_field(row, "sleeve_label", "sleeve_conf")
+
+    # Rule override: jeans should map to pants coverage.
+    if coarse_label == "bottom" and fine_label == "jeans":
+        row["coverage_label"] = "pants"
+        row["coverage_conf"] = 1.0
+
+    # Keep everything marked for human review.
+    row["review"] = 1
+    return row
     
 
 
@@ -410,7 +539,7 @@ def process_dataset(path):
 
         rows_res.extend(updated) # add the rows to the list
 
-    df_res = pd.DataFrame(rows_res)
+    df_res = pd.DataFrame([apply_row_rules(row) for row in rows_res])
     df_res = df_res.reindex(columns=CSV_COLUMNS)
 
     df_res.to_csv('metadata_labeled_ex.csv', index=False)
