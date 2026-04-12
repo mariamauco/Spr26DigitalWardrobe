@@ -374,6 +374,7 @@ def process_dataset(path):
 
     # Some scraped rows can contain broken quoting/newlines; skip only malformed rows.
     df = pd.read_csv(path, engine="python", on_bad_lines="skip")
+    rows_res = []
     #num_rows = len(df)
     num_rows = 64
 
@@ -399,9 +400,11 @@ def process_dataset(path):
         # predict this batch
         updated = predict_clip_batch(model, processor, rows, prompts)
 
-        print(updated)
+        rows_res.append(updated) # add the row to the list
 
-    pass
+    df_res = pd.DataFrame(rows_res)
+
+    df_res.to_csv('metadata_labeled_ex.csv', index=False)
 
 def main() -> None:
     parser = argparse.ArgumentParser()
