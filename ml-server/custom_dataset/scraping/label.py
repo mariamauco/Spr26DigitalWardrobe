@@ -184,8 +184,10 @@ def predict_clip_batch(model, processor, rows, prompts):
         if not images or not text_prompts:
             return []
 
+        labels = list(text_prompts.keys())
+        prompts = list(text_prompts.values())
         inputs = processor(
-            text=text_prompts,
+            text=prompts,
             images=images,
             return_tensors="pt",
             padding=True,
@@ -201,7 +203,7 @@ def predict_clip_batch(model, processor, rows, prompts):
         preds = []
         for img_i, best_idx in enumerate(best_idxs):
             conf = float(probs[img_i, best_idx].item())
-            preds.append((text_prompts[best_idx], conf))
+            preds.append((labels[best_idx], conf))
         return preds
 
 
