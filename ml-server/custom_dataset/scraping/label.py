@@ -185,9 +185,9 @@ def predict_clip_batch(model, processor, rows, prompts):
             return []
 
         labels = list(text_prompts.keys())
-        prompts = list(text_prompts.values())
+        prompt_list = list(text_prompts.values())
         inputs = processor(
-            text=prompts,
+            text=prompt_list,
             images=images,
             return_tensors="pt",
             padding=True,
@@ -335,6 +335,14 @@ def predict_clip_batch(model, processor, rows, prompts):
                 fine_prompts = FINE_CATEGORY_PROMPTS.get(coarse_label, [])
             else:
                 fine_prompts = FINE_CATEGORY_PROMPTS
+
+        if isinstance(fine_prompts, list):
+            coarse_prompt_map = FINE_CATEGORY_PROMPTS.get(coarse_label, {}) if isinstance(FINE_CATEGORY_PROMPTS, dict) else {}
+            fine_prompts = {
+                label: coarse_prompt_map[label]
+                for label in fine_prompts
+                if isinstance(coarse_prompt_map, dict) and label in coarse_prompt_map
+            }
 
         # run the fine predictions
         fine_pred = _batch_predict([valid_images[local_i]], fine_prompts)
