@@ -7,7 +7,7 @@ from PIL import Image, UnidentifiedImageError
 
 import torch
 from transformers import CLIPProcessor, CLIPModel
-
+from daily_outfit.sortingOutfits import filter_by_wheather, group_by_type
 # util functions
 from util.error_handling import validate_single_clothing_item
 from util.prompts import COARSE_PROMPTS
@@ -154,6 +154,57 @@ def process_image():
     })
     print("Sending response back...")
     return data
+
+# make a post request for a json file sent from the backend and return the boolean values of them
+@app.post('/daily_outfit')
+def daily_outfit():
+    request_data = request.get_json()
+
+    userID = request_data.get('userID')
+    preferences = request_data.get('preferences')
+    closet = request_data.get('closet')
+    weatherTags = request_data.get('weatherTags')
+
+    #check if every item is there and if so continue, if not then null
+    is_valid = (
+        userID != ''
+        and preferences 
+        and isinstance(closet, list) and len(closet) > 0
+        and isinstance(weatherTags, list) and len(weatherTags) > 0
+    )
+
+    print(userID != '')
+    print(preferences)
+    print(isinstance(closet, list))
+    print(isinstance(weatherTags, list))
+
+    #the way that i am thinking to handle if there is something missing is by returning an error message for the item.
+    if not is_valid:
+        return jsonify({
+            "error": "Missing or invalid fields",
+            "received": {
+                "userID": userID,
+                "preferences": preferences,
+                "closet": closet,
+                "weatherTags": weatherTags
+            }
+        }), 400
+    #filter by wheather
+    filtered_closet = filter_by_wheather(closet, weatherTags)
+
+    #group by type
+    #groups = group_by_type(filtered_closet)
+
+    #rank items using style_fashionCLIP tuned version
+    #ranking call
+    # ranked_groups = style_fashionclip.rank(groups, preferences)
+    #ranked_groups = groups  # placeholder
+
+    #PASS ranked groups to create_outfit
+    #TODO: call create_outfit with ranked_groups, preferences, weather_tags
+
+    return jsonify(filtered_closet)
+
 
 if __name__ == "__main__":
     # 0.0.0.0 to allow external requests (Postman/Frontend)
