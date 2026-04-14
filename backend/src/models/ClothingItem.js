@@ -12,9 +12,9 @@ const ClothingItemSchema = new mongoose.Schema(
 
         // clothing item details
         name: {type: String, required: false}, // ex: Blue Jean Jacket
-        type: {type: String, lowercase:true, required: false, enum: ["","top", "bottom", "shoe", "accessory", "outerwear", "one piece"]}, 
-        typeConfidence: {type: Number, required: false, min:0, max:1},
-        subtype: {type: String, lowercase:true, required:false, enum: [ "",
+        type: {type: String, required: false, enum: ["Top", "top", "bottom", "Bottom", "shoe", "accessory", "outerwear", "one_piece"]}, 
+        typeConfidence: {type: Number, required: false},
+        subtype: {type: String, required:false, enum: [
             "t-shirt", "long sleeve shirt", "tank top", "sweater", // top
              "jeans", "pants", "leggings","sweatpants", "shorts", "skirt", // bottom
              "dress", "jumpsuit", "romper", "overalls", "bodysuit", //one_piece
@@ -22,7 +22,7 @@ const ClothingItemSchema = new mongoose.Schema(
              "sneakers", "boots", "heels", "sandals", // shoe
              "handbag", "backpack", "belt", "hat", "scarf", "jewelry", "sunglasses" // accessory
             ]},
-        subtypeConfidence: {type: Float16Array, required: false},
+        subtypeConfidence: {type: Number, required: false},
         colors: {type: [String], default: []}, // ex: ["blue", "white"],
         tags: {type: [String], enum: ["casual", "formal", "summer", "winter", "workout"], default: []},
 

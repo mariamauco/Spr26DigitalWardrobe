@@ -2,7 +2,7 @@
 //blue longsleeve shirt([color][subtype]) with __ accurancy(accuracy is for later)
 
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, Platform } from "react-native";
+import { View, Text, StyleSheet, Image, Platform, ActivityIndicator } from "react-native";
 import { getToken } from "../utils/authStorage";
 import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
@@ -26,14 +26,16 @@ type UploadImage = {
 export default function DashboardScreen() {
 	const [weather, setWeather] = useState<any>(null);
 	const [weatherLoading, setWeatherLoading] = useState(true);
-  	const [weatherError, setWeatherError] = useState<string | null>(null);
+	const [weatherError, setWeatherError] = useState<string | null>(null);
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 	const [imageFile, setImageFile] = useState<UploadImage | null>(null);
 	const [uploadedItem, setUploadedItem] = useState<any>(null);
+	const [hasStartedAnalysis, setHasStartedAnalysis] = useState(false);
 	const [showPopup, setShowPopup] = useState(false);
 	const [analysisText, setAnalysisText] = useState("loading...");
+	const [isUploading, setIsUploading] = useState(false);
   
-  	const { user, setUser } = useUser();	
+	const { user, setUser } = useUser();	
 	
 	useEffect(() => {
 		const loadDashboardData = async () => {
@@ -58,7 +60,7 @@ export default function DashboardScreen() {
 			const userData = await userResponse.json();
 
 			console.log("User status:", userResponse.status);
-          	console.log("User response:", userData);
+			console.log("User response:", userData);
 	  
 			  if (!userResponse.ok) {
 				console.log("User backend error:", userData);
@@ -146,7 +148,10 @@ export default function DashboardScreen() {
 				});
 
 				setShowPopup(true);
-				setAnalysisText("loading...");
+				setAnalysisText("");
+				setUploadedItem(null);
+				setHasStartedAnalysis(false);
+				setIsUploading(false);
 			  
 				console.log("Prepared image file:", {
 				  uri: asset.uri,
@@ -162,87 +167,85 @@ export default function DashboardScreen() {
 		  
 		  const uploadImage = async () => {
 			try {
-			  const token = await getToken();
-		  
-			  if (!token) {
-				console.log("No token found");
-				return;
-			  }
-		  
-			  if (!imageFile) {
-				console.log("No image selected");
-				return;
-			  }
+				setHasStartedAnalysis(true);
+				setIsUploading(true);
+				setAnalysisText("");
 
-			  const formData = new FormData();
+				const token = await getToken();
+				if (!token || !imageFile) return;
 
-			  // Web needs a Blob/File, native uses uri/name/type.
-			  if (Platform.OS === "web") {
-				let blob = imageFile.file;
+	const formData = new FormData();
 
-				if (!blob) {
-				  const fileResponse = await fetch(imageFile.uri);
-				  blob = await fileResponse.blob();
-				}
+	if (Platform.OS === "web") {
+	  let blob = imageFile.file;
+	  if (!blob) {
+		const fileResponse = await fetch(imageFile.uri);
+		blob = await fileResponse.blob();
+	  }
+	  formData.append("image", blob, imageFile.name);
+	} else {
+	  formData.append(
+		"image",
+		{
+		  uri: imageFile.uri,
+		  name: imageFile.name,
+		  type: imageFile.type,
+		} as any
+	  );
+	}
 
-				formData.append("image", blob, imageFile.name);
-			  } else { // check if backend accepts this
-				formData.append("image", {
-				  uri: imageFile.uri,
-				  name: imageFile.name,
-				  type: imageFile.type,
-				} as any);
-			  }
-			 
-			  const response = await fetch(`${API_URL}/api/clothing`, {
-				method: "POST",
-				headers: {
-				  Authorization: `Bearer ${token}`,
-				},
-				body: formData,
-			  });
-			  
-				  const data = await response.json();
-				  setUploadedItem(data);
-			  
-				  console.log("Upload status:", response.status);
-				  console.log("Upload response:", data);
-			  
-				  if (!response.ok) {
-					setAnalysisText("upload failed");
-					return;
-				  }
-			  
-				  setAnalysisText("temp text");
-				  setShowPopup(false);
-				  setUploadedImage(null);
-				  setImageFile(null);
-				} catch (error) {
-				  console.error("Upload error:", error);
-				  setAnalysisText("upload failed");
-				}
-			  };
+	const response = await fetch(`${API_URL}/api/clothing`, {
+	  method: "POST",
+	  headers: { Authorization: `Bearer ${token}` },
+	  body: formData,
+	});
+
+	const data = await response.json();
+
+	if (!response.ok) {
+	  setUploadedItem(null);
+	  setAnalysisText("Upload failed");
+	  return;
+	}
+
+	setUploadedItem(data);
+
+	const detectedText =
+	  data.description ||
+	  data.label ||
+	  data.analysis ||
+	  "Item uploaded successfully";
+
+	setAnalysisText(detectedText);
+  } catch (error) {
+	console.error("Upload error:", error);
+	setUploadedItem(null);
+	setAnalysisText("Upload failed");
+  } finally {
+	setIsUploading(false);
+  }
+};
   return (
-    <LinearGradient
-      colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
-      style={styles.container}
-    >
+	<LinearGradient
+	  colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
+	  style={styles.container}
+	>
 		<GridOverlay />
-      <View style={styles.contentWrapper}>
-        <DashboardSidebar
-        	username={user?.name || "User"}
+	  <View style={styles.contentWrapper}>
+		<DashboardSidebar
+			username={user?.name || "User"}
 			activeScreen="dashboard"
 			onLogout={() => {
 			  console.log("Log out pressed");
-          }}
-        />
+		  }}
+		/>
 		<ScrollView
 		style={styles.main}
 		contentContainerStyle={{ paddingBottom: 40 }}
 		showsVerticalScrollIndicator={false}
 		>
-          <Text style={styles.greeting}>
-		  	HELLO, {user?.name ? user.name.toUpperCase() : "USER"}!
+		  <Text style={styles.greeting}>
+			HELLO, {user?.name ? user.name.toUpperCase() : "USER"}!
 		  </Text>
 
 		<View style={styles.mainRow}>
@@ -298,127 +301,192 @@ export default function DashboardScreen() {
 			</View>
 			{/* upload widget*/}
 			<Pressable
-  				style={styles.smallCard}
-  				onPress={!uploadedImage ? handlePickImage : undefined}
+				style={styles.smallCard}
+				onPress={!uploadedImage ? handlePickImage : undefined}
 			>
-  				{uploadedImage ? (
-    				<>
-      					<Image source={{ uri: uploadedImage }} style={styles.uploadPreview} />
-      					<Pressable style={styles.testButton} onPress={uploadImage}>
-  							<Text style={styles.testButtonText}>test upload</Text>
+				{uploadedImage ? (
+					<>
+						<Image source={{ uri: uploadedImage }} style={styles.uploadPreview} />
+						<Pressable style={styles.testButton} onPress={uploadImage}>
+							<Text style={styles.testButtonText}>test upload</Text>
 						</Pressable>
-	  				</>
-  				) : (
-    				<View style={styles.uploadContent}>
-      					<Text style={styles.uploadTitle}>add item</Text>
-      					<Text style={styles.uploadDescription}>upload a photo to your wardrobe
-      					</Text>
+					</>
+				) : (
+					<View style={styles.uploadContent}>
+						<Text style={styles.uploadTitle}>add item</Text>
+						<Text style={styles.uploadDescription}>upload a photo to your wardrobe
+						</Text>
 
-      					<View style={styles.uploadButton}>
-        					<Text style={styles.uploadButtonText}>choose photo</Text>
-      					</View>
+						<View style={styles.uploadButton}>
+							<Text style={styles.uploadButtonText}>choose photo</Text>
+						</View>
 						  
-    				</View>
-  				)}
+					</View>
+				)}
 			</Pressable>
 		</View>
 		</View>
 		</ScrollView>
-      </View>
-	  {showPopup && (
-  		<View style={styles.popupOverlay}>
-    		<View style={styles.popupCard}>
+	  </View>
+		   {showPopup && (
+  <View style={styles.popupOverlay}>
+	<View
+	  style={[
+		styles.popupCard,
+		!isUploading && analysisText ? styles.popupCardResult : null,
+	  ]}
+	>
+	  {/* RESULT STATE: text first */}
+	  {!isUploading && analysisText ? (
+		<>
+		  <View style={styles.popupResultTextBox}>
+			<Text style={styles.popupResultTitle}>we detected:</Text>
+			<Text style={styles.popupText}>{analysisText}</Text>
+		  </View>
 
-      		{/* image */}
-      			{uploadedImage && (
-        			<Image source={{ uri: uploadedImage }} style={styles.popupImage} />
-      			)}
+		  <View style={styles.popupImageWrapper}>
+			<Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
+		  </View>
 
-      		{/* text */}
-      			<View style={styles.popupTextBox}>
-        			<Text style={styles.popupText}>
-          				{analysisText}
-        			</Text>
+		  <View style={styles.popupButtons}>
+			<Pressable
+			  style={styles.confirmButton}
+			  onPress={() => {
+				setShowPopup(false);
+				setUploadedImage(null);
+				setImageFile(null);
+				setUploadedItem(null);
+				setAnalysisText("");
+				setHasStartedAnalysis(false);
+			  }}
+			>
+			  <Text style={styles.popupButtonText}>done</Text>
+			</Pressable>
 
-        	{/* buttons */}
-        		<View style={styles.popupButtons}>
-				<Pressable
-  					style={styles.confirmButton}
-  					onPress={uploadImage}
-				>
-  					<Text style={styles.popupButtonText}>confirm</Text>
-				</Pressable>
+			<Pressable
+			  style={styles.cancelButton}
+			  onPress={() => {
+				setShowPopup(false);
+				setUploadedImage(null);
+				setImageFile(null);
+				setUploadedItem(null);
+				setAnalysisText("");
+				setHasStartedAnalysis(false);
+			  }}
+			>
+			  <Text style={styles.popupButtonText}>cancel</Text>
+			</Pressable>
+		  </View>
+		</>
+	  ) : (
+		<>
+		  {/* BEFORE / DURING UPLOAD */}
+		  <View style={styles.popupImageWrapper}>
+			<Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
 
-          		<Pressable
-            		style={styles.cancelButton}
-            		onPress={() => {
-              			setShowPopup(false);
-              			setUploadedImage(null);
-              			setImageFile(null);
-            		}}
-          		>
-            		<Text style={styles.popupButtonText}>cancel</Text>
-          		</Pressable>
-        		</View>
-      		</View>
-    	</View>
-  	</View>
+			{isUploading && (
+			  <View style={styles.popupImageOverlay}>
+				<ActivityIndicator size="large" color="#FEFDF4" />
+			  </View>
+			)}
+		  </View>
+
+		  <View style={styles.popupTextBox}>
+			{!hasStartedAnalysis ? (
+			  <Text style={styles.popupPlaceholderText}>
+				confirm to analyze this image
+			  </Text>
+			) : (
+			  <Text style={styles.popupPlaceholderText}>analyzing...</Text>
+			)}
+		  </View>
+
+		  <View style={styles.popupButtons}>
+			<Pressable
+			  style={[styles.confirmButton, isUploading && { opacity: 0.6 }]}
+			  onPress={uploadImage}
+			  disabled={isUploading}
+			>
+			  <Text style={styles.popupButtonText}>
+				{isUploading ? "loading..." : "confirm"}
+			  </Text>
+			</Pressable>
+
+			<Pressable
+			  style={styles.cancelButton}
+			  onPress={() => {
+				setShowPopup(false);
+				setUploadedImage(null);
+				setImageFile(null);
+				setUploadedItem(null);
+				setAnalysisText("");
+				setHasStartedAnalysis(false);
+				setIsUploading(false);
+			  }}
+			>
+			  <Text style={styles.popupButtonText}>cancel</Text>
+			</Pressable>
+		  </View>
+		</>
+	  )}
+	</View>
+  </View>
 )}
-    </LinearGradient>
+	</LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+	flex: 1,
   },
 
   contentWrapper: {
-    flex: 1,
-    flexDirection: "row",
-    padding: 20,
-    gap: 20,
+	flex: 1,
+	flexDirection: "row",
+	padding: 20,
+	gap: 20,
   },
 
   main: {
-    flex: 1,
-    paddingTop: 56,
-    paddingHorizontal: 16,
+	flex: 1,
+	paddingTop: 56,
+	paddingHorizontal: 16,
   },
 
   greeting: {
-    color: "#4E4E4E",
-    fontSize: 40,
-    fontFamily: "EncodeSansSemiCondensed_400Regular",
-    marginBottom: 30,
+	color: "#4E4E4E",
+	fontSize: 40,
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
+	marginBottom: 30,
   },
 
   mainRow: {
-    flexDirection: "row",
-    gap: 28,
-    alignItems: "flex-start",
+	flexDirection: "row",
+	gap: 28,
+	alignItems: "flex-start",
   },
 
   dailyCard: {
-    width: 520,
-    height: 590,
-    backgroundColor: "rgba(254, 253, 244, 0.6)",
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
+	width: 520,
+	height: 590,
+	backgroundColor: "rgba(254, 253, 244, 0.6)",
+	borderRadius: 30,
+	justifyContent: "center",
+	alignItems: "center",
   },
 
   bottomOutfitsRow: {
-    position: "absolute",
-    bottom: 120,
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    paddingHorizontal: 30,
+	position: "absolute",
+	bottom: 120,
+	width: "100%",
+	flexDirection: "row",
+	justifyContent: "space-evenly",
+	paddingHorizontal: 30,
   },
 
   rightColumn: {
-    gap: 28,
+	gap: 28,
   },
 
   weatherCard: {
@@ -432,39 +500,39 @@ const styles = StyleSheet.create({
   },
 
   smallCard: {
-    width: 293,
-    height: 275,
-    backgroundColor: "rgba(254, 253, 244, 0.6)",
-    borderRadius: 30,
+	width: 293,
+	height: 275,
+	backgroundColor: "rgba(254, 253, 244, 0.6)",
+	borderRadius: 30,
   },
 
   cardText: {
-    color: "#8A5F5F",
-    fontSize: 24,
-    fontFamily: "DMSerifDisplay_400Regular",
-    textAlign: "center",
+	color: "#8A5F5F",
+	fontSize: 24,
+	fontFamily: "DMSerifDisplay_400Regular",
+	textAlign: "center",
   },
 
   weatherIcon: {
-    width: 80,
-    height: 80,
-    marginBottom: 10,
+	width: 80,
+	height: 80,
+	marginBottom: 10,
   },
 
   weatherDescription: {
-    color: "#8A5F5F",
-    fontSize: 16,
-    marginTop: 4,
-    textTransform: "capitalize",
-    textAlign: "center",
-    fontFamily: "DMSerifDisplay_400Regular",
+	color: "#8A5F5F",
+	fontSize: 16,
+	marginTop: 4,
+	textTransform: "capitalize",
+	textAlign: "center",
+	fontFamily: "DMSerifDisplay_400Regular",
   },
 
   weatherTemp: {
-    color: "#4E4E4E",
-    fontSize: 20,
-    marginTop: 6,
-    fontFamily: "EncodeSansSemiCondensed_400Regular",
+	color: "#4E4E4E",
+	fontSize: 20,
+	marginTop: 6,
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
   },
   
   uploadContent: {
@@ -541,54 +609,110 @@ const styles = StyleSheet.create({
 	alignItems: "center",
   },
   
-  popupCard: {
-	width: 1000,
-	height: 500,
-	backgroundColor: "#FEFDF4",
-	borderRadius: 30,
-	flexDirection: "row",
-	padding: 20,
-	gap: 20,
-  },
-  
-  popupImage: {
-	width: 250,
-	height: "75%",
-	borderRadius: 20,
-  },
-  
-  popupTextBox: {
-	flex: 1,
-	justifyContent: "space-between",
-  },
-  
-  popupText: {
-	color: "#4E4E4E",
-	fontSize: 18,
-	fontFamily: "EncodeSansSemiCondensed_400Regular",
-  },
-  
-  popupButtons: {
-	flexDirection: "row",
-	gap: 10,
-  },
-  
-  confirmButton: {
-	backgroundColor: "#8A5F5F",
-	paddingVertical: 10,
-	paddingHorizontal: 16,
-	borderRadius: 16,
-  },
-  
-  cancelButton: {
-	backgroundColor: "#8A5F5F",
-	paddingVertical: 10,
-	paddingHorizontal: 16,
-	borderRadius: 16,
-  },
-  
-  popupButtonText: {
-	color: "#FEFDF4",
-	fontSize: 14,
-  },
+popupCard: {
+  width: 420,
+  minHeight: 620,
+  backgroundColor: "#FEFDF4",
+  borderRadius: 30,
+  padding: 24,
+  gap: 18,
+  alignItems: "center",
+  justifyContent: "flex-start",
+},
+
+  popupCardResult: {
+  justifyContent: "flex-start",
+},
+
+popupImageWrapper: {
+  position: "relative",
+  width: 260,
+  height: 340,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+popupImage: {
+  width: 260,
+  height: 340,
+  borderRadius: 20,
+  resizeMode: "cover",
+},
+
+popupImageOverlay: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(0,0,0,0.35)",
+  borderRadius: 20,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+popupTextBox: {
+  width: "100%",
+  minHeight: 60,
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 10,
+},
+
+popupResultTextBox: {
+  width: "100%",
+  alignItems: "center",
+  justifyContent: "center",
+  paddingHorizontal: 12,
+  marginBottom: 8,
+},
+
+popupResultTitle: {
+  color: "#8A5F5F",
+  fontSize: 22,
+  fontFamily: "DMSerifDisplay_400Regular",
+  marginBottom: 8,
+  textAlign: "center",
+},
+
+popupText: {
+  color: "#4E4E4E",
+  fontSize: 18,
+  fontFamily: "EncodeSansSemiCondensed_400Regular",
+  textAlign: "center",
+  lineHeight: 24,
+},
+
+popupPlaceholderText: {
+  color: "#8A5F5F",
+  fontSize: 16,
+  fontFamily: "EncodeSansSemiCondensed_400Regular",
+  textAlign: "center",
+},
+
+popupButtons: {
+  flexDirection: "row",
+  gap: 10,
+  marginTop: 8,
+},
+
+confirmButton: {
+  backgroundColor: "#8A5F5F",
+  paddingVertical: 10,
+  paddingHorizontal: 16,
+  borderRadius: 16,
+},
+
+cancelButton: {
+  backgroundColor: "#4E4E4E",
+  paddingVertical: 10,
+  paddingHorizontal: 16,
+  borderRadius: 16,
+},
+
+popupButtonText: {
+  color: "#FEFDF4",
+  fontSize: 14,
+  fontFamily: "EncodeSansSemiCondensed_400Regular",
+},
 });
