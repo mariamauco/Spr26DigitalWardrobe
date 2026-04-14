@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useUser } from "./userContext";
-import { removeToken } from "../../app/authStorage";
+import { removeToken } from "../../utils/authStorage";
 
 type DashboardSidebarProps = {
     username?: string;

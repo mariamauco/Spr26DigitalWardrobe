@@ -8,6 +8,7 @@ import path from "path";
 import clothingRoutes from "./routes/clothing.js";
 import onboardingRoutes from "./routes/onboarding.js";
 import weatherRoutes from "./routes/weather.js";
+import userRoutes from "./routes/users.js";
 
 const app = express();
 app.use(cors()); // allows front end to call backend
@@ -43,6 +44,8 @@ app.use("/api/clothing", clothingRoutes);
 app.use("/api/onboarding", onboardingRoutes);
 
 app.use("/api/weather", weatherRoutes);
+
+app.use("/api/users", userRoutes);
 
 
 

@@ -109,7 +109,7 @@ def download_from_metadata(
 
     print(f"Starting concurrent download of {total} images using {max_workers} workers...")
     
-    # Process downloads 30 images at a time, to complete faster
+    # Process downloads 20 images at a time, to complete faster
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Submit all tasks to the pool
         futures = {
