@@ -224,7 +224,7 @@ def scrapeAll(boards):
                 prefix=f"Pins (board {index + 1}/{total_boards})"
             )
 
-            time.sleep(random.uniform(0.5, 2)) # small wait between pins -> and make it random to seem human
+            time.sleep(random.uniform(0.2, 1)) # small wait between pins -> and make it random to seem human
 
         print()
         print(

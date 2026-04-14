@@ -24,9 +24,20 @@ FOLDER_MAP = {
     "shoes": "Shoes"
 }
 
-def process_and_save_outfit(image_path, output_root="Fashion_Dataset"):
-    with open(image_path, "rb") as f:
-        image_b64 = base64.b64encode(f.read()).decode("utf-8")
+def process_and_save_outfit(image_path, output_root="/media/maria/ubuntu storage/Fashion_Dataset"):
+    # Read the image using OpenCV
+    img = cv2.imread(image_path)
+    
+    # Shrink the image to max 800px wide/high to save GPU VRAM
+    height, width = img.shape[:2]
+    max_dim = 800
+    if max(height, width) > max_dim:
+        scale = max_dim / max(height, width)
+        img = cv2.resize(img, (int(width * scale), int(height * scale)))
+
+    # Convert the resized image to base64
+    _, buffer = cv2.imencode('.jpg', img)
+    image_b64 = base64.b64encode(buffer).decode("utf-8")
 
     # Run the workflow
     result = CLIENT.run_workflow(
