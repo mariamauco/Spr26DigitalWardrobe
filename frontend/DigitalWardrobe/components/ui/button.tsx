@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, Text, StyleSheet } from "react-native";
+import { Pressable, Text, StyleSheet, type TextStyle, type ViewStyle } from "react-native";
 
 type ButtonVariant = "pink" | "white";
 
@@ -9,12 +9,16 @@ export default function Button({
   variant = "pink",
   disabled = false,
   selected = false,
+  buttonStyle,
+  textStyle,
 }: {
   title: string;
   onPress: () => void;
   variant?: ButtonVariant;
   disabled?: boolean;
   selected?: boolean;
+  buttonStyle?: ViewStyle;
+  textStyle?: TextStyle;
 }) {
   return (
     <Pressable
@@ -23,6 +27,7 @@ export default function Button({
         styles.button,
         selected ? styles.selected : (variant === "white" ? styles.buttonWhite : styles.buttonPink),
         {opacity: disabled ? 0.4 : pressed ? 0.7 : 1},
+        buttonStyle,
       ]}
       onPress={onPress}
     >
@@ -30,6 +35,7 @@ export default function Button({
         style={[
           styles.text,
           variant === "white" ? styles.textWhite : styles.textPink,
+          textStyle,
         ]}
       >
         {title}
