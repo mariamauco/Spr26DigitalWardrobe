@@ -1,3 +1,5 @@
 dataset/
 metadata.csv
 pinterest_cookies.json
+metadata_cleaned_final.csv
+metadata_cleaned.csv
