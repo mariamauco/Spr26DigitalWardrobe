@@ -22,14 +22,9 @@ const ClothingItemSchema = new mongoose.Schema(
              "sneakers", "boots", "heels", "sandals", // shoe
              "handbag", "backpack", "belt", "hat", "scarf", "jewelry", "sunglasses" // accessory
             ]},
-        subtypeConfidence: {type: Number, required: false, min:0, max:1},
-        colors: {type: [String], lowercase:true, default: []}, // ex: ["blue", "white"],
-        tags: {type: [String], lowercase:true, enum: [
-            "casual", "formal", "summer", "winter", "business", "sporty",
-            "streetwear", "vintage", "bohemian", "minimalist", "spring", 
-            "fall", "party", "beach", "outdoor", "loungewear", "y2k", 
-            "academia", "cottage", "classic", "clean girl", "old money",
-            "coquette", "earthy", "hippie"], default: []},
+        subtypeConfidence: {type: Float16Array, required: false},
+        colors: {type: [String], default: []}, // ex: ["blue", "white"],
+        tags: {type: [String], enum: ["casual", "formal", "summer", "winter", "workout"], default: []},
 
         imagePath: {type: String, required: true}, // URL to the clothing item image
 
