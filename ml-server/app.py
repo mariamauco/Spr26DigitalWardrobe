@@ -193,12 +193,12 @@ def daily_outfit():
     filtered_closet = filter_by_wheather(closet, weatherTags, model, processor)
 
     #group by type
-    #groups = group_by_type(filtered_closet)
+    groups = group_by_type(filtered_closet)
 
     #rank items using style_fashionCLIP tuned version
     #ranking call
-    # ranked_groups = style_fashionclip.rank(groups, preferences)
-    #ranked_groups = groups  # placeholder
+    #ranked_groups = style_fashionclip.rank(groups, preferences)
+    ranked_groups = groups  # placeholder
 
     #PASS ranked groups to create_outfit
     #TODO: call create_outfit with ranked_groups, preferences, weather_tags

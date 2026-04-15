@@ -6,14 +6,38 @@
 #based on their confidence level
 #include edge cases where the users do not have everything needed
 
-def pick_best(items, used_ids):
+#import fine tuned fashion clip
+
+#make an instance of it
+
+#use the fine-tuned version of fashion clip to create outfits based on style that its asked for
+
+#depending on the wheather API tags returned, we will return the best item for each category
+def pick_first_best(items, used_ids):
     """Return the first item not already used, or None."""
+    #implement logic for weather tag and style 
     for item in items:
         if item["_id"] not in used_ids:
             return item
     return None
 
+def pick_second_best(items, used_ids):
+    """Return the second item not already used, or None."""
+    #implement logic for weather tag and style
+    for item in items:
+        if item["_id"] not in used_ids:
+            return item
+    return None
 
+def pick_third_best(items, used_ids):
+    #implement logic for weather tag and style
+    """Return the third item not already used, or None."""
+    for item in items:
+        if item["_id"] not in used_ids:
+            return item
+    return None
+
+#give three reccommendations based on the three
 def assemble_outfits(ranked_groups, max_outfits=3):
     """Build up to 3 outfits from ranked item groups, no item reuse."""
     outfits = []
