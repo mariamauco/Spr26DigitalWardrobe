@@ -1,7 +1,7 @@
 import express from "express";
 //import { uploadProfilePic, getProfilePic, deleteProfilePic } from "../controllers/profilePicController.js";
-import { upload } from "../config/cloudinary.js";
-import { protect } from "../middleware/authMiddleware.js";
+// import { upload } from "../config/cloudinary.js";
+// import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
