@@ -62,7 +62,7 @@ const GalleryCarousel: React.FC<Props> = ({ width = 200, height = 400 }) => {
     const fetchOutfits = async () => {
       try {
         const response = await fetch(
-          "http://138.197.16.179:5050/api/weather/daily-outfit"
+          "https://api.digitalwardrobe.xyz/api/weather/daily-outfit"
         );
 
         if (!response.ok) {
