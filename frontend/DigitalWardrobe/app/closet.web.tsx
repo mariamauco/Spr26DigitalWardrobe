@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
@@ -43,6 +43,28 @@ const TAGS = [
 ];
 
 type SectionKey = "tops" | "bottoms" | "onePieces" | "outerwear" | "shoes" | "accessories" | "other";
+
+const SECTION_KEYS: SectionKey[] = ["tops", "bottoms", "onePieces", "outerwear", "shoes", "accessories", "other"];
+
+const buildSectionNumberRecord = (value: number): Record<SectionKey, number> => ({
+  tops: value,
+  bottoms: value,
+  onePieces: value,
+  outerwear: value,
+  shoes: value,
+  accessories: value,
+  other: value,
+});
+
+const buildSectionIdRecord = (): Record<SectionKey, string[]> => ({
+  tops: [],
+  bottoms: [],
+  onePieces: [],
+  outerwear: [],
+  shoes: [],
+  accessories: [],
+  other: [],
+});
 
 const SECTION_LABELS: Record<SectionKey, string> = {
   tops: "Tops", bottoms: "Bottoms", onePieces: "One Pieces",
@@ -302,8 +324,20 @@ export default function ClosetScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<ClothingItem | null>(null);
-  const [sectionOrders, setSectionOrders] = useState<Record<SectionKey, string[]>>({ tops: [], bottoms: [], onePieces: [], outerwear: [], shoes: [], accessories: [], other: [] });
+  const [sectionOrders, setSectionOrders] = useState<Record<SectionKey, string[]>>(buildSectionIdRecord());
   const [dragId, setDragId] = useState<string | null>(null);
+  const [sectionOffsets, setSectionOffsets] = useState<Record<SectionKey, number>>(buildSectionNumberRecord(0));
+  const [sectionViewportWidths, setSectionViewportWidths] = useState<Record<SectionKey, number>>(buildSectionNumberRecord(0));
+  const [sectionContentWidths, setSectionContentWidths] = useState<Record<SectionKey, number>>(buildSectionNumberRecord(0));
+  const sectionScrollRefs = useRef<Record<SectionKey, ScrollView | null>>({
+    tops: null,
+    bottoms: null,
+    onePieces: null,
+    outerwear: null,
+    shoes: null,
+    accessories: null,
+    other: null,
+  });
   
   useEffect(() => {
     const loadCloset = async () => {
@@ -340,8 +374,7 @@ export default function ClosetScreen() {
         const loaded: ClothingItem[] = Array.isArray(data) ? data : [];
         setItems(loaded);
 
-        const orders: Record<SectionKey, string[]> = { 
-          tops: [], bottoms: [], onePieces: [], outerwear: [], shoes: [], accessories: [], other: [] };
+        const orders: Record<SectionKey, string[]> = buildSectionIdRecord();
         loaded.forEach((item) => orders[getItemSection(item)].push(item._id));
         setSectionOrders(orders);
       } catch (err) {
@@ -420,6 +453,46 @@ export default function ClosetScreen() {
   
   const getOrderedItems = (key: SectionKey): ClothingItem[] =>
     sectionOrders[key].map((id) => itemMap[id]).filter(Boolean) as ClothingItem[];
+
+  const setSectionRef = useCallback(
+    (key: SectionKey) => (ref: ScrollView | null) => {
+      sectionScrollRefs.current[key] = ref;
+    },
+    []
+  );
+
+  const updateSectionOffset = useCallback((key: SectionKey, offset: number) => {
+    setSectionOffsets((prev) => ({ ...prev, [key]: offset }));
+  }, []);
+
+  const updateSectionViewportWidth = useCallback((key: SectionKey, width: number) => {
+    setSectionViewportWidths((prev) => ({ ...prev, [key]: width }));
+  }, []);
+
+  const updateSectionContentWidth = useCallback((key: SectionKey, width: number) => {
+    setSectionContentWidths((prev) => ({ ...prev, [key]: width }));
+  }, []);
+
+  const scrollSection = useCallback(
+    (key: SectionKey, direction: "left" | "right") => {
+      const viewportWidth = sectionViewportWidths[key] ?? 0;
+      const contentWidth = sectionContentWidths[key] ?? 0;
+      if (viewportWidth <= 0 || contentWidth <= viewportWidth) return;
+
+      const maxOffset = Math.max(0, contentWidth - viewportWidth);
+      const currentOffset = sectionOffsets[key] ?? 0;
+      const step = Math.max(180, viewportWidth * 0.75);
+      const nextOffset =
+        direction === "left"
+          ? Math.max(0, currentOffset - step)
+          : Math.min(maxOffset, currentOffset + step);
+
+      sectionScrollRefs.current[key]?.scrollTo({ x: nextOffset, animated: true });
+      updateSectionOffset(key, nextOffset);
+    },
+    [sectionContentWidths, sectionOffsets, sectionViewportWidths, updateSectionOffset]
+  );
+
   
   return (
     <LinearGradient
@@ -448,7 +521,7 @@ export default function ClosetScreen() {
               contentContainerStyle={styles.sections}
               showsVerticalScrollIndicator={false}
             >
-            {(["tops", "bottoms", "onePieces", "outerwear", "shoes", "accessories", "other"] as SectionKey[]).map((key) => {
+            {SECTION_KEYS.map((key) => {
   const sectionItems = getOrderedItems(key);
   return (
     <DroppableView
@@ -462,35 +535,65 @@ export default function ClosetScreen() {
       {sectionItems.length === 0 ? (
         <Text style={styles.emptyText}>No items yet</Text>
       ) : (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.itemsRow} scrollEnabled={!dragId}>
-          {sectionItems.map((item) => {
-            const isDragging = dragId === item._id;
-            return (
-              <DraggablePressable
-                key={item._id}
-                style={[styles.itemCard, isDragging && styles.itemDragging, !!dragId && !isDragging && styles.itemDropZone]}
-                onPress={() => {
-                  if (dragId) {
-                    if (dragId !== item._id) handleDragOver(key, item._id);
-                    setDragId(null);
-                  } else {
-                    setSelectedItem(item);
-                  }
-                }}
-                onLongPress={() => setDragId(item._id)}
-                draggable
-                onDragStart={() => setDragId(item._id)}
-                onDragOver={(e: any) => { e?.preventDefault?.(); handleDragOver(key, item._id); }}
-                onDrop={(e: any) => { e?.preventDefault?.(); setDragId(null); }}
-                onDragEnd={() => setDragId(null)}
-              >
-                <Image source={{ uri: `https://digitalwardrobe.xyz${item.imagePath}` }} style={[styles.itemImage, isDragging && { opacity: 0.4 }]} />
-                <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-                {isDragging && <Text style={styles.draggingBadge}>moving</Text>}
-              </DraggablePressable>
-            );
-          })}
-        </ScrollView>
+        <View style={styles.itemsScrollerRow}>
+          <TouchableOpacity
+            style={styles.scrollArrow}
+            onPress={() => scrollSection(key, "left")}
+          >
+            <Text style={styles.scrollArrowText}>{"<"}</Text>
+          </TouchableOpacity>
+
+          <View
+            style={styles.itemsScrollerViewport}
+            onLayout={(e) => updateSectionViewportWidth(key, e.nativeEvent.layout.width)}
+          >
+            <ScrollView
+              ref={setSectionRef(key)}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.itemsRow}
+              scrollEnabled={!dragId}
+              onContentSizeChange={(w) => updateSectionContentWidth(key, w)}
+              onScroll={(e) => updateSectionOffset(key, e.nativeEvent.contentOffset.x)}
+              scrollEventThrottle={16}
+            >
+              {sectionItems.map((item) => {
+                const isDragging = dragId === item._id;
+                return (
+                  <DraggablePressable
+                    key={item._id}
+                    style={[styles.itemCard, isDragging && styles.itemDragging, !!dragId && !isDragging && styles.itemDropZone]}
+                    onPress={() => {
+                      if (dragId) {
+                        if (dragId !== item._id) handleDragOver(key, item._id);
+                        setDragId(null);
+                      } else {
+                        setSelectedItem(item);
+                      }
+                    }}
+                    onLongPress={() => setDragId(item._id)}
+                    draggable
+                    onDragStart={() => setDragId(item._id)}
+                    onDragOver={(e: any) => { e?.preventDefault?.(); handleDragOver(key, item._id); }}
+                    onDrop={(e: any) => { e?.preventDefault?.(); setDragId(null); }}
+                    onDragEnd={() => setDragId(null)}
+                  >
+                    <Image source={{ uri: `https://digitalwardrobe.xyz${item.imagePath}` }} style={[styles.itemImage, isDragging && { opacity: 0.4 }]} />
+                    <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+                    {isDragging && <Text style={styles.draggingBadge}>moving</Text>}
+                  </DraggablePressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          <TouchableOpacity
+            style={styles.scrollArrow}
+            onPress={() => scrollSection(key, "right")}
+          >
+            <Text style={styles.scrollArrowText}>{">"}</Text>
+          </TouchableOpacity>
+        </View>
       )}
       {dragId && itemMap[dragId] && getItemSection(itemMap[dragId]) === key && (
         <Text style={styles.dragHint}>Tap another item to reorder · tap same item to cancel</Text>
@@ -579,6 +682,28 @@ const styles = StyleSheet.create({
   itemsRow: {
     gap: 16,
     paddingRight: 16,
+  },
+
+  itemsScrollerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  itemsScrollerViewport: {
+    flex: 1,
+  },
+
+  scrollArrow: {
+    width: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  scrollArrowText: {
+    fontSize: 30,
+    color: "#8A5F5F",
+    fontWeight: "bold",
   },
 
   itemCard: {
