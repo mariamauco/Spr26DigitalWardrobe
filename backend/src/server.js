@@ -30,7 +30,12 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 
-app.use(cors({ origin: "*" })); // or http://localhost:5173 for prod
+app.use(cors({
+  origin: true, // Dynamically allow any origin
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
+}));
 
 //app.use(cors({ origin: "*" })); // or "*" for testing
 app.use("/api/auth", authRoutes);  
