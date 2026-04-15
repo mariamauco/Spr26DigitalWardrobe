@@ -5,46 +5,7 @@ import DashboardSidebar from "../components/features/dashboardSidebar";
 import { getToken } from "../utils/authStorage";
 import { useUser } from "../components/features/userContext";
 import { View, Text, StyleSheet, Image, ScrollView, Modal, Pressable, Alert, TouchableOpacity, TextInput } from "react-native";
-
-type ClothingItem = {
-  _id: string;
-  user: string;
-  name: string;
-  type: string;
-  subtype?: string;
-  colors?: string[];
-  tags?: string[];
-  imagePath: string;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-const CLOTHING_TYPES = ["Top", "Bottom", "One Piece", "Outerwear", "Shoe", "Accessory"];
-
-const SUBTYPES: Record<string, string[]> = {
-  Top:          ["T-Shirt", "Long Sleeve Shirt", "Blouse", "Tank Top", "Sweater"],
-  Bottom:       ["Jeans", "Trousers", "Pants", "Leggings", "Sweatpants", "Shorts", "Skirt"],
-  "One Piece":  ["Dress", "Jumpsuit", "Romper", "Overalls", "Bodysuit"],
-  Outerwear:    ["Jacket", "Coat", "Blazer", "Cardigan", "Vest", "Trench Coat"],
-  Shoe:         ["Sneakers", "Boots", "Loafers", "Flats", "Heels", "Sandals"],
-  Accessory:    ["Handbag", "Backpack", "Belt", "Hat", "Scarf", "Jewelry", "Sunglasses"],
-};
-
-
-const COLORS = [
-  "black", "white", "gray", "red", "blue", "green", "yellow",
-  "orange", "purple", "pink", "brown", "beige", "navy", "maroon", "teal", "cream",
-];
-
-const TAGS = [
-  "casual", "formal", "business", "sporty", "streetwear", "vintage",
-  "bohemian", "minimalist", "summer", "winter", "spring", "fall",
-  "party", "beach", "outdoor", "loungewear",
-];
-
-type SectionKey = "tops" | "bottoms" | "onePieces" | "outerwear" | "shoes" | "accessories" | "other";
-
-const SECTION_KEYS: SectionKey[] = ["tops", "bottoms", "onePieces", "outerwear", "shoes", "accessories", "other"];
+import { ClothingItem, CLOTHING_TYPES, SUBTYPES, COLORS, TAGS, SectionKey, SECTION_KEYS} from "../components/features/labels";
 
 const buildSectionNumberRecord = (value: number): Record<SectionKey, number> => ({
   tops: value,

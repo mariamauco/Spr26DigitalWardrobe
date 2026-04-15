@@ -6,6 +6,7 @@ import { getToken } from "../utils/authStorage";
 import { useUser } from "../components/features/userContext";
 import { View, Text, StyleSheet, Image, ScrollView, Modal, Pressable, Alert, TouchableOpacity, TextInput } from "react-native";
 
+// Shape returned by the clothing API and used throughout this screen.
 type ClothingItem = {
   _id: string;
   user: string;
@@ -19,8 +20,10 @@ type ClothingItem = {
   updatedAt?: string;
 };
 
+// Top-level categories shown in the type dropdown.
 const CLOTHING_TYPES = ["Top", "Bottom", "One Piece", "Outerwear", "Shoe", "Accessory"];
 
+// Available subtypes depend on the selected top-level type.
 const SUBTYPES: Record<string, string[]> = {
   Top:          ["T-Shirt", "Long Sleeve Shirt", "Blouse", "Tank Top", "Sweater"],
   Bottom:       ["Jeans", "Trousers", "Pants", "Leggings", "Sweatpants", "Shorts", "Skirt"],
@@ -31,6 +34,7 @@ const SUBTYPES: Record<string, string[]> = {
 };
 
 
+// Selectable metadata chips for each item in the edit modal.
 const COLORS = [
   "black", "white", "gray", "red", "blue", "green", "yellow",
   "orange", "purple", "pink", "brown", "beige", "navy", "maroon", "teal", "cream",
@@ -42,10 +46,12 @@ const TAGS = [
   "party", "beach", "outdoor", "loungewear",
 ];
 
+// Internal section identifiers used for grouping and ordering on this page.
 type SectionKey = "tops" | "bottoms" | "onePieces" | "outerwear" | "shoes" | "accessories" | "other";
 
 const SECTION_KEYS: SectionKey[] = ["tops", "bottoms", "onePieces", "outerwear", "shoes", "accessories", "other"];
 
+// Utility builders keep section-shaped state initialization consistent.
 const buildSectionNumberRecord = (value: number): Record<SectionKey, number> => ({
   tops: value,
   bottoms: value,
@@ -66,12 +72,14 @@ const buildSectionIdRecord = (): Record<SectionKey, string[]> => ({
   other: [],
 });
 
+// Human-friendly labels for each section card heading.
 const SECTION_LABELS: Record<SectionKey, string> = {
   tops: "Tops", bottoms: "Bottoms", onePieces: "One Pieces",
   outerwear: "Outerwear", shoes: "Shoes", accessories: "Accessories", other: "Other",
 };
 
 
+// Normalizes API type values into one of the local section buckets.
 function getItemSection(item: ClothingItem): SectionKey {
   const t = item.type?.toLowerCase();
   if (t === "top") return "tops";
@@ -84,9 +92,11 @@ function getItemSection(item: ClothingItem): SectionKey {
 }
 
 
+// Aliases used so drag-and-drop props can be attached for web behavior.
 const DraggablePressable = Pressable as any;
 const DroppableView = View as any;
 
+// Base API URL from Expo env.
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 function ItemEditModal({
@@ -100,6 +110,7 @@ function ItemEditModal({
   onSave: (updated: ClothingItem) => void;
   onDelete: (id: string) => void;
 }) {
+  // Local form state mirrors the selected item while editing.
   const [editName,    setEditName]    = useState("");
   const [editType,    setEditType]    = useState("");
   const [editSubtype, setEditSubtype] = useState("");
@@ -110,6 +121,7 @@ function ItemEditModal({
   const [showTypeDD,  setShowTypeDD]  = useState(false);
   const [showSubDD,   setShowSubDD]   = useState(false);
 
+  // When a new item is selected, populate and reset the modal form.
   useEffect(() => {
     if (item) {
       setEditName(item.name ?? "");
@@ -122,16 +134,20 @@ function ItemEditModal({
     }
   }, [item?._id]);
  
+  // Render nothing when there is no selected item.
   if (!item) return null;
  
+  // Subtype list depends on the currently selected type.
   const subtypeOpts = SUBTYPES[editType] ?? [];
  
+  // Toggle helpers for multi-select chips.
   const toggleColor = (c: string) =>
     setEditColors((p) => (p.includes(c) ? p.filter((x) => x !== c) : [...p, c]));
  
   const toggleTag = (t: string) =>
     setEditTags((p) => (p.includes(t) ? p.filter((x) => x !== t) : [...p, t]));
  
+  // Persists modal edits to the backend and updates parent list on success.
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -164,6 +180,7 @@ function ItemEditModal({
     }
   };
  
+  // Deletes the item after user confirmation and removes it from parent state.
   const handleDelete = () => {
     const doDelete = async () => {
       setDeleting(true);
@@ -198,6 +215,7 @@ function ItemEditModal({
     <Modal transparent animationType="fade" visible onRequestClose={onClose}>
       <Pressable style={mStyles.overlay} onPress={onClose}>
         <Pressable style={mStyles.card} onPress={(e) => e.stopPropagation()}>
+          {/* Modal body is scrollable in case chip lists exceed viewport height. */}
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
  
             {/* ── Header ── */}
@@ -318,14 +336,20 @@ function ItemEditModal({
 
 export default function ClosetScreen() {
 
+  // Pull current user identity for sidebar display.
   const { user } = useUser();
 
+  // Core screen state: data, loading/error status, and active modal item.
   const [items, setItems] = useState<ClothingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<ClothingItem | null>(null);
+
+  // Per-section order state supports custom drag reorder without backend persistence.
   const [sectionOrders, setSectionOrders] = useState<Record<SectionKey, string[]>>(buildSectionIdRecord());
   const [dragId, setDragId] = useState<string | null>(null);
+
+  // Horizontal-scroller bookkeeping for arrow-based scrolling in each section.
   const [sectionOffsets, setSectionOffsets] = useState<Record<SectionKey, number>>(buildSectionNumberRecord(0));
   const [sectionViewportWidths, setSectionViewportWidths] = useState<Record<SectionKey, number>>(buildSectionNumberRecord(0));
   const [sectionContentWidths, setSectionContentWidths] = useState<Record<SectionKey, number>>(buildSectionNumberRecord(0));
@@ -339,6 +363,7 @@ export default function ClosetScreen() {
     other: null,
   });
   
+  // Initial fetch of closet items, then initialize per-section ordering.
   useEffect(() => {
     const loadCloset = async () => {
       try {
@@ -388,6 +413,7 @@ export default function ClosetScreen() {
     loadCloset();
   }, []);
 
+  // Reorders items within the same section while dragging over another card.
   const handleDragOver = useCallback((sectionKey: SectionKey, targetId: string) => {
     if (!dragId || dragId === targetId) return;
     setSectionOrders((prev) => {
@@ -401,11 +427,13 @@ export default function ClosetScreen() {
     });
   }, [dragId]);
 
+  // Maps section keys back to API-style type values when moving across sections.
   const sectionTypeMap: Record<SectionKey, string> = {
     tops: "top", bottoms: "bottom", onePieces: "one_piece",
     outerwear: "outerwear", shoes: "shoe", accessories: "accessory", other: "other",
   };
   
+  // Moves the dragged item into a different section and updates local item type.
   const handleDropOnSection = useCallback((targetSection: SectionKey, e: any) => {
     e?.preventDefault?.();
     if (!dragId) return;
@@ -424,6 +452,7 @@ export default function ClosetScreen() {
   }, [dragId]);
   
   
+  // Applies item updates returned from the edit modal.
   const handleSave = useCallback((updated: ClothingItem) => {
     setItems((prev) => prev.map((i) => (i._id === updated._id ? updated : i)));
     setSectionOrders((prev) => {
@@ -436,6 +465,7 @@ export default function ClosetScreen() {
     });
   }, []);
   
+  // Removes an item from all local state slices after delete.
   const handleDelete = useCallback((id: string) => {
     setItems((prev) => prev.filter((i) => i._id !== id));
     setSectionOrders((prev) => {
@@ -445,15 +475,18 @@ export default function ClosetScreen() {
     });
   }, []);
   
+  // Fast lookup by id for rendering ordered section lists.
   const itemMap = useMemo(() => {
     const m: Record<string, ClothingItem> = {};
     items.forEach((i) => { m[i._id] = i; });
     return m;
   }, [items]);
   
+  // Returns rendered items in the user-defined order for a section.
   const getOrderedItems = (key: SectionKey): ClothingItem[] =>
     sectionOrders[key].map((id) => itemMap[id]).filter(Boolean) as ClothingItem[];
 
+  // Stores each section's ScrollView ref for arrow controls.
   const setSectionRef = useCallback(
     (key: SectionKey) => (ref: ScrollView | null) => {
       sectionScrollRefs.current[key] = ref;
@@ -461,6 +494,7 @@ export default function ClosetScreen() {
     []
   );
 
+  // Track horizontal scroll state to keep arrows and snapping behavior consistent.
   const updateSectionOffset = useCallback((key: SectionKey, offset: number) => {
     setSectionOffsets((prev) => ({ ...prev, [key]: offset }));
   }, []);
@@ -473,6 +507,7 @@ export default function ClosetScreen() {
     setSectionContentWidths((prev) => ({ ...prev, [key]: width }));
   }, []);
 
+  // Scrolls a section left/right by a proportional step when arrow buttons are pressed.
   const scrollSection = useCallback(
     (key: SectionKey, direction: "left" | "right") => {
       const viewportWidth = sectionViewportWidths[key] ?? 0;
@@ -495,6 +530,7 @@ export default function ClosetScreen() {
 
   
   return (
+    // Main page shell: gradient background, sidebar, and categorized closet sections.
     <LinearGradient
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
       style={styles.container}
@@ -521,6 +557,7 @@ export default function ClosetScreen() {
               contentContainerStyle={styles.sections}
               showsVerticalScrollIndicator={false}
             >
+            {/* Render one card per section with horizontal item scroller. */}
             {SECTION_KEYS.map((key) => {
   const sectionItems = getOrderedItems(key);
   return (
@@ -606,6 +643,7 @@ export default function ClosetScreen() {
         </View>
       </View>
       <ItemEditModal
+        // Edit modal is controlled by selectedItem; null closes it.
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
         onSave={handleSave}
