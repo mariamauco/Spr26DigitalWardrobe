@@ -2,6 +2,13 @@
 #classifying using evaluate clip
 
 import numpy as np
+import torch
+from PIL import Image
+from transformers import CLIPModel, CLIPProcessor
+from pathlib import Path
+from util.prompts import STYLES, STYLE_FINE_CATEGORIES
+
+#logic to use the fine_tuned model including loading and importing
 
 #Maps weather tags to item subtypes/types that should be EXCLUDED following the WEATHER API tags
 WEATHER_EXCLUSIONS = {
@@ -97,6 +104,8 @@ def group_by_type(closet):
         if item_type in groups:
             groups[item_type].append(item)
     return groups
+def group_by_style(closet):
+    #logic of this function will use the model to group every clothing item in the closet by styles
 
 # if __name__ == '__main__':
 #     app.run(debug=True)
