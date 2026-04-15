@@ -1,18 +1,16 @@
+// MOBILE LAYOUT
 // when user opens in file picker, open card that loads until the data gets recognized :we detected this as a 
 //blue longsleeve shirt([color][subtype]) with __ accurancy(accuracy is for later)
 
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, Platform, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, Image, Platform, ActivityIndicator, ScrollView, Pressable, Alert, TouchableOpacity, } from "react-native";
 import { getToken } from "../utils/authStorage";
 import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
 import GalleryCarousel from "../components/ui/galleryCard";
-import { ScrollView } from "react-native";
-
 import * as ImagePicker from "expo-image-picker";
-import { Pressable, Alert } from "react-native";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
@@ -23,10 +21,25 @@ type UploadImage = {
 	file?: Blob;
 };
 
+function weatherEmoji(main: string): string {
+	const m = main?.toLowerCase();
+	if (m?.includes("clear")) return "☀️";
+	if (m?.includes("cloud")) return "☁️";
+	if (m?.includes("rain"))  return "🌧️";
+	if (m?.includes("snow"))  return "❄️";
+	if (m?.includes("storm")) return "⛈️";
+	return "🌤️";
+  }
+
 export default function DashboardScreen() {
+	const { user, setUser } = useUser();
+	
+	// weather state
 	const [weather, setWeather] = useState<any>(null);
 	const [weatherLoading, setWeatherLoading] = useState(true);
   	const [weatherError, setWeatherError] = useState<string | null>(null);
+	
+	// image upload + analysis state
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 	const [imageFile, setImageFile] = useState<UploadImage | null>(null);
 	const [uploadedItem, setUploadedItem] = useState<any>(null);
@@ -34,14 +47,12 @@ export default function DashboardScreen() {
 	const [showPopup, setShowPopup] = useState(false);
 	const [analysisText, setAnalysisText] = useState("loading...");
 	const [isUploading, setIsUploading] = useState(false);
-  
-  	const { user, setUser } = useUser();	
+	
 	
 	useEffect(() => {
 		const loadDashboardData = async () => {
 		  try {
 			const token = await getToken();
-			console.log("Dashboard token:", token);
 	  
 			if (!token) {
 			  console.log("No token found");
