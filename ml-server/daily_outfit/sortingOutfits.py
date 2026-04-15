@@ -9,6 +9,73 @@ from pathlib import Path
 from util.prompts import STYLES, STYLE_FINE_CATEGORIES
 
 #logic to use the fine_tuned model including loading and importing
+FINE_TUNED_MODEL_PATH = Path(__file__).parent.parent / "util" / "fine_tuned_model2"
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+_model = None
+_processor = None
+
+#helper functions to be able to use fine-tuned model
+def _load_style_fashionclip():
+    #why are we doing global vars?
+    global _model, _processor
+    if _model is None:
+        _model = CLIPModel.from_pretrained(FINE_TUNED_MODEL_PATH).to(DEVICE)
+        _processor = CLIPProcessor.from_pretrained(FINE_TUNED_MODEL_PATH)
+        _model.eval()
+    return _model, _processor
+def _build_prompts_for_item(item_type:str, item_subtype:str) -> list[tuple[str, str]]:
+    prompts = []
+    item_type_lower = item_type.lower()
+    item_subtype_lower = item_subtype.lower()
+
+    for style in STYLES:
+        key = (style, item_type_lower)
+        fine_tags = STYLE_FINE_CATEGORIES.get(key, [])
+
+        if item_type_lower in fine_tags:
+            prompt = f"a photo of a {style} {item_subtype_lower}"
+        elif fine_tags:
+            prompt = f"a photo of a {style} {item_subtype_lower}"
+        else:
+            prompt = f"a photo of a {style} {item_type_lower}"
+
+        prompts.append((style, prompt))
+    return prompts
+
+@torch.inference_mode()
+def style_fashionclip(image_embedding: list[float], item_type: str, item_subtype: str) -> list[dict]:
+    model, processor = _load_style_fashionclip()
+
+    # Convert stored embedding to tensor
+    img_emb = torch.tensor(image_embedding, dtype=torch.float32).unsqueeze(0).to(DEVICE)
+    img_emb = img_emb / img_emb.norm(p=2, dim=-1, keepdim=True).clamp_min(1e-12)
+
+    # Build and encode text prompts
+    style_prompt_pairs = _build_prompts_for_item(item_type, item_subtype)
+    styles = [s for s, _ in style_prompt_pairs]
+    prompts = [p for _, p in style_prompt_pairs]
+
+    text_inputs = processor(
+        text=prompts,
+        return_tensors="pt",
+        padding="max_length",
+        truncation=True,
+        max_length=77,
+    ).to(DEVICE)
+
+    text_features = model.get_text_features(**text_inputs)
+    text_features = text_features / text_features.norm(p=2, dim=-1, keepdim=True).clamp_min(1e-12)
+
+    # Compute similarity: (1, embed_dim) @ (embed_dim, num_styles) -> (1, num_styles)
+    similarity = (img_emb @ text_features.T) * model.logit_scale.exp()
+    probs = similarity.softmax(dim=1).squeeze(0).cpu().tolist()
+
+    results = [{"style": style, "score": round(score, 4)} for style, score in zip(styles, probs)]
+    results.sort(key=lambda x: x["score"], reverse=True)
+
+    return results
+
 
 #Maps weather tags to item subtypes/types that should be EXCLUDED following the WEATHER API tags
 WEATHER_EXCLUSIONS = {
@@ -104,8 +171,26 @@ def group_by_type(closet):
         if item_type in groups:
             groups[item_type].append(item)
     return groups
-def group_by_style(closet):
-    #logic of this function will use the model to group every clothing item in the closet by styles
 
+def group_by_style(closet: list[dict]) -> dict[str, list[dict]]:
+    grouped = {style: [] for style in STYLES}
+
+    for item in closet:
+        image_embedding = item.get("imageEmbedding", [])
+        item_type = item.get("type", "")
+        item_subtype = item.get("subtype", "")
+
+        if not image_embedding or not item_type or not item_subtype:
+            continue
+
+        scores = style_fashionclip(image_embedding, item_type, item_subtype)
+
+        if scores:
+            top_style = scores[0]["style"]
+            item["style_scores"] = scores
+            item["predicted_style"] = top_style
+            grouped[top_style].append(item)
+
+    return grouped
 # if __name__ == '__main__':
 #     app.run(debug=True)
