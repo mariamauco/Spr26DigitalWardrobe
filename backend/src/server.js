@@ -30,10 +30,10 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 
-app.use(cors({ 
-  origin: (origin, callback) => callback(null, true), // Allows any origin dynamically
-  credentials: true 
-}));
+// app.use(cors({ 
+//   origin: (origin, callback) => callback(null, true), // Allows any origin dynamically
+//   credentials: true 
+// }));
 
 //app.use(cors({ origin: "*" })); // or "*" for testing
 app.use("/api/auth", authRoutes);  
