@@ -236,14 +236,20 @@ export default function DashboardScreen() {
       				setAnalysisText("Upload failed");
       				return;
     			}
+				const item =
+  					data?.response?.item ||
+  					data?.item ||
+  					data?.clothingItem ||
+  					null;
 
-    			setUploadedItem(data);
+    			setUploadedItem(item);
 
     			const detectedText =
-      				data.description ||
-      				data.label ||
-      				data.analysis ||
-     				 "Item uploaded successfully";
+  					item?.description ||
+  					item?.label ||
+  					item?.analysis ||
+  					data?.response?.message ||
+  					"Item uploaded successfully";
 
     			setAnalysisText(detectedText);
 				try {
@@ -430,31 +436,46 @@ export default function DashboardScreen() {
           <View
             style={[
               styles.popupCard,
-              !isUploading && analysisText ? styles.popupCardResult : null,
+              !isUploading && uploadedItem ? styles.popupCardResult : null,
             ]}
           >
             {/* show detected text above image */}
-            {!isUploading && analysisText ? (
-              <>
-                <View style={styles.popupResultTextBox}>
-                  <Text style={styles.popupResultTitle}>we detected:</Text>
-                  <Text style={styles.popupText}>{analysisText}</Text>
-                </View>
+            {!isUploading && uploadedItem ? (
+  <>
+    <View style={styles.popupResultTextBox}>
+      <Text style={styles.popupResultTitle}>we detected:</Text>
+    </View>
 
-                <View style={styles.popupImageWrapper}>
-                  <Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
-                </View>
+    <View style={styles.popupImageWrapper}>
+      <Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
+    </View>
 
-                <View style={styles.popupButtons}>
-                  <Pressable style={styles.confirmButton} onPress={resetUpload}>
-                    <Text style={styles.popupButtonText}>done</Text>
-                  </Pressable>
-                  <Pressable style={styles.cancelButton} onPress={resetUpload}>
-                    <Text style={styles.popupButtonText}>cancel</Text>
-                  </Pressable>
-                </View>
-              </>
-            ) : (
+    <View style={styles.popupButtons}>
+      <Pressable style={styles.confirmButton} onPress={resetUpload}>
+        <Text style={styles.popupButtonText}>done</Text>
+      </Pressable>
+
+      <Pressable style={styles.cancelButton} onPress={resetUpload}>
+        <Text style={styles.popupButtonText}>cancel</Text>
+      </Pressable>
+    </View>
+
+    <View style={styles.popupDetailsBelowButtons}>
+      {uploadedItem?.type ? (
+        <Text style={styles.popupInfoText}>
+          <Text style={styles.popupInfoLabel}>Type:</Text> {uploadedItem.type}
+        </Text>
+      ) : null}
+
+      {uploadedItem?.subtype ? (
+        <Text style={styles.popupInfoText}>
+          <Text style={styles.popupInfoLabel}>Subtype:</Text>{" "}
+          {uploadedItem.subtype.replace(/-/g, " ")}
+        </Text>
+      ) : null}
+    </View>
+  </>
+) : (
               /* before.during upload: image first, then status text */
               <>
                 <View style={styles.popupImageWrapper}>
@@ -878,4 +899,24 @@ const styles = StyleSheet.create({
 	  fontSize: 14,
 	  fontFamily: "EncodeSansSemiCondensed_400Regular",
 	},
-  });
+
+	popupDetailsBelowButtons: {
+  		marginTop: 18,
+  		alignItems: "center",
+  		justifyContent: "center",
+  		width: "100%",
+	},
+
+	popupInfoText: {
+  		fontSize: 18,
+  		color: "#4B4B4B",
+  		marginBottom: 8,
+  		textAlign: "center",
+	},
+
+	popupInfoLabel: {
+  		fontSize: 18,
+  		fontWeight: "700",
+  		color: "#8F6262",
+	},
+});
