@@ -166,65 +166,123 @@ export default function DashboardScreen() {
 		  };
 		  
 		  const uploadImage = async () => {
-			try {
-				setHasStartedAnalysis(true);
-				setIsUploading(true);
-				setAnalysisText("");
+  try {
+    console.log("Starting upload...");
+    setHasStartedAnalysis(true);
+    setIsUploading(true);
+    setAnalysisText("");
 
-				const token = await getToken();
-				if (!token || !imageFile) return;
+    const token = await getToken();
+    if (!token || !imageFile) {
+      console.log("Missing token or imageFile");
+      return;
+    }
 
-	const formData = new FormData();
+    const formData = new FormData();
 
-	if (Platform.OS === "web") {
-	  let blob = imageFile.file;
-	  if (!blob) {
-		const fileResponse = await fetch(imageFile.uri);
-		blob = await fileResponse.blob();
-	  }
-	  formData.append("image", blob, imageFile.name);
-	} else {
-	  formData.append(
-		"image",
-		{
-		  uri: imageFile.uri,
-		  name: imageFile.name,
-		  type: imageFile.type,
-		} as any
-	  );
-	}
+    if (Platform.OS === "web") {
+      let blob = imageFile.file;
+      if (!blob) {
+        const fileResponse = await fetch(imageFile.uri);
+        blob = await fileResponse.blob();
+      }
+      formData.append("image", blob, imageFile.name);
+    } else {
+      formData.append(
+        "image",
+        {
+          uri: imageFile.uri,
+          name: imageFile.name,
+          type: imageFile.type,
+        } as any
+      );
+    }
 
-	const response = await fetch(`${API_URL}/api/clothing`, {
-	  method: "POST",
-	  headers: { Authorization: `Bearer ${token}` },
-	  body: formData,
-	});
+    const response = await fetch(`${API_URL}/api/clothing`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
 
-	const data = await response.json();
+    console.log("Upload response status:", response.status);
 
-	if (!response.ok) {
-	  setUploadedItem(null);
-	  setAnalysisText("Upload failed");
-	  return;
-	}
+    const data = await response.json();
+    console.log("Upload response data:", data);
 
-	setUploadedItem(data);
+    if (!response.ok) {
+      setUploadedItem(null);
+      setAnalysisText(data?.message || "Upload failed");
+      return;
+    }
 
-	const detectedText =
-	  data.description ||
-	  data.label ||
-	  data.analysis ||
-	  "Item uploaded successfully";
+    const item =
+  		data?.response?.item ||
+  		data?.item ||
+  		data?.clothingItem ||
+  		null;
 
-	setAnalysisText(detectedText);
+    console.log("Detected clothing item:", item);
+
+    setUploadedItem(item);
+
+    const detectedText =
+  		item?.description ||
+  		item?.label ||
+  		item?.analysis ||
+  		item?.name ||
+  		data?.response?.message ||
+  		"Item uploaded successfully";
+
+    setAnalysisText(detectedText);
+	console.log(item.description);
+	console.log(item.label);
+	console.log(item.name);
+	console.log("Upload response data:", detectedText);
+
   } catch (error) {
-	console.error("Upload error:", error);
-	setUploadedItem(null);
-	setAnalysisText("Upload failed");
+    console.error("Upload error:", error);
+    setUploadedItem(null);
+    setAnalysisText("Upload failed");
   } finally {
-	setIsUploading(false);
+    setIsUploading(false);
   }
+  
 };
+const formatUploadedItemDetails = (item: any) => {
+  if (!item) return [];
+
+  return [
+    item.name ? { label: "name", value: item.name } : null,
+    item.type ? { label: "type", value: item.type } : null,
+    item.subtype ? { label: "subtype", value: item.subtype } : null,
+    item.color ? { label: "color", value: item.color } : null,
+    item.colors?.length
+      ? { label: "colors", value: item.colors.join(", ") }
+      : null,
+    item.tags?.length
+      ? { label: "tags", value: item.tags.join(", ") }
+      : null,
+    item.description ? { label: "description", value: item.description } : null,
+    item.accuracy !== undefined
+      ? { label: "accuracy", value: `${item.accuracy}%` }
+      : null,
+  ].filter(Boolean);
+};
+
+const uploadedItemDetails = uploadedItem
+  ? [
+      uploadedItem.type
+        ? { label: "Type", value: uploadedItem.type }
+        : null,
+      uploadedItem.subtype
+        ? { label: "Subtype", value: uploadedItem.subtype.replace(/-/g, " ") }
+        : null,
+    ].filter(Boolean)
+  : [];
+
+
   return (
 	<LinearGradient
 	  colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
@@ -336,49 +394,63 @@ export default function DashboardScreen() {
 		!isUploading && analysisText ? styles.popupCardResult : null,
 	  ]}
 	>
-	  {/* RESULT STATE: text first */}
-	  {!isUploading && analysisText ? (
-		<>
-		  <View style={styles.popupResultTextBox}>
-			<Text style={styles.popupResultTitle}>we detected:</Text>
-			<Text style={styles.popupText}>{analysisText}</Text>
-		  </View>
+	  {/* RESULT STATE: text + detected item data */}
+	   {!isUploading && uploadedItem ? (
+  <>
+    <Text style={styles.popupResultTitle}>we detected:</Text>
 
-		  <View style={styles.popupImageWrapper}>
-			<Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
-		  </View>
+    <View style={styles.popupImageOnlySection}>
+      <View style={styles.popupImageWrapper}>
+        <Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
+      </View>
+    </View>
 
-		  <View style={styles.popupButtons}>
-			<Pressable
-			  style={styles.confirmButton}
-			  onPress={() => {
-				setShowPopup(false);
-				setUploadedImage(null);
-				setImageFile(null);
-				setUploadedItem(null);
-				setAnalysisText("");
-				setHasStartedAnalysis(false);
-			  }}
-			>
-			  <Text style={styles.popupButtonText}>done</Text>
-			</Pressable>
+    <View style={styles.popupButtons}>
+      <Pressable
+        style={styles.confirmButton}
+        onPress={() => {
+          setShowPopup(false);
+          setUploadedImage(null);
+          setImageFile(null);
+          setUploadedItem(null);
+          setAnalysisText("");
+          setHasStartedAnalysis(false);
+        }}
+      >
+        <Text style={styles.popupButtonText}>done</Text>
+      </Pressable>
 
-			<Pressable
-			  style={styles.cancelButton}
-			  onPress={() => {
-				setShowPopup(false);
-				setUploadedImage(null);
-				setImageFile(null);
-				setUploadedItem(null);
-				setAnalysisText("");
-				setHasStartedAnalysis(false);
-			  }}
-			>
-			  <Text style={styles.popupButtonText}>cancel</Text>
-			</Pressable>
-		  </View>
-		</>
-	  ) : (
+      <Pressable
+        style={styles.cancelButton}
+        onPress={() => {
+          setShowPopup(false);
+          setUploadedImage(null);
+          setImageFile(null);
+          setUploadedItem(null);
+          setAnalysisText("");
+          setHasStartedAnalysis(false);
+        }}
+      >
+        <Text style={styles.popupButtonText}>cancel</Text>
+      </Pressable>
+    </View>
+
+    <View style={styles.popupDetailsBelowButtons}>
+      {uploadedItem.type ? (
+        <Text style={styles.popupInfoText}>
+          <Text style={styles.popupInfoLabel}>Type:</Text> {uploadedItem.type}
+        </Text>
+      ) : null}
+
+      {uploadedItem.subtype ? (
+        <Text style={styles.popupInfoText}>
+          <Text style={styles.popupInfoLabel}>Subtype:</Text>{" "}
+          {uploadedItem.subtype.replace(/-/g, " ")}
+        </Text>
+      ) : null}
+    </View>
+  </>
+) : (
 		<>
 		  {/* BEFORE / DURING UPLOAD */}
 		  <View style={styles.popupImageWrapper}>
@@ -625,17 +697,27 @@ popupCard: {
 },
 
 popupImageWrapper: {
-  position: "relative",
   width: 260,
-  height: 340,
+  height: 260,
+  borderRadius: 24,
+  overflow: "hidden",
+  backgroundColor: "#F3F3F3",
   justifyContent: "center",
   alignItems: "center",
 },
 
+popupImageOnlySection: {
+  width: "100%",
+  alignItems: "center",
+  justifyContent: "center",
+  marginTop: 18,
+  marginBottom: 22,
+},
+
+
 popupImage: {
-  width: 260,
-  height: 340,
-  borderRadius: 20,
+  width: "100%",
+  height: "100%",
   resizeMode: "cover",
 },
 
@@ -668,16 +750,16 @@ popupResultTextBox: {
 },
 
 popupResultTitle: {
-  color: "#8A5F5F",
-  fontSize: 22,
-  fontFamily: "DMSerifDisplay_400Regular",
+  fontSize: 24,
+  fontWeight: "700",
+  color: "#8F6262",
   marginBottom: 8,
   textAlign: "center",
 },
 
 popupText: {
   color: "#4E4E4E",
-  fontSize: 18,
+  fontSize: 22,
   fontFamily: "EncodeSansSemiCondensed_400Regular",
   textAlign: "center",
   lineHeight: 24,
@@ -715,4 +797,78 @@ popupButtonText: {
   fontSize: 14,
   fontFamily: "EncodeSansSemiCondensed_400Regular",
 },
+popupDetailsBox: {
+  width: "100%",
+  backgroundColor: "rgba(138,95,95,0.08)",
+  borderRadius: 18,
+  paddingVertical: 14,
+  paddingHorizontal: 16,
+  gap: 8,
+},
+
+popupResultContent: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+  justifyContent: "center",
+  gap: 24,
+  width: "100%",
+  marginTop: 20,
+},
+
+popupRightContent: {
+  flex: 1,
+  justifyContent: "flex-start",
+  alignItems: "flex-start",
+  maxWidth: 280,
+},
+
+popupMainDescription: {
+  fontSize: 20,
+  color: "#4B4B4B",
+  marginBottom: 18,
+  lineHeight: 28,
+  fontWeight: "500",
+},
+
+popupDetailsBox: {
+  width: "100%",
+  backgroundColor: "#F8F5ED",
+  borderRadius: 18,
+  paddingVertical: 14,
+  paddingHorizontal: 16,
+},
+
+popupDetailRow: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+  marginBottom: 8,
+  flexWrap: "wrap",
+},
+
+popupDetailRowCentered: {
+  flexDirection: "row",
+  justifyContent: "center",
+  alignItems: "center",
+  marginBottom: 10,
+},
+
+popupDetailLabel: {
+  fontSize: 22,
+  fontWeight: "700",
+  color: "#8F6262",
+  marginRight: 6,
+},
+
+popupDetailValue: {
+  fontSize: 22,
+  color: "#4B4B4B",
+  textTransform: "capitalize",
+},
+
+popupDetailsBelowButtons: {
+  marginTop: 20,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
 });
