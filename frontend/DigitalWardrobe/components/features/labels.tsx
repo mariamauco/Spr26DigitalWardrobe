@@ -1,5 +1,3 @@
-
-
 // Shape returned by the clothing API and used throughout this screen.
 export type ClothingItem = {
   _id: string;
@@ -26,6 +24,15 @@ export const SUBTYPES: Record<string, string[]> = {
   Shoe:         ["Sneakers", "Boots", "Loafers", "Flats", "Heels", "Sandals"],
   Accessory:    ["Handbag", "Backpack", "Belt", "Hat", "Scarf", "Jewelry", "Sunglasses"],
 };
+
+export const typeToSectionKey = new Map<string, string>([
+  ["top", "tops"],
+  ["bottom", "bottoms"],
+  ["one_piece", "onePieces"],
+  ["outerwear", "outerwear"],
+  ["shoe", "shoes"], 
+  ["accessory", "accessories"]
+]);
 
 
 // Selectable metadata chips for each item in the edit modal.
