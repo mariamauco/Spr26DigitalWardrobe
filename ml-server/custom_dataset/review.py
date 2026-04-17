@@ -69,33 +69,38 @@ def process_dupes(df):
     return delete_ids
 
 def output_dupe(row1, row2):
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-    
-    # Load and display image 1
     img1_path = os.path.join(IMAGES_ROOT, row1["image_path"])
-    img1 = cv2.imread(img1_path)
-    
-    img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
-    axes[0].imshow(img1_rgb)
-    axes[0].axis('off')
-    
-    # Load and display image 2
     img2_path = os.path.join(IMAGES_ROOT, row2["image_path"])
+
+    img1 = cv2.imread(img1_path)
     img2 = cv2.imread(img2_path)
-    
+
+    if img1 is None:
+        print(f"Could not load: {img1_path}")
+        return
+    if img2 is None:
+        print(f"Could not load: {img2_path}")
+        return
+
+    img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
     img2_rgb = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    axes[0].imshow(img1_rgb)
+    axes[0].axis("off")
     axes[1].imshow(img2_rgb)
-    axes[1].axis('off')
-    
-    # Add metadata below the images
-    info1 = f"Status: {row1['status']}\nPin: {row1['pin_id']}\nStyle: {row1['style']}\nCoarse Cat: {row1['coarse_category']}\nFine Cat: {row1['fine_tag']}\nColor: {row1['color']}\nSleeve: {row1['sleeve_label']}\nCoverage: {row1['coverage_label']}"
-    info2 = f"Status: {row2['status']}\nPin: {row2['pin_id']}\nStyle: {row2['style']}\nCoarse Cat: {row2['coarse_category']}\nFine Cat: {row2['fine_tag']}\nColor: {row2['color']}\nSleeve: {row2['sleeve_label']}\nCoverage: {row2['coverage_label']}"
-    
-    fig.text(0.25, 0.02, info1, ha='center', fontsize=9, verticalalignment='bottom')
-    fig.text(0.75, 0.02, info2, ha='center', fontsize=9, verticalalignment='bottom')
-    
-    plt.tight_layout()
-    plt.show()
+    axes[1].axis("off")
+
+    info1 = f"Status: {row1['status']}\nPin: {row1['pin_id']}\nStyle: {row1['style']}\nColor: {row1['color']}"
+    info2 = f"Status: {row2['status']}\nPin: {row2['pin_id']}\nStyle: {row2['style']}\nColor: {row2['color']}"
+
+    fig.subplots_adjust(bottom=0.25)
+    fig.text(0.25, 0.05, info1, ha="center", va="bottom", fontsize=9)
+    fig.text(0.75, 0.05, info2, ha="center", va="bottom", fontsize=9)
+
+    display(fig)
+    plt.close(fig)
 
 def save_output(df, delete_ids):
     # use delete to remove duplicates from df
