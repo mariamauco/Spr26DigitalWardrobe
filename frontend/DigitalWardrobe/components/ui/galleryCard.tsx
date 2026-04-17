@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { ScrollView } from "react-native";
 import {
   View,
   FlatList,
@@ -28,7 +29,7 @@ const GalleryCarousel: React.FC<Props> = ({ width = 200, height = 400 }) => {
   const scrollX = useRef(0);
   const [currentIndex, setCurrentIndex] = useState(1);
 
-  const effectiveWidth = width - 80;
+  const effectiveWidth = width;
 
   useEffect(() => {
     // make api call to get daily outfit
@@ -61,30 +62,61 @@ const GalleryCarousel: React.FC<Props> = ({ width = 200, height = 400 }) => {
     */
     const fetchOutfits = async () => {
       try {
-        const response = await fetch(
+        /*const response = await fetch(
           "http://138.197.16.179:5050/api/weather/daily-outfit"
-        );
+        );*/
+        const response = {
+          "first": {
+              "top": ["69cc08029451dee96ce52eb1D", "/uploads/u_69a4fc64c6c8150a122826d8_1774979070368_76017578.jpg"],
+              "bottom": ["69cb41f6d06d79e87efc5569", "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"],
+              "accessories": null,
+              "footwear": ["69cc24779451dee96ce52ed8", "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"],
+              "outerwear": null,
+              }, 
+          "second": {
+              "top": ["69c974310c62892406315c0e", "/uploads/u_69a4fc64c6c8150a122826d8_1774810160882_298184207.png"],
+              "bottom": ["69cb41f6d06d79e87efc5569", "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"],
+              "accessories": null,
+              "footwear": ["69cc24779451dee96ce52ed8", "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"],
+              "outerwear": null,
+              },
+          "third": {
+              "top": ["69cc08029451dee96ce52eb1D", "/uploads/u_69a4fc64c6c8150a122826d8_1774979070368_76017578.jpg"],
+              "bottom": ["69cb41f6d06d79e87efc5569", "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"],
+              "accessories": null,
+              "footwear": ["69cc24779451dee96ce52ed8", "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"],
+              "outerwear": ["69cb420bd06d79e87efc556b","/uploads/u_69a4fc64c6c8150a122826d8_1774928391367_850166138.jpg"],
+              },
+        };
 
+        /*
         if (!response.ok) {
           throw new Error("Failed to fetch outfits");
         }
 
         const data = await response.json();
-
+        */
+       
         // Transform API data → slides
-        const formattedSlides: ImageItem[][] = Object.values(data).map(
-          (outfit: any, outfitIndex: number) => {
-            return Object.values(outfit)
-              .filter((item: any) => item !== null)
-              .map((item: any, itemIndex: number) => ({
-                id: `${outfitIndex}-${itemIndex}`,
-                uri: item[1],
-              }));
-          }
+        const formattedSlides: ImageItem[][] = Object.entries(response).map(
+          ([outfitKey, outfitValue]) => {
+                return Object.entries(outfitValue)
+              // 1. Remove nulls and ensure we have an array with the image path
+              .filter(([_, item]) => Array.isArray(item) && item.length > 1)
+              .map(([category, itemData], itemIndex) => {
+                if (!Array.isArray(itemData) || !itemData[1]) return null;
+
+                return {
+                  id: `${outfitKey}-${category}-${itemIndex}`,
+                  uri: `http://138.197.16.179:5050${itemData[1]}`,
+                };
+              })
+              .filter((item): item is ImageItem => item !== null);
+            }
         );
 
-        if (formattedSlides.length === 0) return;
-
+        console.log("formattedSlides:", formattedSlides);
+        setSlides(formattedSlides);
       } catch (error) {
         console.error("API error:", error);
       } finally {
@@ -98,15 +130,13 @@ const GalleryCarousel: React.FC<Props> = ({ width = 200, height = 400 }) => {
   if (loading) return <Text>Loading...</Text>;
   if (slides.length === 0) return <Text>No outfits found</Text>;
 
-  const handleMomentumEnd = (
-    event: NativeSyntheticEvent<NativeScrollEvent>
-  ) => {
+  const handleMomentumEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = Math.round(
       event.nativeEvent.contentOffset.x / effectiveWidth
     );
 
     // If at end → jump to start
-      if (index === slides.length - 1) {
+      if (index === slides.length) {
         flatListRef.current?.scrollToIndex({
           index: 0,
           animated: false,
@@ -119,47 +149,39 @@ const GalleryCarousel: React.FC<Props> = ({ width = 200, height = 400 }) => {
 
   // goes to next outfit
   const goToNext = () => {
-    const index = Math.round(scrollX.current / effectiveWidth);
-
-    if (index === slides.length - 1) {
-      flatListRef.current?.scrollToIndex({
-        index: 0,
-        animated: false,
-      });
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < slides.length) {
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      setCurrentIndex(nextIndex); // Update state manually for button clicks
     } else {
-      flatListRef.current?.scrollToIndex({
-        index: index + 1,
-        animated: true,
-      });
+      // Loop back to start
+      flatListRef.current?.scrollToIndex({ index: 0, animated: true });
+      setCurrentIndex(0);
     }
   };
 
   // goes to previous outfit
   const goToPrev = () => {
-    const index = Math.round(scrollX.current / effectiveWidth);
-
-    if (index === 0) {
-      flatListRef.current?.scrollToIndex({
-        index: slides.length - 1,
-        animated: false,
-      });
+    const prevIndex = currentIndex - 1;
+    if (prevIndex >= 0) {
+      flatListRef.current?.scrollToIndex({ index: prevIndex, animated: true });
+      setCurrentIndex(prevIndex);
     } else {
-      flatListRef.current?.scrollToIndex({
-        index: index - 1,
-        animated: true,
-      });
+      // Loop to end
+      flatListRef.current?.scrollToIndex({ index: slides.length - 1, animated: true });
+      setCurrentIndex(slides.length - 1);
     }
   };
 
   return (
     <View style={[styles.wrapper, { width, height }]}>
-      {/*when LEFT ARROW pressed to to previous */}
-      <TouchableOpacity style={styles.sideArrow} onPress={goToPrev}>
-        <Text style={styles.arrowText}>‹</Text>
-      </TouchableOpacity>
+      {/*when LEFT ARROW pressed to previous */}
+    <TouchableOpacity style={styles.sideArrow} onPress={goToPrev}>
+      <Text style={styles.arrowText}>‹</Text>
+    </TouchableOpacity>
 
       {/* CAROUSEL */}
-      <View style={[styles.card, { width: effectiveWidth, height }]}>
+      <View style={[styles.card, { flex: 1, height }]}>
         <FlatList
           ref={flatListRef}
           data={slides}
@@ -167,34 +189,41 @@ const GalleryCarousel: React.FC<Props> = ({ width = 200, height = 400 }) => {
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           keyExtractor={(_, i) => i.toString()}
-          initialScrollIndex={0}
+          onMomentumScrollEnd={handleMomentumEnd}
+
           getItemLayout={(_, index) => ({
-            length: effectiveWidth,
-            offset: effectiveWidth * index,
+            length: width - 80, // Adjust based on your arrow widths
+            offset: (width - 80) * index,
             index,
           })}
-          onScroll={(event) => {
-            scrollX.current = event.nativeEvent.contentOffset.x;
-          }}
-          scrollEventThrottle={16}
-          onMomentumScrollEnd={handleMomentumEnd}
+          
           renderItem={({ item }) => (
-            <View style={[styles.slide, { width: effectiveWidth }]}>
-              {item.map((img: ImageItem) => (
-                <Image
-                  key={img.id}
-                  source={{ uri: img.uri }}
-                  style={{
-                    width: width - 100,
-                    height: (height - 40) / 3,
-                    borderRadius: 8,
-                  }}
-                  resizeMode="cover"
-                />
-              ))}
-            </View>
-          )}
-        />
+            /* Ensure the slide width matches the FlatList container width */
+            <View style={{ width: width - 80, alignItems: 'center' }}>
+              <ScrollView
+                contentContainerStyle={{
+                  alignItems: "center",
+                  gap: 10,
+                  paddingVertical: 10,
+                }}
+                showsVerticalScrollIndicator={false}
+              >
+                {item?.map((img: ImageItem) => (
+                  <Image
+                    key={img.id}
+                    source={{ uri: img.uri }}
+                    style={{
+                      width: width - 120, 
+                      height: 120,
+                      borderRadius: 8,
+                    }}
+                    resizeMode="cover"
+                  />
+                ))}
+              </ScrollView>
+              </View>
+            )}
+          />
       </View>
 
       {/*when RIGHT ARROW pressed to to previous */}
@@ -220,9 +249,10 @@ const styles = StyleSheet.create({
   },
   slide: {
     flexDirection: "column",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     padding: 10,
+    gap: 20,
   },
   sideArrow: {
     width: 40,

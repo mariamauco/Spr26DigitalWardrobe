@@ -109,3 +109,73 @@ COLOR_PROMPTS = {
     "camel": "a photo of camel clothing with a dominant camel color",
     "rust": "a photo of rust clothing with a dominant rust color",
 }
+
+STYLES = [
+"y2k", "academia",
+"formal, business casual",
+"vintage, cottage core",
+"sporty",
+"minimalist, classic",
+"coquette", "earthy"
+]
+
+STYLE_FINE_CATEGORIES: dict[tuple[str, str], list[str]] = {
+    # y2k
+    ("y2k", "one_piece"):  ["dress"],
+    ("y2k", "top"):        ["t-shirt", "tank top", "long sleeve shirt"],
+    ("y2k", "bottom"):     ["jeans", "skirt", "shorts", "leggings"],
+    ("y2k", "outerwear"):  ["jacket"],
+    ("y2k", "shoe"):       ["sneakers", "heels", "boots", "sandals"],
+
+    # academia
+    ("academia", "one_piece"):  ["dress"],
+    ("academia", "top"):        ["long sleeve shirt", "sweater"],
+    ("academia", "bottom"):     ["pants", "skirt"],
+    ("academia", "outerwear"):  ["blazer", "vest", "coat"],
+    ("academia", "shoe"):       ["boots", "sneakers"],
+    ("academia", "accessory"):  ["scarf"],
+
+    # formal, business casual
+    ("formal, business casual", "one_piece"):  ["dress", "jumpsuit"],
+    ("formal, business casual", "top"):        ["long sleeve shirt"],
+    ("formal, business casual", "bottom"):     ["pants", "skirt"],
+    ("formal, business casual", "outerwear"):  ["blazer", "coat"],
+    ("formal, business casual", "shoe"):       ["heels", "sneakers"],
+
+    # vintage, cottage core
+    ("vintage, cottage core", "one_piece"):  ["dress", "romper", "overalls"],
+    ("vintage, cottage core", "top"):        ["long sleeve shirt", "sweater"],
+    ("vintage, cottage core", "bottom"):     ["skirt", "jeans", "pants"],
+    ("vintage, cottage core", "outerwear"):  ["jacket", "vest"],
+    ("vintage, cottage core", "shoe"):       ["boots", "sandals"],
+
+    # sporty
+    ("sporty", "one_piece"):  ["jumpsuit", "bodysuit"],
+    ("sporty", "top"):        ["t-shirt", "tank top"],
+    ("sporty", "bottom"):     ["shorts", "leggings", "sweatpants"],
+    ("sporty", "outerwear"):  ["jacket"],
+    ("sporty", "shoe"):       ["sneakers"],
+
+    # minimalist, classic
+    ("minimalist, classic", "one_piece"):  ["dress", "bodysuit", "jumpsuit"],
+    ("minimalist, classic", "top"):        ["t-shirt", "tank top", "long sleeve shirt"],
+    ("minimalist, classic", "bottom"):     ["jeans", "pants", "skirt", "leggings"],
+    ("minimalist, classic", "outerwear"):  ["jacket", "blazer", "coat"],
+    ("minimalist, classic", "shoe"):       ["sneakers", "sandals", "boots"],
+    ("minimalist, classic", "accessory"):  ["sunglasses", "jewelry"],
+
+    # coquette
+    ("coquette", "one_piece"):  ["dress", "romper", "bodysuit"],
+    ("coquette", "top"):        ["tank top", "long sleeve shirt"],
+    ("coquette", "bottom"):     ["skirt", "shorts"],
+    ("coquette", "outerwear"):  ["jacket", "vest"],
+    ("coquette", "shoe"):       ["heels", "sandals"],
+    ("coquette", "accessory"):  ["jewelry", "handbag"],
+
+    # earthy
+    ("earthy", "one_piece"):  ["dress", "overalls", "jumpsuit"],
+    ("earthy", "top"):        ["t-shirt", "sweater", "long sleeve shirt"],
+    ("earthy", "bottom"):     ["jeans", "pants", "skirt"],
+    ("earthy", "outerwear"):  ["jacket", "vest", "coat"],
+    ("earthy", "shoe"):       ["boots", "sandals"],
+}

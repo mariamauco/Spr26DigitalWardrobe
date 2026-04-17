@@ -3,7 +3,7 @@
 import fetch from "node-fetch";
 
 // endpoint for the model
-const endpoint = process.env.MODEL_API_URL || "http://138.197.16.179:5000";
+const endpoint = process.env.MODEL_API_URL || "https://ml.digitalwardrobe.xyz/";
 
 // routes from the ml-server 
 export const modelRoutes = Object.freeze({

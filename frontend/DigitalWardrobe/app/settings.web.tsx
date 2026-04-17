@@ -17,7 +17,7 @@ export default function SettingsScreen() {
 
     useEffect(() => {
       setName(user?.name ?? "");
-      setZipcode(user?.zipcode ?? "");
+      setZipcode(user?.zipCode ?? "");
     }, [user]);
 
     // function that triggers when clicking Save button
