@@ -1,7 +1,7 @@
 #import needed libraries
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2, csv
+import cv2, csv, os
 import pandas as pd
 
 #METADATA_CSV = "/home/maria/Projects/WEECSSpr26/Spr26DigitalWardrobe/ml-server/custom_dataset/scraping/metadata_labeled.csv"
@@ -72,13 +72,17 @@ def output_dupe(row1, row2):
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
     
     # Load and display image 1
-    img1 = cv2.imread(row1['image_path'])
+    img1_path = os.path.join(IMAGES_ROOT, row1["image_path"])
+    img1 = cv2.imread(img1_path)
+    
     img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
     axes[0].imshow(img1_rgb)
     axes[0].axis('off')
     
     # Load and display image 2
-    img2 = cv2.imread(row2['image_path'])
+    img2_path = os.path.join(IMAGES_ROOT, row2["image_path"])
+    img2 = cv2.imread(img2_path)
+    
     img2_rgb = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
     axes[1].imshow(img2_rgb)
     axes[1].axis('off')
