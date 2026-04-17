@@ -1,6 +1,7 @@
 #import needed libraries
 import numpy as np
 import matplotlib.pyplot as plt
+from IPython.display import display
 import cv2, csv, os
 import pandas as pd
 
@@ -38,7 +39,12 @@ def process_dupes(df):
 
         while num_dupes > 1:
             # compare winner with next dupe
+            
+            #output
+            print(f"{len(delete_ids)} duplicates removed out of {len(df)} total rows")
             output_dupe(dupes.iloc[first], dupes.iloc[first + 1])
+            
+            
             choice = input('Which one to keep?')
 
             # if they did not make a valid choice
