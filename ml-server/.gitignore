@@ -7,3 +7,7 @@ __pycache_
 .vscode/
 evaluate_clip/dataset/
 evaluate_clip/results/
+
+metadata_labeled.csv
+metadata_labeled.backup.csv
+metadata_labeled2.csv

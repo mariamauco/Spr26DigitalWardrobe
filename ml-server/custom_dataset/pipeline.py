@@ -103,44 +103,83 @@ CSV_COLUMNS = [
 
 # Fine subcategories to search per (style, coarse_category).
 # Falls back to all fine subcategories if a combo is not listed.
+STYLES = ["y2k", "formal, business casual", "vintage, cottagecore", "athleisure", "coquette", "old money, rich", "sporty", "minimal, clean_girl", "earthy", "academia"]
+
 STYLE_FINE_CATEGORIES: dict[tuple[str, str], list[str]] = {
+    # y2k
     ("y2k", "one_piece"):  ["dress"],
-    ("y2k", "top"):        ["t-shirt", "tank top", "blouse", "long sleeve shirt"],
+    ("y2k", "top"):        ["t-shirt", "tank top", "long sleeve shirt"],
     ("y2k", "bottom"):     ["jeans", "skirt", "shorts", "leggings"],
-    ("y2k", "outerwear"):  ["jacket", "cardigan"],
+    ("y2k", "outerwear"):  ["jacket"],
     ("y2k", "shoe"):       ["sneakers", "heels", "boots", "sandals"],
 
-    ("goth", "one_piece"):  ["dress", "jumpsuit"],
-    ("goth", "top"):       ["t-shirt", "long sleeve shirt", "blouse"],
-    ("goth", "bottom"):    ["jeans", "skirt", "trousers"],
-    ("goth", "outerwear"): ["jacket", "coat", "trench coat", "blazer"],
-    ("goth", "shoe"):      ["boots", "heels"],
+    # formal, business casual
+    ("formal, business casual", "one_piece"):  ["dress", "jumpsuit"],
+    ("formal, business casual", "top"):        ["long sleeve shirt"],
+    ("formal, business casual", "bottom"):     ["pants", "skirt"],
+    ("formal, business casual", "outerwear"):  ["blazer", "coat"],
+    ("formal, business casual", "shoe"):       ["heels", "sneakers"],
 
-    ("vintage", "one_piece"): ["dress", "romper", "overalls"],
-    ("vintage", "top"):       ["blouse", "t-shirt", "sweater"],
-    ("vintage", "bottom"):    ["skirt", "jeans", "trousers"],
-    ("vintage", "outerwear"): ["cardigan", "jacket"],
-    ("vintage", "shoe"):      ["flats", "sandals", "boots"],
+    # vintage, cottagecore
+    ("vintage, cottagecore", "one_piece"):  ["dress", "romper", "overalls"],
+    ("vintage, cottagecore", "top"):        ["long sleeve shirt", "sweater"],
+    ("vintage, cottagecore", "bottom"):     ["skirt", "jeans", "pants"],
+    ("vintage, cottagecore", "outerwear"):  ["jacket", "vest"],
+    ("vintage, cottagecore", "shoe"):       ["boots", "sandals"],
 
-    ("athleisure", "one_piece"): ["jumpsuit", "romper", "bodysuit"],
-    ("athleisure", "top"):       ["t-shirt", "tank top", "long sleeve shirt"],
-    ("athleisure", "bottom"):    ["leggings", "shorts", "sweatpants"],
-    ("athleisure", "outerwear"): ["jacket"],
-    ("athleisure", "shoe"):      ["sneakers"],
+    # athleisure
+    ("athleisure", "one_piece"):  ["jumpsuit", "romper", "bodysuit"],
+    ("athleisure", "top"):        ["t-shirt", "tank top", "long sleeve shirt"],
+    ("athleisure", "bottom"):     ["leggings", "shorts", "sweatpants"],
+    ("athleisure", "outerwear"):  ["jacket"],
+    ("athleisure", "shoe"):       ["sneakers"],
 
-    ("old money", "one_piece"):  ["dress", "romper", "bodysuit"],
-    ("old money", "top"):       ["blouse", "tank top", "t-shirt"],
-    ("old money", "bottom"):    ["skirt", "shorts"],
-    ("old money", "outerwear"): ["cardigan", "blazer"],
-    ("old money", "shoe"):      ["heels", "flats", "sandals"],
+    # coquette
+    ("coquette", "one_piece"):  ["dress", "romper", "bodysuit"],
+    ("coquette", "top"):        ["tank top", "long sleeve shirt"],
+    ("coquette", "bottom"):     ["skirt", "shorts"],
+    ("coquette", "outerwear"):  ["jacket", "vest"],
+    ("coquette", "shoe"):       ["heels", "sandals"],
+    ("coquette", "accessory"):  ["jewelry", "handbag"],
 
-    ("business_casual", "one_piece"): ["dress", "jumpsuit", "two-piece"],
-    ("business_casual", "top"):       ["blouse", "long sleeve shirt", "shirt"],
-    ("business_casual", "bottom"):    ["trousers", "skirt", "pants"],
-    ("business_casual", "outerwear"): ["blazer", "trench coat"],
-    ("business_casual", "shoe"):      ["heels", "loafers", "flats"],
+    # old money, rich
+    ("old money, rich", "one_piece"):  ["dress", "jumpsuit"],
+    ("old money, rich", "top"):        ["long sleeve shirt", "tank top"],
+    ("old money, rich", "bottom"):     ["pants", "skirt", "shorts"],
+    ("old money, rich", "outerwear"):  ["blazer", "vest", "coat"],
+    ("old money, rich", "shoe"):       ["heels", "sandals", "boots"],
+    ("old money, rich", "accessory"):  ["jewelry", "handbag", "sunglasses"],
+
+    # sporty
+    ("sporty", "one_piece"):  ["jumpsuit", "bodysuit"],
+    ("sporty", "top"):        ["t-shirt", "tank top"],
+    ("sporty", "bottom"):     ["shorts", "leggings", "sweatpants"],
+    ("sporty", "outerwear"):  ["jacket"],
+    ("sporty", "shoe"):       ["sneakers"],
+
+    # minimal, clean girl
+    ("minimal, clean girl", "one_piece"):  ["dress", "bodysuit", "jumpsuit"],
+    ("minimal, clean girl", "top"):        ["t-shirt", "tank top", "long sleeve shirt"],
+    ("minimal, clean girl", "bottom"):     ["jeans", "pants", "skirt", "leggings"],
+    ("minimal, clean girl", "outerwear"):  ["jacket", "blazer", "coat"],
+    ("minimal, clean girl", "shoe"):       ["sneakers", "sandals", "boots"],
+    ("minimal, clean girl", "accessory"):  ["sunglasses", "jewelry"],
+
+    # earthy
+    ("earthy", "one_piece"):  ["dress", "overalls", "jumpsuit"],
+    ("earthy", "top"):        ["t-shirt", "sweater", "long sleeve shirt"],
+    ("earthy", "bottom"):     ["jeans", "pants", "skirt"],
+    ("earthy", "outerwear"):  ["jacket", "vest", "coat"],
+    ("earthy", "shoe"):       ["boots", "sandals"],
+
+    # academia
+    ("academia", "one_piece"):  ["dress"],
+    ("academia", "top"):        ["long sleeve shirt", "sweater"],
+    ("academia", "bottom"):     ["pants", "skirt"],
+    ("academia", "outerwear"):  ["blazer", "vest", "coat"],
+    ("academia", "shoe"):       ["boots", "sneakers"],
+    ("academia", "accessory"):  ["scarf"],
 }
-
 
 # ---------------------------------------------------------------------------
 # URL-capturing downloader

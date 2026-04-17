@@ -12,24 +12,19 @@ const ClothingItemSchema = new mongoose.Schema(
 
         // clothing item details
         name: {type: String, required: false}, // ex: Blue Jean Jacket
-        type: {type: String, lowercase:true, required: false, enum: ["","top", "bottom", "shoe", "accessory", "outerwear", "one piece"]}, 
-        typeConfidence: {type: Number, required: false, min:0, max:1},
-        subtype: {type: String, lowercase:true, required:false, enum: [ "",
+        type: {type: String, required: false, enum: ["Top", "top", "bottom", "Bottom", "shoe", "accessory", "outerwear", "one_piece"]}, 
+        typeConfidence: {type: Number, required: false},
+        subtype: {type: String, required:false, enum: [
             "t-shirt", "long sleeve shirt", "tank top", "sweater", // top
-             "jeans", "pants", "leggings","sweatpants", "shorts", "skirt", // bottom
+             "jeans", "pants", "leggings","sweatpants", "shorts", "skirt", "trousers", // bottom
              "dress", "jumpsuit", "romper", "overalls", "bodysuit", //one_piece
              "jacket", "coat", "blazer", "vest", // outerwear
              "sneakers", "boots", "heels", "sandals", // shoe
              "handbag", "backpack", "belt", "hat", "scarf", "jewelry", "sunglasses" // accessory
             ]},
-        subtypeConfidence: {type: Number, required: false, min:0, max:1},
-        colors: {type: [String], lowercase:true, default: []}, // ex: ["blue", "white"],
-        tags: {type: [String], lowercase:true, enum: [
-            "casual", "formal", "summer", "winter", "business", "sporty",
-            "streetwear", "vintage", "bohemian", "minimalist", "spring", 
-            "fall", "party", "beach", "outdoor", "loungewear", "y2k", 
-            "academia", "cottage", "classic", "clean girl", "old money",
-            "coquette", "earthy", "hippie"], default: []},
+        subtypeConfidence: {type: Number, required: false},
+        colors: {type: [String], default: []}, // ex: ["blue", "white"],
+        tags: {type: [String], enum: ["casual", "formal", "summer", "winter", "workout"], default: []},
 
         imagePath: {type: String, required: true}, // URL to the clothing item image
 

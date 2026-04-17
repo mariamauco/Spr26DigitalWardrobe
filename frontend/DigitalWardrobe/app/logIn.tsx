@@ -1,7 +1,6 @@
-import { Text, View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { Text, View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Pressable } from 'react-native';
 import React, { useState } from "react";
-import { Pressable } from "react-native";
-import { Alert, useWindowDimensions } from "react-native";
+import {useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
 import { saveToken } from "../utils/authStorage";
 // imports for components
@@ -21,7 +20,6 @@ export default function LogInScreen() {
 
 	const {width} = useWindowDimensions();
 	const isMobile = width < 768;
-
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");	
@@ -107,86 +105,51 @@ export default function LogInScreen() {
 							style={[styles.keyboardView]}
 				>
 					<View style={styles.logInContainer}>
-						{/* Left panel - Sign up prompt */}
-						<View style={[styles.glassWrapper, ]}>
-					
-							<PlaceholderCard 
-								width="100%" 
-								height="100%"
-								backgroundColor="rgba(220, 160, 160, 0.5)"
-								style={{...styles.innerContent, borderTopRightRadius:0, borderBottomRightRadius:0}}
-							>
-						
-							<View style={{ height:350, alignItems:'center', justifyContent:'flex-start'}}>
-								<View style={[styles.header]}>
-									<Text style={styles.title}>Welcome Back</Text>
-								</View>
-								<View style={{marginBottom:20}}>
-									<Text style={{fontSize:20, fontFamily: "DMSerifDisplay_400Regular",letterSpacing:1,marginBottom:20}}>First time here?</Text>
-								</View>
-
-								{/* wrapped button to stop it from looking like a wonky pill */}
-								<View style={{ width: 221 }}>
-									<Button 
-										title="Sign Up" 
-										onPress={() => router.replace("/signUp")}
-										variant="white"
-									/>
-								</View>
-							</View>
-							</PlaceholderCard>
+						{/* Title header */}
+						<View style={styles.header}>
+							<Text style={styles.title}>Log In</Text>
 						</View>
-						{/* Right panel - Login form */}
-						<View style={[styles.glassWrapper]}>
-							<PlaceholderCard 
-								width="100%" 
-								height="100%" 
-								backgroundColor="rgba(255,255,255,0.35)"
-								style={{...styles.innerContent,borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}
-							>
-								<View style={{width:'100%'}}>
-									<View style={styles.header}>
-										<Text style={styles.title}>Log In</Text>
-									</View>
 
-									<View style={styles.container}>
-					
-										{/* Email input field */}
-										<TextBox 
-											placeholder='email' 
-											value={email} 
-											onChangeText={(text) => {
-												setEmail(text);
-												setErrorMessage(null);
-											}}								
-											keyboardType="email-address"
-											autoCapitalize="none"
-										/>
-										{/* Password input field */}
-										<TextBox 
-											placeholder='password' 
-											secureTextEntry 
-											value={password} 
-											onChangeText={(text) => {
-												setPassword(text);
-												setErrorMessage(null);
-											}}
-										/>
+						<View style={styles.container}>
+							{/* Email input field */}
+							<TextBox 
+								placeholder='email' 
+								value={email} 
+								onChangeText={(text) => {
+									setEmail(text);
+									setErrorMessage(null);
+								}}								
+								keyboardType="email-address"
+								autoCapitalize="none"
+							/>
+							{/* Password input field */}
+							<TextBox 
+								placeholder='password' 
+								secureTextEntry 
+								value={password} 
+								onChangeText={(text) => {
+									setPassword(text);
+									setErrorMessage(null);
+								}}
+							/>
 
-									{/* Error message display */}
-									{errorMessage && (
-										<View style={styles.errorBox}>
-										<Text style={styles.errorText}>{errorMessage}</Text>
-										</View>
-									)}				
-									<View style={{marginTop:20}}/>
-									{/* Submit login button */}
-									<Button title="Log In" onPress={login} />
+							{/* Error message display */}
+							{errorMessage && (
+								<View style={styles.errorBox}>
+									<Text style={styles.errorText}>{errorMessage}</Text>
 								</View>
+							)}				
+							<View style={{marginTop:20}}/>
+								{/* Log In button */}
+								<Button title="Log In" onPress={login} />
 							</View>
-							</PlaceholderCard>
+
+							{/* Footer message*/}
+
+							<Pressable onPress={() => router.replace("/signUp")}> 
+								<Text style={styles.signUpText}>Sign up</Text>
+							</Pressable>
 						</View>
-					</View>
 				</KeyboardAvoidingView>
 			</ScrollView>
 		</View>
@@ -225,25 +188,8 @@ const styles = StyleSheet.create({
 		alignSelf:"center",
 
 	},
-
-	glassWrapper: {
-		// display:"flex",
-		// flexDirection:"column",
-		height:"80%",
-		width:"50%",
-		alignItems: "center",
-		flex:1, // places it on top of the background
-  	},
-
-	innerContent:{
-		padding:20,
-		alignItems:'center',
-		justifyContent: 'center',
-	},
-
     header: {
 		height:60,
-		//marginTop:20,
 		marginBottom:40,
         alignItems: 'center',
 		justifyContent:'center'
@@ -261,24 +207,26 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		gap: 16,
 	},
-	pickerWrapper: {
-        alignSelf: "center", 
-        marginVertical: 10,
-		width: 438,
-		height: 48,
-		borderRadius: 10,
-		backgroundColor: "#FEFDF4",
-		paddingHorizontal: 12,
-
-		// iOS shadow
-		shadowColor: "#DCA0A0",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 1,
-		shadowRadius: 4,
-
-		// Android shadow
-		elevation: 4,
-    },
+	signUpText: {
+		fontFamily: 'DM Serif Display',
+		fontSize: 22,
+		fontWeight: '700',
+		color: '#6A6A6A',
+		textDecorationLine: 'underline',
+	},
+	/*
+	inputWrapper: {
+        backgroundColor: "#FEFDF4",
+        borderRadius: 12,
+        height: 60,
+        justifyContent: 'center',
+        paddingHorizontal: 20,
+        shadowColor: "#DCA0A0",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.6,
+        shadowRadius: 4,
+        elevation: 5,
+    },*/
 	errorBox: {
 		backgroundColor: "#f7b0b6",
 		borderRadius: 8,
