@@ -8,6 +8,8 @@ import path from "path";
 import clothingRoutes from "./routes/clothing.js";
 import onboardingRoutes from "./routes/onboarding.js";
 import weatherRoutes from "./routes/weather.js";
+import userRoutes from "./routes/users.js";
+import profilePicRoutes from "./routes/profilePicRoutes.js";
 
 const app = express();
 app.use(cors()); // allows front end to call backend
@@ -28,7 +30,10 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 
-app.use(cors({ origin: "*" })); // or http://localhost:5173 for prod
+// app.use(cors({ 
+//   origin: (origin, callback) => callback(null, true), // Allows any origin dynamically
+//   credentials: true 
+// }));
 
 //app.use(cors({ origin: "*" })); // or "*" for testing
 app.use("/api/auth", authRoutes);  
@@ -43,6 +48,11 @@ app.use("/api/clothing", clothingRoutes);
 app.use("/api/onboarding", onboardingRoutes);
 
 app.use("/api/weather", weatherRoutes);
+
+app.use("/api/users", userRoutes);
+
+// PROFILE PICTURE ROUTES //
+app.use("/", profilePicRoutes);
 
 
 

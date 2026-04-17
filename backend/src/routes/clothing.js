@@ -54,10 +54,19 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
     let name = req.body.name; // make name the image path if no input
     const colors = parseList(req.body.colors);
     const tags = parseList(req.body.tags);
+    let message = "Success";
+    let require_input = false;
+
     if (!name)
       name = req.file.filename;
 
-    //const imagePath = `/uploads/${req.file.filename}`;
+
+    if (typeConfidence < 0.4){
+      message = "We couldn't quite identify this item. Please categorize it manually."
+      type = 'not detected';
+      subtype = 'not detected';
+      require_input = true;
+    }
 
     const item = await ClothingItem.create({
       user: req.user.id,
@@ -72,7 +81,13 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
       imageEmbedding
     });
 
-    res.status(201).json(item);
+    const response = {
+      message,
+      require_input,
+      item: item,
+    }
+
+    res.status(201).json({response});
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -111,7 +126,10 @@ router.get("/:id", auth, async (req, res) => {
 
 //      UPDATE ITEM     //
 router.put("/:id", auth, async (req, res) => {
+
+
   try {
+
     const updated = await ClothingItem.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },
       req.body,

@@ -1,3 +1,4 @@
+import torch
 from rembg import remove
 from PIL import Image
 import requests
@@ -93,8 +94,8 @@ STYLE_PROMPTS = {
 #TODO: add seasonalities and other attributes
 
 
-with open('inputskirt1.png', 'rb') as i:
-    with open('outputskirt1.png', 'wb') as o:
+with open('inputskirtTST.png', 'rb') as i:
+    with open('outputskirtTST.png', 'wb') as o:
         input = i.read()
         output = remove(input)
         o.write(output)
@@ -102,7 +103,7 @@ with open('inputskirt1.png', 'rb') as i:
 model = CLIPModel.from_pretrained("patrickjohncyh/fashion-clip")
 processor = CLIPProcessor.from_pretrained("patrickjohncyh/fashion-clip")
 
-image = Image.open('outputskirt1.png').convert("RGB")
+image = Image.open('inputskirtTST.png').convert("RGB")
 
 labels = []
 all_prompts = []
@@ -135,3 +136,26 @@ feature_vector = image_features.tolist()
 print(feature_vector)
 print("Predicted coarse category:", best_category)
 print("Confidence:", confidence)
+
+#classify colors too
+COLOR_LABELS = [
+    # Solids
+    "white", "black", "red", "blue", "green", "yellow",
+    "pink", "brown", "grey", "beige", "purple", "navy",
+    "cream", "orange", "coral", "lavender", "burgundy",
+    "olive", "teal", "mustard", "camel", "rust"
+]
+def classify_color(image_path: str) -> dict:
+    image = Image.open(image_path).convert("RGB")
+    inputs = processor(text=COLOR_LABELS, images=image, return_tensors="pt", padding=True)
+    
+    with torch.no_grad():
+        outputs = model(**inputs)
+    
+    probs = outputs.logits_per_image.softmax(dim=1)[0]
+    results = sorted(zip(COLOR_LABELS, probs.tolist()), key=lambda x: x[1], reverse=True)
+    
+    return {label: round(score, 4) for label, score in results[:5]}
+
+# Example
+print(classify_color("inputskirtTST.png"))

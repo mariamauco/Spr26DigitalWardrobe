@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from "react";
 type User = {
   name: string;
   email?: string;
-  zipcode?: string;
+  zipCode?: string;
 } | null;
 
 type UserContextType = {

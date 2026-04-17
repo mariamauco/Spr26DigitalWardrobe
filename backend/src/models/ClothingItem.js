@@ -16,7 +16,7 @@ const ClothingItemSchema = new mongoose.Schema(
         typeConfidence: {type: Number, required: false},
         subtype: {type: String, required:false, enum: [
             "t-shirt", "long sleeve shirt", "tank top", "sweater", // top
-             "jeans", "pants", "leggings","sweatpants", "shorts", "skirt", // bottom
+             "jeans", "pants", "leggings","sweatpants", "shorts", "skirt", "trousers", // bottom
              "dress", "jumpsuit", "romper", "overalls", "bodysuit", //one_piece
              "jacket", "coat", "blazer", "vest", // outerwear
              "sneakers", "boots", "heels", "sandals", // shoe
