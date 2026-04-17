@@ -5,7 +5,7 @@ import cv2, csv
 import pandas as pd
 
 #METADATA_CSV = "/home/maria/Projects/WEECSSpr26/Spr26DigitalWardrobe/ml-server/custom_dataset/scraping/metadata_labeled.csv"
-METADATA_CSV = "/home/maria/Spr26DigitalWardrobe/ml-server/custom_dataset/scraping/metadata_labeled.csv"
+METADATA_CSV = "scraping/metadata_labeled.csv"
 
 IMAGES_ROOT  = "/media/maria/ubuntu storage/dataset"
 
