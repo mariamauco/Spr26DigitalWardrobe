@@ -38,24 +38,39 @@ def process_dupes(df):
         first = 0 # current winner
 
         while num_dupes > 1:
-            # compare winner with next dupe
+            # compare if different
             
-            #output
-            print(f"{len(delete_ids)} duplicates removed out of {len(df)} total rows")
-            output_dupe(dupes.iloc[first], dupes.iloc[first + 1])
-            
-            
-            choice = input('Which one to keep?')
+            to_del = first + 1
+            diff = 0
+            row_a = dupes.iloc[first]
+            row_b = dupes.iloc[first + 1]
 
-            # if they did not make a valid choice
-            if choice not in {"1", "2"}:
-                print("Incorrect input, try again")
-                continue
- 
-            to_del = first
+            # check if status, style, color, coarse cat, or fine cat are different
+            if (
+                row_a["status"] != row_b["status"]
+                or row_a["style"] != row_b["style"]
+                or row_a["color"] != row_b["color"]
+                or row_a["coarse_category"] != row_b["coarse_category"]
+                or row_a["fine_tag"] != row_b["fine_tag"]
+            ):
+                diff = 1
+            
+            # if different rows, output and collect choice
+            if(diff):
+                #output
+                print(f"{len(delete_ids)} duplicates removed out of {len(df)} duplicate rows in review set")
+                output_dupe(dupes.iloc[first], dupes.iloc[first + 1])
+                
+                
+                choice = input('Which one to keep?')
 
-            if int(choice) == 1:
-                to_del = first + 1 # delete the second instead
+                # if they did not make a valid choice
+                if choice not in {"1", "2"}:
+                    print("Incorrect input, try again")
+                    continue
+    
+                if int(choice) == 2:
+                    to_del = first # delete the first instead
 
             # add row id to delete list
             delete_ids.append(int(dupes.iloc[to_del]["row_id"]))
@@ -98,8 +113,8 @@ def output_dupe(row1, row2):
     axes[1].imshow(img2_rgb)
     axes[1].axis("off")
 
-    info1 = f"Status: {row1['status']}\nPin: {row1['pin_id']}\nStyle: {row1['style']}\nColor: {row1['color']}"
-    info2 = f"Status: {row2['status']}\nPin: {row2['pin_id']}\nStyle: {row2['style']}\nColor: {row2['color']}"
+    info1 = f"Status: {row1['status']}\nPin: {row1['pin_id']}\nStyle: {row1['style']}\nColor: {row1['color']}\nCoarse: {row1['coarse_category']}\nFine: {row1['fine_tag']}\nSleeve: {row1['sleeve_label']}\nCoverage: {row1['coverage_label']}"
+    info2 = f"Status: {row2['status']}\nPin: {row2['pin_id']}\nStyle: {row2['style']}\nColor: {row2['color']}\nCoarse: {row2['coarse_category']}\nFine: {row2['fine_tag']}\nSleeve: {row2['sleeve_label']}\nCoverage: {row2['coverage_label']}"
 
     fig.subplots_adjust(bottom=0.25)
     fig.text(0.25, 0.05, info1, ha="center", va="bottom", fontsize=9)
