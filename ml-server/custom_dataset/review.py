@@ -46,15 +46,16 @@ def process_dupes(df):
             row_b = dupes.iloc[first + 1]
 
             # check if status, style, color, coarse cat, or fine cat are different
-            if (
-                row_a["status"] != row_b["status"]
-                or row_a["style"] != row_b["style"]
-                or row_a["color"] != row_b["color"]
-                or row_a["coarse_category"] != row_b["coarse_category"]
-                or row_a["fine_tag"] != row_b["fine_tag"]
-            ):
-                diff = 1
-            
+            def norm(v):
+                return "" if pd.isna(v) else str(v).strip().lower()
+
+            diff = (
+                norm(row_a["status"]) != norm(row_b["status"])
+                or norm(row_a["style"]) != norm(row_b["style"])
+                or norm(row_a["color"]) != norm(row_b["color"])
+                or norm(row_a["coarse_category"]) != norm(row_b["coarse_category"])
+                or norm(row_a["fine_tag"]) != norm(row_b["fine_tag"])
+                        
             # if different rows, output and collect choice
             if(diff):
                 #output
