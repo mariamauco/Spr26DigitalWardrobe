@@ -55,6 +55,7 @@ def process_dupes(df):
                 or norm(row_a["color"]) != norm(row_b["color"])
                 or norm(row_a["coarse_category"]) != norm(row_b["coarse_category"])
                 or norm(row_a["fine_tag"]) != norm(row_b["fine_tag"])
+            )
                         
             # if different rows, output and collect choice
             if(diff):
