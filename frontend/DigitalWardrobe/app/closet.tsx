@@ -156,7 +156,6 @@ export default function ClosetScreen() {
         setShowPopup(true);
         setAnalysisText("");
         setUploadedItem(null);
-        //setHasStartedAnalysis(false);
         setIsUploading(false);
 
         console.log("Prepared image file:", { uri: asset.uri, name: "upload.jpg", type: "image/jpeg" });
@@ -169,7 +168,6 @@ export default function ClosetScreen() {
    // sends image to backend, sets analysis result text
    const uploadImage = async () => {
     try {
-      //setHasStartedAnalysis(true);
       setIsUploading(true);
       setAnalysisText("");
 
@@ -243,8 +241,6 @@ export default function ClosetScreen() {
     setUploadedImage(null);
     setImageFile(null);
     setUploadedItem(null);
-    //setAnalysisText("");
-    //setHasStartedAnalysis(false);
     setIsUploading(false);
   };
 
@@ -362,7 +358,7 @@ return (
           >
             {/* Result state: show detected text above image. */}
             {uploadedItem ? (
-  // ✅ RESULT STATE
+  // RESULT STATE
   <>
     <View style={styles.popupResultTextBox}>
       <Text style={styles.popupResultTitle}>we detected:</Text>
@@ -395,7 +391,7 @@ return (
     </View>
   </>
 ) : isUploading ? (
-  // ⏳ LOADING STATE
+  // LOADING STATE
   <>
     <View style={styles.popupImageWrapper}>
       <Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
@@ -408,7 +404,7 @@ return (
     <Text style={styles.popupPlaceholderText}>analyzing...</Text>
   </>
 ) : (
-  // 📷 BEFORE CONFIRM STATE
+  // BEFORE CONFIRM STATE
   <>
     <View style={styles.popupImageWrapper}>
       <Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
@@ -429,77 +425,6 @@ return (
     </View>
   </>
 )}
-{/* {!isUploading && analysisText ? (
-              <>
-                <View style={styles.popupResultTextBox}>
-                  <Text style={styles.popupResultTitle}>we detected:</Text>
-
-                  {uploadedItem?.type && (
-                    <Text style={styles.popupText}>
-                      Type: {uploadedItem.type}
-                    </Text>
-                  )}
-
-                  {uploadedItem?.subtype && (
-                    <Text style={styles.popupText}>
-                      Subtype: {uploadedItem.subtype.replace(/-/g, " ")}
-                    </Text>
-                  )}
-                </View>
-
-                <View style={styles.popupImageWrapper}>
-                  <Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
-                </View>
-
-                <View style={styles.popupButtons}>
-                  <Pressable style={styles.confirmButton} onPress={resetUpload}>
-                    <Text style={styles.popupButtonText}>done</Text>
-                  </Pressable>
-                  <Pressable style={styles.cancelButton} onPress={resetUpload}>
-                    <Text style={styles.popupButtonText}>cancel</Text>
-                  </Pressable>
-                </View>
-              </>
-            ) : (
-              // Before / during upload: image first, then status text.
-              <>
-                <View style={styles.popupImageWrapper}>
-                  <Image source={{ uri: uploadedImage! }} style={styles.popupImage} />
-
-                  {isUploading && (
-                    <View style={styles.popupImageOverlay}>
-                      <ActivityIndicator size="large" color="#FEFDF4" />
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.popupTextBox}>
-                  {!hasStartedAnalysis ? (
-                    <Text style={styles.popupPlaceholderText}>
-                      confirm to analyze this image
-                    </Text>
-                  ) : (
-                    <Text style={styles.popupPlaceholderText}>analyzing...</Text>
-                  )}
-                </View>
-
-                <View style={styles.popupButtons}>
-                  <Pressable
-                    style={[styles.confirmButton, isUploading && { opacity: 0.6 }]}
-                    onPress={uploadImage}
-                    disabled={isUploading}
-                  >
-                    <Text style={styles.popupButtonText}>
-                      {isUploading ? "loading..." : "confirm"}
-                    </Text>
-                  </Pressable>
-
-                  <Pressable style={styles.cancelButton} onPress={resetUpload}>
-                    <Text style={styles.popupButtonText}>cancel</Text>
-                  </Pressable>
-                </View>
-              </>
-            )}*/}
           </View>
         </View>
       )}
