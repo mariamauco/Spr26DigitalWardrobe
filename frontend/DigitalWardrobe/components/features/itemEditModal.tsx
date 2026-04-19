@@ -60,11 +60,19 @@ export default function ItemEditModal({ item, onClose, onSave, onDelete }: ItemE
 	// Persist edited fields to backend, then notify parent list via onSave.
 	const handleSave = async () => {
 		setSaving(true);
+		const normalizedType = editType ? ( editType === 'One Piece' ? 'one_piece' : editType.toLowerCase())  : "";
+		const normalizedSubtype = editSubtype ? editSubtype.toLowerCase() : "";
 		try {
 			const token = await getToken();
 			console.log("Token:", token);
 
-			console.log("Saving item:", { name: editName, type: editType, subtype: editSubtype, colors: editColors, tags: editTags });
+			console.log("Saving item:", {
+				name: editName,
+				type: normalizedType,
+				subtype: normalizedSubtype,
+				colors: editColors,
+				tags: editTags,
+			});
 
 			const res = await fetch(`${API_URL}/api/clothing/${item._id}`, {
 				method: "PUT",
@@ -74,8 +82,8 @@ export default function ItemEditModal({ item, onClose, onSave, onDelete }: ItemE
 				},
 				body: JSON.stringify({
 					name: editName,
-					type: editType,
-					...(editSubtype ? { subtype: editSubtype } : {}),
+					type: normalizedType,
+					...(normalizedSubtype ? { subtype: normalizedSubtype } : {}),
 					colors: editColors,
 					tags: editTags,
 				  }),

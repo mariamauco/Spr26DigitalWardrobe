@@ -18,13 +18,20 @@ const ClothingItemSchema = new mongoose.Schema(
             "t-shirt", "long sleeve shirt", "tank top", "sweater", "blouse", // top
              "jeans", "pants", "leggings","sweatpants", "shorts", "skirt", "trousers", // bottom
              "dress", "jumpsuit", "romper", "overalls", "bodysuit", //one_piece
-             "jacket", "coat", "blazer", "vest", // outerwear
-             "sneakers", "boots", "heels", "sandals", // shoe
+             "jacket", "coat", "blazer", "cardigan", "vest", "trench coat", // outerwear
+             "sneakers", "boots", "loafers", "flats", "heels", "sandals", // shoe
              "handbag", "backpack", "belt", "hat", "scarf", "jewelry", "sunglasses" // accessory
-            ]},
+        ]},
         subtypeConfidence: {type: Number, required: false},
-        colors: {type: [String], default: []}, // ex: ["blue", "white"],
-        tags: {type: [String], enum: ["casual", "formal", "summer", "winter", "workout"], default: []},
+        colors: {type: [String], enum: [
+            "black", "white", "gray", "red", "blue", "green", "yellow",
+            "orange", "purple", "pink", "brown", "beige", "navy", "maroon", "teal", "cream",
+        ], default: []}, // ex: ["blue", "white"],
+        tags: {type: [String], enum: [
+            "casual", "formal", "business", "sporty", "streetwear", "vintage",
+            "bohemian", "minimalist", "summer", "winter", "spring", "fall",
+            "party", "beach", "outdoor", "loungewear"
+        ], default: []},
 
         imagePath: {type: String, required: true}, // URL to the clothing item image
 
