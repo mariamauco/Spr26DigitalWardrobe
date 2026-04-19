@@ -7,7 +7,7 @@ from PIL import Image, UnidentifiedImageError
 
 import torch
 from transformers import CLIPProcessor, CLIPModel
-from daily_outfit.sortingOutfits import filter_by_wheather, group_by_type
+from daily_outfit.sortingOutfits import filter_by_weather, group_by_type
 # util functions
 from util.error_handling import validate_single_clothing_item
 from util.prompts import COARSE_PROMPTS
@@ -190,7 +190,7 @@ def daily_outfit():
             }
         }), 400
     #filter by wheather
-    filtered_closet = filter_by_wheather(closet, weatherTags, model, processor)
+    filtered_closet = filter_by_weather(closet, weatherTags, model, processor)
 
     #group by type
     groups = group_by_type(filtered_closet)
