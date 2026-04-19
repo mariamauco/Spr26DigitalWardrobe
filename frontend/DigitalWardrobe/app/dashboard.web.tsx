@@ -13,6 +13,7 @@ import { ScrollView } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
 import { Pressable, Alert } from "react-native";
+import * as ImageManipulator from "expo-image-manipulator";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
@@ -137,11 +138,18 @@ export default function DashboardScreen() {
 		  
 			  if (!result.canceled && result.assets?.length > 0) {
 				const asset = result.assets[0];
+
+				// resize to max 1000px wide before upload to avoid 413 errors
+				const resized = await ImageManipulator.manipulateAsync(
+					asset.uri,
+					[{ resize: { width: 1000 } }],
+					{ compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+				);
 			  
-				setUploadedImage(asset.uri);
+				setUploadedImage(resized.uri);
 			  
 				setImageFile({
-				  uri: asset.uri,
+				  uri: resized.uri,
 				  name: "upload.jpg",
 				  type: "image/jpeg",
 				  file: (asset as { file?: Blob }).file,
@@ -181,22 +189,17 @@ export default function DashboardScreen() {
     const formData = new FormData();
 
     if (Platform.OS === "web") {
-      let blob = imageFile.file;
-      if (!blob) {
-        const fileResponse = await fetch(imageFile.uri);
-        blob = await fileResponse.blob();
-      }
-      formData.append("image", blob, imageFile.name);
-    } else {
-      formData.append(
-        "image",
-        {
-          uri: imageFile.uri,
-          name: imageFile.name,
-          type: imageFile.type,
-        } as any
-      );
-    }
+		// always fetch from resized uri on web — ignore asset.file which is unresized
+		const fileResponse = await fetch(imageFile.uri);
+		const blob = await fileResponse.blob();
+		formData.append("image", blob, imageFile.name);
+	  } else {
+		formData.append("image", {
+		  uri: imageFile.uri,
+		  name: imageFile.name,
+		  type: imageFile.type,
+		} as any);
+	  }
 
     const response = await fetch(`${API_URL}/api/clothing`, {
       method: "POST",
@@ -830,14 +833,6 @@ popupMainDescription: {
   fontWeight: "500",
 },
 
-popupDetailsBox: {
-  width: "100%",
-  backgroundColor: "#F8F5ED",
-  borderRadius: 18,
-  paddingVertical: 14,
-  paddingHorizontal: 16,
-},
-
 popupDetailRow: {
   flexDirection: "row",
   alignItems: "flex-start",
@@ -870,5 +865,18 @@ popupDetailsBelowButtons: {
   alignItems: "center",
   justifyContent: "center",
 },
+
+popupInfoText: {
+	color: "#4E4E4E",
+	fontSize: 16,
+	fontFamily: "EncodeSansSemiCondensed_400Regular",
+	textAlign: "center",
+	marginBottom: 4,
+  },
+  
+  popupInfoLabel: {
+	color: "#8A5F5F",
+	fontFamily: "DMSerifDisplay_400Regular",
+  },
 
 });

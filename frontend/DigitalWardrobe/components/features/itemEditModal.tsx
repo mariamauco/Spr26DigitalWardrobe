@@ -62,6 +62,9 @@ export default function ItemEditModal({ item, onClose, onSave, onDelete }: ItemE
 		setSaving(true);
 		try {
 			const token = await getToken();
+			console.log("Token:", token);
+
+			console.log("Saving item:", { name: editName, type: editType, subtype: editSubtype, colors: editColors, tags: editTags });
 
 			const res = await fetch(`${API_URL}/api/clothing/${item._id}`, {
 				method: "PUT",
@@ -71,11 +74,11 @@ export default function ItemEditModal({ item, onClose, onSave, onDelete }: ItemE
 				},
 				body: JSON.stringify({
 					name: editName,
-					type: editType.toLowerCase(),
-					subtype: editSubtype.toLowerCase(),
+					type: editType,
+					...(editSubtype ? { subtype: editSubtype } : {}),
 					colors: editColors,
 					tags: editTags,
-				}),
+				  }),
 			});
 
 			const data = await res.json();
@@ -93,33 +96,40 @@ export default function ItemEditModal({ item, onClose, onSave, onDelete }: ItemE
 	};
 
 	// Confirm and delete item from backend, then remove it from parent list.
+	// Uses Alert.alert instead of window.confirm so it works on both web and mobile.
 	const handleDelete = () => {
-		const doDelete = async () => {
-			setDeleting(true);
-			try {
-				const token = await getToken();
-				const res = await fetch(`${API_URL}/api/clothing/${item._id}`, {
-					method: "DELETE",
-					headers: { Authorization: `Bearer ${token}` },
-				});
-
-				if (res.ok) {
-					onDelete(item._id);
-					onClose();
-				} else {
-					const d = await res.json().catch(() => ({}));
-					window.alert(d?.message ?? "Could not delete");
-				}
-			} catch {
-				window.alert("Network error");
-			} finally {
-				setDeleting(false);
-			}
-		};
-
-		if (window.confirm(`Remove "${item.name}" from your closet?`)) {
-			doDelete();
-		}
+		Alert.alert(
+			"Delete item",
+			`Remove "${item.name}" from your closet?`,
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Delete",
+					style: "destructive",
+					onPress: async () => {
+						setDeleting(true);
+						try {
+							const token = await getToken();
+							const res = await fetch(`${API_URL}/api/clothing/${item._id}`, {
+								method: "DELETE",
+								headers: { Authorization: `Bearer ${token}` },
+							});
+							if (res.ok) {
+								onDelete(item._id);
+								onClose();
+							} else {
+								const d = await res.json().catch(() => ({}));
+								Alert.alert("Error", d?.message ?? "Could not delete");
+							}
+						} catch {
+							Alert.alert("Error", "Network error");
+						} finally {
+							setDeleting(false);
+						}
+					},
+				},
+			]
+		);
 	};
 
 	return (

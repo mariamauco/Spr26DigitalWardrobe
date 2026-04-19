@@ -11,6 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import * as ImagePicker from "expo-image-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImageManipulator from "expo-image-manipulator";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
@@ -171,10 +172,17 @@ export default function DashboardScreen() {
 		  
 			  if (!result.canceled && result.assets?.length > 0) {
 				const asset = result.assets[0];
+
+				// resize to max 1000px wide before upload to avoid 413 errors
+				const resized = await ImageManipulator.manipulateAsync(
+					asset.uri,
+					[{ resize: { width: 1000 } }],
+					{ compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+				  );
 			  
-				setUploadedImage(asset.uri);
+				setUploadedImage(resized.uri);
 				setImageFile({
-				  uri: asset.uri,
+				  uri: resized.uri,
 				  name: "upload.jpg",
 				  type: "image/jpeg",
 				  file: (asset as { file?: Blob }).file,
@@ -210,11 +218,9 @@ export default function DashboardScreen() {
     			const formData = new FormData();
 
 				if (Platform.OS === "web") {
-					let blob = imageFile.file;
-					if (!blob) {
-					  const fileResponse = await fetch(imageFile.uri);
-					  blob = await fileResponse.blob();
-					}
+					// always fetch from resized uri on web
+					const fileResponse = await fetch(imageFile.uri);
+					const blob = await fileResponse.blob();
 					formData.append("image", blob, imageFile.name);
 				  } else {
 					formData.append("image", {
