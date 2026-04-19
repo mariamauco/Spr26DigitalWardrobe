@@ -316,7 +316,7 @@ const uploadedItemDetails = uploadedItem
 
 			{/* img */}
 			<View style={{ marginTop: 20 }}>
-			<GalleryCarousel width={400} height={500} />
+			<GalleryCarousel width={500} height={500} />
 			</View>
 		</View>
 
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   },
 
   dailyCard: {
-	width: 520,
+	width: 550,
 	height: 590,
 	backgroundColor: "rgba(254, 253, 244, 0.6)",
 	borderRadius: 30,

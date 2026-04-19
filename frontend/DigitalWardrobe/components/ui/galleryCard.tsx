@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_IMG_SRC_TYPES, DO_NOT_USE_OR_YOU_WILL_BE_FIRED_CALLBACK_REF_RETURN_VALUES } from "react";
 import { ScrollView } from "react-native";
 import {
   View,
@@ -10,168 +10,135 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
 } from "react-native";
+import example from "../../utils/dailyOutfitExample.json"
 
 type Props = {
   width?: number;
   height?: number;
 };
 
-type ImageItem = {
-  id: string;
-  uri: string;
-};
+const GalleryCarousel: React.FC<Props> = ({ width = 500, height = 400 }) => {  
+  const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
-const GalleryCarousel: React.FC<Props> = ({ width = 200, height = 400 }) => {
-  const [slides, setSlides] = useState<ImageItem[][]>([]);
   const [loading, setLoading] = useState(true);
 
-  const flatListRef = useRef<FlatList>(null);
-  const scrollX = useRef(0);
-  const [currentIndex, setCurrentIndex] = useState(1);
+  // OUTFIT VARIABLES
+  // the types of clothing items we have
+  type clothingLabel = "top" | "bottom" | "one_piece" | "outerwear" | "shoe" | "accessory";
+  // what makes up an item: id and imagePath
+  type outfitItem = {
+    id: string,
+    imagePath: string
+  }
+  // an outfit is made up of clothing labels and items
+  type Outfit = Partial<Record<clothingLabel, outfitItem | null>>; // Partial means some are optional
+  // this is how the json we ask the backend looks
+  type DailyOutfitsResponse = Record<string, Outfit>; // first, second, third, ...
+  // where we'll be storing our outfits for the UI later
+  const [DAILY_OUTFITS, setDailyOutfits] = useState<Outfit[]>([]);
+  //const [numOfOutfits, setNumOfOutfits] = useState(0);
 
-  const effectiveWidth = width;
+  // OUTFIT RENDERING
+  const cardWidth = width - 80;
+  type Box = { x: number; y: number; w: number; h: number; z?: number };
+  // percentages so it scales on mobile/web
+  const LAYOUTS: Record<2 | 3 | 4 | 5, Box[]> = {
+    5: [
+      { x: 0.46, y: 0.00, w: 0.48, h: 0.45, z: 2 },
+      { x: 0.00, y: 0.01, w: 0.50, h: 0.43, z: 3 },
+      { x: 0.24, y: 0.28, w: 0.42, h: 0.44, z: 4 },
+      { x: 0.49, y: 0.52, w: 0.45, h: 0.40, z: 5 },
+      { x: 0.00, y: 0.45, w: 0.40, h: 0.50, z: 1 },
+    ],
+    4: [
+      { x: 0.45, y: 0.00, w: 0.48, h: 0.45 },
+      { x: 0.00, y: 0.01, w: 0.50, h: 0.43 },
+      { x: 0.45, y: 0.48, w: 0.45, h: 0.40 },
+      { x: 0.05, y: 0.50, w: 0.42, h: 0.44 },
+    ],
+    3: [
+      { x: 0.02, y: 0.05, w: 0.46, h: 0.45 },
+      { x: 0.52, y: 0.10, w: 0.44, h: 0.42 },
+      { x: 0.22, y: 0.50, w: 0.56, h: 0.45 },
+    ],
+    2: [
+      { x: 0.04, y: 0.10, w: 0.44, h: 0.78 },
+      { x: 0.52, y: 0.10, w: 0.44, h: 0.78 },
+    ],
+  };
+  const ORDER: clothingLabel[] = ["top", "one_piece", "bottom", "outerwear", "shoe", "accessory"];
 
+  // setting for testing with example
+  const [dev, setDev] = useState(1); // 1 for dev
+
+  // 1. GET OUTFIT
   useEffect(() => {
-    // make api call to get daily outfit
-    /*
-    Example JSON file:
-      {
-        "first": {
-            "top": ["ID", “imagePath”],
-            "bottom": ["ID", “imagePath”],
-            "accessories": null,
-            "footwear": ["ID", “imagePath”],
-            "outerwear": ["ID", “imagePath”],
-            }, 
-        "second": {
-            "top": ["ID", “imagePath”],
-            "bottom": ["ID", “imagePath”],
-            "accessories": null,
-            "footwear": ["ID", “imagePath”],
-            "outerwear": ["ID", “imagePath”],
-            }, 
-        "third": {
-            "top": "ID",
-            "bottom": "ID",
-            "accessories": null,
-            "footwear": "ID",
-            "outerwear": "ID"
-            }
-      }
+    
+    // dummy outfits
+    let outfitData: DailyOutfitsResponse = example as DailyOutfitsResponse;
 
-    */
+    
+    // make api call to get daily outfit
     const fetchOutfits = async () => {
       try {
-        /*const response = await fetch(
-          "http://138.197.16.179:5050/api/weather/daily-outfit"
-        );*/
-        const response = {
-          "first": {
-              "top": ["69cc08029451dee96ce52eb1D", "/uploads/u_69a4fc64c6c8150a122826d8_1774979070368_76017578.jpg"],
-              "bottom": ["69cb41f6d06d79e87efc5569", "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"],
-              "accessories": null,
-              "footwear": ["69cc24779451dee96ce52ed8", "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"],
-              "outerwear": null,
-              }, 
-          "second": {
-              "top": ["69c974310c62892406315c0e", "/uploads/u_69a4fc64c6c8150a122826d8_1774810160882_298184207.png"],
-              "bottom": ["69cb41f6d06d79e87efc5569", "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"],
-              "accessories": null,
-              "footwear": ["69cc24779451dee96ce52ed8", "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"],
-              "outerwear": null,
-              },
-          "third": {
-              "top": ["69cc08029451dee96ce52eb1D", "/uploads/u_69a4fc64c6c8150a122826d8_1774979070368_76017578.jpg"],
-              "bottom": ["69cb41f6d06d79e87efc5569", "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"],
-              "accessories": null,
-              "footwear": ["69cc24779451dee96ce52ed8", "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"],
-              "outerwear": ["69cb420bd06d79e87efc556b","/uploads/u_69a4fc64c6c8150a122826d8_1774928391367_850166138.jpg"],
-              },
-        };
+        const response = await fetch(`${API_URL}/api/weather/daily-outfit`);
 
-        /*
         if (!response.ok) {
           throw new Error("Failed to fetch outfits");
         }
 
-        const data = await response.json();
-        */
-       
-        // Transform API data → slides
-        const formattedSlides: ImageItem[][] = Object.entries(response).map(
-          ([outfitKey, outfitValue]) => {
-                return Object.entries(outfitValue)
-              // 1. Remove nulls and ensure we have an array with the image path
-              .filter(([_, item]) => Array.isArray(item) && item.length > 1)
-              .map(([category, itemData], itemIndex) => {
-                if (!Array.isArray(itemData) || !itemData[1]) return null;
-
-                return {
-                  id: `${outfitKey}-${category}-${itemIndex}`,
-                  uri: `http://138.197.16.179:5050${itemData[1]}`,
-                };
-              })
-              .filter((item): item is ImageItem => item !== null);
-            }
-        );
-
-        console.log("formattedSlides:", formattedSlides);
-        setSlides(formattedSlides);
+        outfitData = await response.json();
       } catch (error) {
         console.error("API error:", error);
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
 
-    fetchOutfits();
-  }, []);
+    // storing response into data. much easier due to our variables
+    const processData = (raw: DailyOutfitsResponse) => {
+      const outfitsList = Object.values(raw); // [first outfit, second outfit, third outfit]
+      setDailyOutfits(outfitsList);
+    }
+    const run = async () => {
+      if(!dev){ // call the api if not in dev mode
+        await fetchOutfits();
+    }
+      processData(outfitData);
+      //setNumOfOutfits(DAILY_OUTFITS.length)
+      setLoading(false); // finished loading data
+    }
+
+    run();    
+  }, [API_URL, dev]);
+
+
+  // RENDER OUTFITS 
+  function getRenderableItems(outfit: Outfit) {
+  return ORDER
+    .map((k) => outfit[k])
+    .filter((it): it is outfitItem => !!it && !!it.id && !!it.imagePath);
+  }
+
+  const flatListRef = useRef<FlatList<Outfit>>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const goToNext = () => {
+    const total = DAILY_OUTFITS.length;
+
+    const nextIndex = (currentIndex + 1) % total; // wraps around
+    flatListRef.current?.scrollToOffset({ offset: nextIndex * cardWidth, animated: true, });
+    setCurrentIndex(nextIndex);
+  };
+
+  const goToPrev = () => {
+    const total = DAILY_OUTFITS.length;
+
+    const prevIndex = (currentIndex - 1 + total) % total; // wraps around
+    flatListRef.current?.scrollToOffset({ offset: prevIndex * cardWidth, animated: true, });
+    setCurrentIndex(prevIndex);
+  };
 
   if (loading) return <Text>Loading...</Text>;
-  if (slides.length === 0) return <Text>No outfits found</Text>;
-
-  const handleMomentumEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(
-      event.nativeEvent.contentOffset.x / effectiveWidth
-    );
-
-    // If at end → jump to start
-      if (index === slides.length) {
-        flatListRef.current?.scrollToIndex({
-          index: 0,
-          animated: false,
-        });
-        setCurrentIndex(0);
-      } else {
-        setCurrentIndex(index);
-      }
-  };
-
-  // goes to next outfit
-  const goToNext = () => {
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < slides.length) {
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
-      setCurrentIndex(nextIndex); // Update state manually for button clicks
-    } else {
-      // Loop back to start
-      flatListRef.current?.scrollToIndex({ index: 0, animated: true });
-      setCurrentIndex(0);
-    }
-  };
-
-  // goes to previous outfit
-  const goToPrev = () => {
-    const prevIndex = currentIndex - 1;
-    if (prevIndex >= 0) {
-      flatListRef.current?.scrollToIndex({ index: prevIndex, animated: true });
-      setCurrentIndex(prevIndex);
-    } else {
-      // Loop to end
-      flatListRef.current?.scrollToIndex({ index: slides.length - 1, animated: true });
-      setCurrentIndex(slides.length - 1);
-    }
-  };
+  if (DAILY_OUTFITS.length === 0) return <Text>No outfits found</Text>;
 
   return (
     <View style={[styles.wrapper, { width, height }]}>
@@ -183,50 +150,55 @@ const GalleryCarousel: React.FC<Props> = ({ width = 200, height = 400 }) => {
       {/* CAROUSEL */}
       <View style={[styles.card, { flex: 1, height }]}>
         <FlatList
-          ref={flatListRef}
-          data={slides}
+          ref={flatListRef} // get current outfit
+          data={DAILY_OUTFITS}
+          getItemLayout={(_, index) => ({
+            length: cardWidth,
+            offset: cardWidth * index,
+            index,
+            })}
           horizontal
           pagingEnabled
-          showsHorizontalScrollIndicator={false}
           keyExtractor={(_, i) => i.toString()}
-          onMomentumScrollEnd={handleMomentumEnd}
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={(e) => {            
+            const index = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
+            setCurrentIndex(index);
+          }}
+          renderItem={({ item: outfit }) => {
+            const items = getRenderableItems(outfit);
+            const count = Math.max(2, Math.min(5, items.length)) as 2 | 3 | 4 | 5;
+            const boxes = LAYOUTS[count];
 
-          getItemLayout={(_, index) => ({
-            length: width - 80, // Adjust based on your arrow widths
-            offset: (width - 80) * index,
-            index,
-          })}
-          
-          renderItem={({ item }) => (
-            /* Ensure the slide width matches the FlatList container width */
-            <View style={{ width: width - 80, alignItems: 'center' }}>
-              <ScrollView
-                contentContainerStyle={{
-                  alignItems: "center",
-                  gap: 10,
-                  paddingVertical: 10,
-                }}
-                showsVerticalScrollIndicator={false}
-              >
-                {item?.map((img: ImageItem) => (
-                  <Image
-                    key={img.id}
-                    source={{ uri: img.uri }}
-                    style={{
-                      width: width - 120, 
-                      height: 120,
-                      borderRadius: 8,
-                    }}
-                    resizeMode="cover"
-                  />
-                ))}
-              </ScrollView>
+            return (
+              <View style={{ width: width - 80, height, position: "relative"}}>
+                {items.slice(0, 5).map((it, i) => {
+                  const b = boxes[i];
+                  return (
+                    <Image
+                      key={it.id}
+                      source={{ uri: `${API_URL}${it.imagePath}` }} // create full uri
+                      style={{
+                        position: "absolute",
+                        left: b.x * (width - 80),
+                        top: b.y * height,
+                        width: b.w * (width - 80),
+                        height: b.h * height,
+                        zIndex: b.z ?? i,
+                        borderRadius: 10,
+                      }}
+                      resizeMode="contain"
+                    />
+                  );
+                })}
               </View>
-            )}
-          />
+            );
+          }}
+        />
       </View>
 
       {/*when RIGHT ARROW pressed to to previous */}
+      
       <TouchableOpacity style={styles.sideArrow} onPress={goToNext}>
         <Text style={styles.arrowText}>›</Text>
       </TouchableOpacity>

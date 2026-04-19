@@ -1,0 +1,72 @@
+{
+    "first": {
+        "top": {
+            "id": "69cc08029451dee96ce52eb1D",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774979070368_76017578.jpg"
+        },
+        "bottom":{
+            "id": "69cb41f6d06d79e87efc5569",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"
+        },
+        "accessory": {
+            "id": "",
+            "imagePath": ""
+        },
+        "shoe": {
+            "id": "69cc24779451dee96ce52ed8",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"
+        },
+        "outerwear": {
+            "id": "",
+            "imagePath": ""
+        },
+        "one_piece": {
+            "id": "",
+            "imagePath": ""
+        }
+    }, 
+    "second": {
+        "top": {
+            "id": "69c974310c62892406315c0e",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774810160882_298184207.png"
+        },
+        "bottom": {
+            "id": "69cb41f6d06d79e87efc5569",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"
+        },
+        "accessory": {
+            "id": "",
+            "imagePath": ""
+        },
+        "shoe": {
+            "id": "69cc24779451dee96ce52ed8",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"
+        },
+        "outerwear": {
+            "id": "",
+            "imagePath": ""
+        }
+        },
+    "third": {
+        "top": {
+            "id": "69cc08029451dee96ce52eb1D",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774979070368_76017578.jpg"
+        },
+        "bottom": {
+            "id": "69cb41f6d06d79e87efc5569",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"
+        },
+        "accessory": {
+            "id": "",
+            "imagePath": ""
+        },
+        "shoe": {
+            "id": "69cc24779451dee96ce52ed8",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"
+        },
+        "outerwear": {
+            "id": "69cb420bd06d79e87efc556b",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774928391367_850166138.jpg"
+        }
+    }
+}
