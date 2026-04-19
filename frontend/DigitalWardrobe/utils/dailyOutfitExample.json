@@ -1,24 +1,24 @@
 {
     "first": {
         "top": {
-            "id": "69cc08029451dee96ce52eb1D",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774979070368_76017578.jpg"
+            "id": "69e53196a7f993cf0355f8f5",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776628113624_404710678.png"
         },
         "bottom":{
-            "id": "69cb41f6d06d79e87efc5569",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"
+            "id": "69e533a9a7f993cf0355f8fe",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776628645000_780350323.png"
         },
         "accessory": {
-            "id": "",
-            "imagePath": ""
+            "id": "69e53521a7f993cf0355f903",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776629020860_290939798.png"
         },
         "shoe": {
-            "id": "69cc24779451dee96ce52ed8",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"
+            "id": "69e5363da7f993cf0355f90d",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776629305847_265041146.png"
         },
         "outerwear": {
-            "id": "",
-            "imagePath": ""
+            "id": "69e53685a7f993cf0355f914",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776629376901_288363846.png"
         },
         "one_piece": {
             "id": "",
@@ -27,46 +27,54 @@
     }, 
     "second": {
         "top": {
-            "id": "69c974310c62892406315c0e",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774810160882_298184207.png"
+            "id": "69e53196a7f993cf0355f8f5",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776628113624_404710678.png"
         },
-        "bottom": {
-            "id": "69cb41f6d06d79e87efc5569",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"
+        "bottom":{
+            "id": "69e533a9a7f993cf0355f8fe",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776628645000_780350323.png"
         },
         "accessory": {
             "id": "",
             "imagePath": ""
         },
         "shoe": {
-            "id": "69cc24779451dee96ce52ed8",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"
+            "id": "69e5363da7f993cf0355f90d",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776629305847_265041146.png"
         },
         "outerwear": {
+            "id": "69e53685a7f993cf0355f914",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776629376901_288363846.png"
+        },
+        "one_piece": {
             "id": "",
             "imagePath": ""
         }
         },
     "third": {
         "top": {
-            "id": "69cc08029451dee96ce52eb1D",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774979070368_76017578.jpg"
+            "id": "69e53196a7f993cf0355f8f5",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776628113624_404710678.png"
         },
-        "bottom": {
-            "id": "69cb41f6d06d79e87efc5569",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774928361626_290440119.jpg"
+        "bottom":{
+            "id": "69e533a9a7f993cf0355f8fe",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776628645000_780350323.png"
         },
         "accessory": {
             "id": "",
             "imagePath": ""
         },
         "shoe": {
-            "id": "69cc24779451dee96ce52ed8",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774986355817_792189507.jpg"
+            "id": "69e5363da7f993cf0355f90d",
+            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1776629305847_265041146.png"
         },
         "outerwear": {
-            "id": "69cb420bd06d79e87efc556b",
-            "imagePath": "/uploads/u_69a4fc64c6c8150a122826d8_1774928391367_850166138.jpg"
+            "id": "",
+            "imagePath": ""
+        },
+        "one_piece": {
+            "id": "",
+            "imagePath": ""
         }
     }
 }

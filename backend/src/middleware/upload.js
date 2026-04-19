@@ -34,3 +34,17 @@ export const upload = multer({
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 },
 });
+
+
+export function deleteImage(imagePath) {
+  if (!imagePath) return false;
+
+  const resolvedPath = path.isAbsolute(imagePath)
+    ? imagePath
+    : path.join(process.cwd(), imagePath);
+
+  if (!fs.existsSync(resolvedPath)) return false;
+
+  fs.unlinkSync(resolvedPath);
+  return true;
+}

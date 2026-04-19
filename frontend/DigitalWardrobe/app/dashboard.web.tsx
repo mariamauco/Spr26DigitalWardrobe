@@ -173,86 +173,88 @@ export default function DashboardScreen() {
 			}
 		  };
 		  
-		  const uploadImage = async () => {
-  try {
-    console.log("Starting upload...");
-    setHasStartedAnalysis(true);
-    setIsUploading(true);
-    setAnalysisText("");
+	const uploadImage = async () => {
+	try {
+		console.log("Starting upload...");
+		setHasStartedAnalysis(true);
+		setIsUploading(true);
+		setAnalysisText("");
 
-    const token = await getToken();
-    if (!token || !imageFile) {
-      console.log("Missing token or imageFile");
-      return;
-    }
+		const token = await getToken();
+		if (!token || !imageFile) {
+		console.log("Missing token or imageFile");
+		return;
+		}
 
-    const formData = new FormData();
+		const formData = new FormData();
 
-    if (Platform.OS === "web") {
-		// always fetch from resized uri on web — ignore asset.file which is unresized
-		const fileResponse = await fetch(imageFile.uri);
-		const blob = await fileResponse.blob();
-		formData.append("image", blob, imageFile.name);
-	  } else {
-		formData.append("image", {
-		  uri: imageFile.uri,
-		  name: imageFile.name,
-		  type: imageFile.type,
-		} as any);
-	  }
+		if (Platform.OS === "web") {
+			// always fetch from resized uri on web — ignore asset.file which is unresized
+			const fileResponse = await fetch(imageFile.uri);
+			const blob = await fileResponse.blob();
+			formData.append("image", blob, imageFile.name);
+		} else {
+			formData.append("image", {
+			uri: imageFile.uri,
+			name: imageFile.name,
+			type: imageFile.type,
+			} as any);
+		}
 
-    const response = await fetch(`${API_URL}/api/clothing`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
+		const response = await fetch(`${API_URL}/api/clothing`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+		body: formData,
+		});
 
-    console.log("Upload response status:", response.status);
+		console.log("Upload response status:", response.status);
 
-    const data = await response.json();
-    console.log("Upload response data:", data);
+		const data = await response.json();
+		console.log("Upload response data:", data);
 
-    if (!response.ok) {
-      setUploadedItem(null);
-      setAnalysisText(data?.message || "Upload failed");
-      return;
-    }
+		if (!response.ok) {
+		setUploadedItem(null);
+		setAnalysisText(data?.message || "Upload failed");
+		return;
+		}
 
-    const item =
-  		data?.response?.item ||
-  		data?.item ||
-  		data?.clothingItem ||
-  		null;
+		const item =
+			data?.response?.item ||
+			data?.item ||
+			data?.clothingItem ||
+			null;
 
-    console.log("Detected clothing item:", item);
+		console.log("Detected clothing item:", item);
 
-    setUploadedItem(item);
+		setUploadedItem(item);
+		const newURL = `${API_URL}${item.imagePath}`;
+		setUploadedImage(newURL);
 
-    const detectedText =
-  		item?.description ||
-  		item?.label ||
-  		item?.analysis ||
-  		item?.name ||
-  		data?.response?.message ||
-  		"Item uploaded successfully";
+		const detectedText =
+			item?.description ||
+			item?.label ||
+			item?.analysis ||
+			item?.name ||
+			data?.response?.message ||
+			"Item uploaded successfully";
 
-    setAnalysisText(detectedText);
-	console.log(item.description);
-	console.log(item.label);
-	console.log(item.name);
-	console.log("Upload response data:", detectedText);
+		setAnalysisText(detectedText);
+		console.log(item.description);
+		console.log(item.label);
+		console.log(item.name);
+		console.log("Upload response data:", detectedText);
 
-  } catch (error) {
-    console.error("Upload error:", error);
-    setUploadedItem(null);
-    setAnalysisText("Upload failed");
-  } finally {
-    setIsUploading(false);
-  }
-  
-};
+	} catch (error) {
+		console.error("Upload error:", error);
+		setUploadedItem(null);
+		setAnalysisText("Upload failed");
+	} finally {
+		setIsUploading(false);
+	}
+	
+	};
 const formatUploadedItemDetails = (item: any) => {
   if (!item) return [];
 

@@ -1,10 +1,8 @@
 import express from "express";
 import ClothingItem from "../models/ClothingItem.js";
 import auth from "../middleware/auth.js";
-import { upload } from "../middleware/upload.js";
+import { upload, deleteImage } from "../middleware/upload.js";
 import { callModel, modelRoutes } from "../middleware/model.js";
-import fs from "fs";
-import path from "path";
 import { model } from "mongoose";
 
 const router = express.Router();
@@ -14,14 +12,15 @@ const processImage = async (imagePath) => {
 
   const type = modelResult?.pred_coarse;
   const subtype = modelResult?.pred_fine;
-  const imageEmbedding = modelResult?.image_embedding;
+  const imageEmbedding = modelResult?.imageEmbedding;
   const typeConfidence = modelResult?.coarse_conf;
   const subtypeConfidence = modelResult?.fine_conf;
+  const imagePathNoBg = modelResult?.bg_removed_image?.url;
   
   // store confidence percentage
 
   // error handling for no type or sub type detected
-  return { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence };
+  return { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence, imagePathNoBg };
 };
 
 
@@ -48,8 +47,13 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
       }
     };
 
-    const imagePath = `/uploads/${req.file.filename}`;
-    const { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence } = await processImage(imagePath);
+    let imagePath = `/uploads/${req.file.filename}`;
+    let { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence, imagePathNoBg } = await processImage(imagePath);
+
+    if (imagePathNoBg) {
+      deleteImage(imagePath)
+      imagePath = imagePathNoBg;
+    }
 
     let name = req.body.name; // make name the image path if no input
     const colors = parseList(req.body.colors);
@@ -154,8 +158,7 @@ router.delete("/:id", auth, async (req, res) => {
     if (!item) return res.status(404).json({ message: "Not found" });
 
     // Remove the actual file from /uploads
-    const absolutePath = path.join(process.cwd(), item.imagePath); // item.imagePath starts with /uploads/...
-    if (fs.existsSync(absolutePath)) fs.unlinkSync(absolutePath);
+    deleteImage(item.imagePath);
 
     res.json({ message: "Deleted" });
   } catch (err) {

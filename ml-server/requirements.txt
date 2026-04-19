@@ -19,3 +19,5 @@ seaborn
 beautifulsoup4
 inference_sdk
 python-dotenv
+numpy==1.26.4
+opencv-python-headless==4.11.0.86

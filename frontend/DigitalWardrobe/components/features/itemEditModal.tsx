@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, ScrollView, Modal, Pressable, Alert, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView, Modal, Pressable, Alert, TouchableOpacity, TextInput, Platform } from "react-native";
 import { getToken } from "../../utils/authStorage";
 import { ClothingItem, CLOTHING_TYPES, SUBTYPES, COLORS, TAGS } from "./labels";
 
@@ -98,38 +98,33 @@ export default function ItemEditModal({ item, onClose, onSave, onDelete }: ItemE
 	// Confirm and delete item from backend, then remove it from parent list.
 	// Uses Alert.alert instead of window.confirm so it works on both web and mobile.
 	const handleDelete = () => {
-		Alert.alert(
-			"Delete item",
-			`Remove "${item.name}" from your closet?`,
-			[
-				{ text: "Cancel", style: "cancel" },
-				{
-					text: "Delete",
-					style: "destructive",
-					onPress: async () => {
-						setDeleting(true);
-						try {
-							const token = await getToken();
-							const res = await fetch(`${API_URL}/api/clothing/${item._id}`, {
-								method: "DELETE",
-								headers: { Authorization: `Bearer ${token}` },
-							});
-							if (res.ok) {
-								onDelete(item._id);
-								onClose();
-							} else {
-								const d = await res.json().catch(() => ({}));
-								Alert.alert("Error", d?.message ?? "Could not delete");
-							}
-						} catch {
-							Alert.alert("Error", "Network error");
-						} finally {
-							setDeleting(false);
-						}
-					},
-				},
-			]
-		);
+		const confirmDelete = Platform.OS === "web"
+			? window.confirm(`Remove "${item.name}" from your closet?`)
+			: true;
+
+		if (!confirmDelete) return;
+
+		setDeleting(true);
+		(async () => {
+			try {
+				const token = await getToken();
+				const res = await fetch(`${API_URL}/api/clothing/${item._id}`, {
+					method: "DELETE",
+					headers: { Authorization: `Bearer ${token}` },
+				});
+				if (res.ok) {
+					onDelete(item._id);
+					onClose();
+				} else {
+					const d = await res.json().catch(() => ({}));
+					Alert.alert("Error", d?.message ?? "Could not delete");
+				}
+			} catch {
+				Alert.alert("Error", "Network error");
+			} finally {
+				setDeleting(false);
+			}
+		})();
 	};
 
 	return (

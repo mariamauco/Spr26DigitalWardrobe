@@ -30,6 +30,7 @@ __pycache__
 .env
 
 # photos uploaded
+
 backend/uploads/
 ml-server/custom_dataset/scraping/pinterest_profile
 

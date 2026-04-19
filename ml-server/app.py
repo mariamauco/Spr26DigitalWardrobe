@@ -149,7 +149,7 @@ def process_image():
         "bg_removed_image": { # change this to return a image url or the path after storing
             "format": "png",
             "mime_type": "image/png",
-            "url": f"https://digitalwardrobe.xyz/uploads/{saved_filename}"
+            "url": f"/uploads/{saved_filename}"
         },
     })
     print("Sending response back...")
