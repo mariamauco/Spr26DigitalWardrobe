@@ -16,22 +16,27 @@ export default function TextBox({ style, ...props }: TextBoxProps) {
 const styles = StyleSheet.create({
   textBox: {
     width: "72%",
-    height: 44,
-    borderRadius: 10,
+    height: 55, // Set a consistent height
+    borderRadius: 12,
     backgroundColor: "#FEFDF4",
-    paddingHorizontal: 12,
-    fontSize:18,
-    //justifyContent:'center',
-    lineHeight:44,
-    fontFamily:'DMSerifDisplay_400Regular',
+    
+    // 1. HORIZONTAL ALIGNMENT
+    textAlign: 'left',          // Keep text to the left
+    paddingLeft: 20,            // Push text away from the edge (Crucial!)
+    
+    // 2. VERTICAL ALIGNMENT
+    textAlignVertical: 'center', // Centers text vertically on Android
+    paddingVertical: 0,          // Removes default OS padding
+    
+    // 3. TYPOGRAPHY
+    fontSize: 18,
+    fontFamily: 'DMSerifDisplay_400Regular',
 
-    // iOS shadow
+    // 4. SHADOWS
     shadowColor: "#DCA0A0",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
+    shadowOpacity: 0.5,
     shadowRadius: 4,
-
-    // Android shadow
     elevation: 4,
   },
 });
