@@ -215,7 +215,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   card: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     overflow: "hidden",
   },
