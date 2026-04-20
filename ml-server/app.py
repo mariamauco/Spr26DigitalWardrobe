@@ -11,7 +11,7 @@ from daily_outfit.sortingOutfits import filter_by_weather, group_by_type
 # util functions
 from util.error_handling import validate_single_clothing_item
 from util.prompts import COARSE_PROMPTS
-from util.analyze_img import clip_classify, clip_classify_fine, get_img_embedding
+from util.analyze_img import clip_classify, clip_classify_fine, get_img_embedding, clip_classify_style
 
 # background removal function
 from util.remove_bg import remove_bg
@@ -116,6 +116,12 @@ def process_image():
     pred_fine, fine_conf, fine_probs = clip_classify_fine(
         clip_image, fine_coarse_key, model, processor
     )
+    print('Fine classification done')
+
+    pred_style, style_conf, style_probs = clip_classify_style(
+        clip_image, pred_fine, model, processor
+    )
+    print(f'Analyzed a {pred_style} {pred_coarse}: {pred_fine}.')
 
     # Save result_image to backend/uploads with the same filename
     # output = io.BytesIO()
@@ -138,6 +144,9 @@ def process_image():
     data = jsonify({
         "embedding_dim": len(image_embedding),
         "imageEmbedding": image_embedding,
+        "pred_style":pred_style,
+        "style_conf": style_conf,
+        "style_probs":style_probs,
         "pred_coarse": pred_coarse,
         "coarse_conf": coarse_conf,
         "coarse_probs": coarse_probs,

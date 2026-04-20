@@ -16,11 +16,13 @@ const processImage = async (imagePath) => {
   const typeConfidence = modelResult?.coarse_conf;
   const subtypeConfidence = modelResult?.fine_conf;
   const imagePathNoBg = modelResult?.bg_removed_image?.url;
+  const styles = modelResult?.pred_style;
+  const styleConfidence = modelResult?.style_conf;
   
   // store confidence percentage
 
   // error handling for no type or sub type detected
-  return { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence, imagePathNoBg };
+  return { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence, imagePathNoBg, styles, styleConfidence };
 };
 
 
@@ -48,7 +50,7 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
     };
 
     let imagePath = `/uploads/${req.file.filename}`;
-    let { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence, imagePathNoBg } = await processImage(imagePath);
+    let { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence, imagePathNoBg, styles, styleConfidence } = await processImage(imagePath);
 
     if (imagePathNoBg) {
       deleteImage(imagePath)
@@ -57,7 +59,9 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
 
     let name = req.body.name; // make name the image path if no input
     const colors = parseList(req.body.colors);
-    const tags = parseList(req.body.tags);
+    let tags = parseList(req.body.tags);
+    tags.push(styles);
+
     let message = "Success";
     let require_input = false;
 
@@ -81,6 +85,7 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
       subtypeConfidence,
       colors,
       tags,
+      styleConfidence,
       imagePath,
       imageEmbedding
     });

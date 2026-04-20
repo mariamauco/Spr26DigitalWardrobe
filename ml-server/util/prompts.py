@@ -116,7 +116,7 @@ STYLES = [
 "vintage, cottage core",
 "sporty",
 "minimalist, classic",
-"coquette", "earthy"
+"coquette", "earthy", "goth"
 ]
 
 STYLE_FINE_CATEGORIES: dict[tuple[str, str], list[str]] = {
@@ -126,6 +126,13 @@ STYLE_FINE_CATEGORIES: dict[tuple[str, str], list[str]] = {
     ("y2k", "bottom"):     ["jeans", "skirt", "shorts", "leggings"],
     ("y2k", "outerwear"):  ["jacket"],
     ("y2k", "shoe"):       ["sneakers", "heels", "boots", "sandals"],
+
+    #goth
+    ("goth", "one_piece"):  ["dress"],
+    ("goth", "top"):        ["t-shirt", "tank top", "long sleeve shirt", "sweater"],
+    ("goth", "bottom"):     ["jeans", "skirt", "shorts", "leggings", "pants"],
+    ("goth", "outerwear"):  ["jacket","vest", "coat"],
+    ("goth", "shoe"):       ["heels", "boots", "sneakers"],
 
     # academia
     ("academia", "one_piece"):  ["dress"],

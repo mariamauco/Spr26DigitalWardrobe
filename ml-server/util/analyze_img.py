@@ -6,7 +6,7 @@ import requests
 import seaborn as sns
 import torch
 from transformers import CLIPProcessor, CLIPModel
-from util.prompts import FINE_CATEGORY_PROMPTS
+from util.prompts import FINE_CATEGORY_PROMPTS, STYLE_FINE_CATEGORIES, STYLES
 
 @torch.inference_mode()
 def clip_classify(image: Image.Image, label_to_prompt: dict, model: CLIPModel, processor: CLIPProcessor):
@@ -39,6 +39,17 @@ def clip_classify_fine(image: Image.Image, coarse_key: str, model: CLIPModel, pr
     if not label_to_prompt:
         return None, None, {}
 
+    return clip_classify(image, label_to_prompt, model, processor)
+
+def clip_classify_style(image: Image.Image, fine_tag, model: CLIPModel, processor: CLIPProcessor):
+    """
+    Returns: (best_style, confidence, probs_dict)
+    """
+    
+    label_to_prompt = {
+        style: f"a photo of a {style} {fine_tag}"
+        for style in STYLES
+    }
     return clip_classify(image, label_to_prompt, model, processor)
 
 def get_img_embedding(model:CLIPModel, processor:CLIPProcessor, img):

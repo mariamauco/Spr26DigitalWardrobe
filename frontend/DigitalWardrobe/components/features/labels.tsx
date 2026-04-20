@@ -42,9 +42,15 @@ export const COLORS = [
 ];
 
 export const TAGS = [
-  "casual", "formal", "business", "sporty", "streetwear", "vintage",
-  "bohemian", "minimalist", "summer", "winter", "spring", "fall",
+  "casual", "streetwear",
+  "bohemian", "summer", "winter", "spring", "fall",
   "party", "beach", "outdoor", "loungewear",
+  "y2k", "academia",
+  "formal, business casual",
+  "vintage, cottage core",
+  "sporty",
+  "minimalist, classic",
+  "coquette", "earthy", "goth"
 ];
 
 // Internal section identifiers used for grouping and ordering on this page.
