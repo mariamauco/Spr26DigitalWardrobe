@@ -80,21 +80,25 @@ def style_fashionclip(image_embedding: list[float], item_type: str, item_subtype
 
 #Maps weather tags to item subtypes/types that should be EXCLUDED following the WEATHER API tags
 WEATHER_EXCLUSIONS = {
-    #Temperature tags from backend 
+    # Temperature tags from backend
     "very hot": {
         "subtypes": ["jacket", "coat", "blazer", "vest", "sweater", "long sleeve shirt",
-                      "boots", "jeans", "sweatpants", "scarf"],
+                      "cardigan", "trench coat",  # all outerwear subtypes
+                      "boots", "jeans", "sweatpants", "leggings", "scarf",
+                      "pants"],  # full leg coverage too warm
         "types": ["outerwear"],
         "tags": ["winter"]
     },
     "hot": {
         "subtypes": ["jacket", "coat", "blazer", "sweater", "long sleeve shirt",
+                      "cardigan", "trench coat",
                       "boots", "sweatpants", "scarf"],
         "types": ["outerwear"],
         "tags": ["winter"]
     },
     "warm": {
-        "subtypes": ["coat", "sweater", "scarf", "boots"],
+        "subtypes": ["coat", "sweater", "scarf", "boots",
+                      "trench coat"],  # heavy layers only
         "types": [],
         "tags": ["winter"]
     },
@@ -104,17 +108,20 @@ WEATHER_EXCLUSIONS = {
         "tags": ["summer"]
     },
     "cold": {
-        "subtypes": ["tank top", "sandals", "shorts", "t-shirt", "skirt"],
+        "subtypes": ["tank top", "sandals", "shorts", "t-shirt", "skirt",
+                      "romper", "flats"],  # sleeveless + short coverage
         "types": [],
         "tags": ["summer"]
     },
     "freezing": {
-        "subtypes": ["tank top", "sandals", "shorts", "t-shirt", "skirt"],
+        "subtypes": ["tank top", "sandals", "shorts", "t-shirt", "skirt",
+                      "romper", "flats", "sneakers", "loafers",
+                      "dress"],  # only heavy coverage allowed
         "types": [],
         "tags": ["summer"]
     },
 
-    #precipitation tags frombackend
+    # Precipitation tags
     "wet weather": {
         "subtypes": ["sandals", "heels"],
         "types": [],
@@ -127,7 +134,8 @@ WEATHER_EXCLUSIONS = {
     },
     "snow weather": {
         "subtypes": ["sandals", "sneakers", "heels", "shorts", "t-shirt",
-                      "tank top", "skirt"],
+                      "tank top", "skirt", "flats", "loafers",
+                      "romper"],
         "types": [],
         "tags": ["summer"]
     },
@@ -178,10 +186,26 @@ def group_by_type(closet):
             groups[item_type].append(item)
     return groups
 
-def group_by_style(closet: list[dict]) -> dict[str, list[dict]]:
-    grouped = {style: [] for style in STYLES}
+def sort_closet_by_preferences(closet: list[dict], preferences: dict, weather_tags: list[str]) -> list[dict]:
+    """
+    Return items from the closet that match the user's style preferences
+    and are appropriate for the current weather.
+    """
+    # step 1: filter out items that don't fit the weather
+    weather_filtered = filter_by_weather(closet, weather_tags)
 
-    for item in closet:
+    # step 2: get the user's preferred styles
+    user_styles = [s.lower() for s in preferences.get("styleTags", [])]
+
+    #base case the user has no preference of style so you can make any kind of outfit combination
+    if not user_styles:
+        return weather_filtered  # no style preference, return all weather-appropriate items
+
+    # step 3: score each item against the user's preferred styles
+    CONFIDENCE_THRESHOLD = 0.40
+    matching_items = []
+
+    for item in weather_filtered:
         image_embedding = item.get("imageEmbedding", [])
         item_type = item.get("type", "")
         item_subtype = item.get("subtype", "")
@@ -189,14 +213,21 @@ def group_by_style(closet: list[dict]) -> dict[str, list[dict]]:
         if not image_embedding or not item_type or not item_subtype:
             continue
 
+        # get style scores from the fine-tuned model
         scores = style_fashionclip(image_embedding, item_type, item_subtype)
 
-        if scores:
-            top_style = scores[0]["style"]
-            item["style_scores"] = scores
-            item["predicted_style"] = top_style
-            grouped[top_style].append(item)
+        if not scores:
+            continue
 
-    return grouped
+        # check if any of the user's preferred styles score above 40%
+        item["style_scores"] = scores
+        for score_entry in scores:
+            if (score_entry["style"].lower() in user_styles
+                    and score_entry["score"] >= CONFIDENCE_THRESHOLD):
+                item["predicted_style"] = score_entry["style"]
+                matching_items.append(item)
+                break  # item matched, no need to check other styles
+
+    return matching_items
 # if __name__ == '__main__':
 #     app.run(debug=True)
