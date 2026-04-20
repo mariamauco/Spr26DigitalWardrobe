@@ -186,7 +186,7 @@ def group_by_type(closet):
             groups[item_type].append(item)
     return groups
 
-def sort_closet_by_preferences(closet: list[dict], preferences: dict, weather_tags: list[str]) -> list[dict]:
+def group_by_style(closet: list[dict], preferences: dict, weather_tags: list[str]) -> list[dict]:
     """
     Return items from the closet that match the user's style preferences
     and are appropriate for the current weather.
