@@ -8,6 +8,7 @@ import { getToken } from "../utils/authStorage";
 import { useUser } from "../components/features/userContext";
 import GridOverlay from "../components/features/gridoverlay";
 import { UploadProvider, UploadCard, ItemCard, useUploadContext } from "../components/features/uploadItem";
+import GalleryCarousel from "../components/ui/galleryCard";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "";
 
@@ -154,6 +155,9 @@ export default function DashboardScreen() {
 
 					<View style={styles.dailyCard}>
 						<Text style={styles.cardText}>Today's Outfit</Text>
+						<View style={{ marginTop: 20 }}>
+									<GalleryCarousel width={350} height={250} />
+						</View>
 					</View>
 
 					<View style={styles.secondRow}>
@@ -174,7 +178,10 @@ export default function DashboardScreen() {
 							{weather?.main?.temp !== undefined ? <Text style={styles.weatherTemp}>{Math.round(weather.main.temp)}°F</Text> : null}
 						</View>
 
-						<UploadCard />
+						<View style= {{width:'60%', height:200}}>
+							<UploadCard />
+						</View>
+						
 					</View>
 
 					<View style={{ height: 100 }} />
@@ -272,6 +279,7 @@ const styles = StyleSheet.create({
 	},
 	statLabelActive: { color: "#8A5F5F" },
 	dailyCard: {
+		width:'100%',
 		backgroundColor: "rgba(254, 253, 244, 0.6)",
 		borderRadius: 30,
 		padding: 20,
@@ -289,6 +297,7 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		gap: 14,
 		marginBottom: 14,
+		height:200
 	},
 	weatherCard: {
 		flex: 1,

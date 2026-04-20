@@ -302,8 +302,8 @@ export function ItemCard() {
 
 const styles = StyleSheet.create({
 	smallCard: {
-		width: 293,
-		height: 275,
+		width: '100%',
+		height: '100%',
 		backgroundColor: "rgba(254, 253, 244, 0.6)",
 		borderRadius: 30,
 	},
