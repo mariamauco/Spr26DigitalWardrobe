@@ -204,7 +204,7 @@ export default function DashboardScreen() {
 						<MaterialCommunityIcons name="tune-variant" size={24} color="#b0968e" />
 					</TouchableOpacity>
 				</View>
-
+				
 				<ItemCard />
 			</LinearGradient>
 		</UploadProvider>

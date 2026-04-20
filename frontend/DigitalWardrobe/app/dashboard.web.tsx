@@ -128,7 +128,9 @@ export default function DashboardScreen() {
 					</ScrollView>
 				</View>
 
-				<ItemCard/>
+				
+					<ItemCard/>
+				
 			</UploadProvider>
 		</LinearGradient>
 	);
@@ -137,6 +139,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		height:'100%'
 	},
 	contentWrapper: {
 		flex: 1,
