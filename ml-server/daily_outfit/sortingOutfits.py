@@ -132,7 +132,11 @@ WEATHER_EXCLUSIONS = {
         "tags": ["summer"]
     },
 }
+'''THE LOGIC OF FILTERING: every time that the JSON file is read and the weather is something
+such as "cold, rainy", then we can exclude any clothing items that shouldnt be included in the list
+we will then return a list of items in the closet that can be chosen and passed through the sort by style function
 
+'''
 def filter_by_weather(closet, weather_tags):
     excluded_subtypes = set()
     excluded_types = set()
