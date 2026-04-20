@@ -24,6 +24,7 @@ def _load_style_fashionclip():
         _processor = CLIPProcessor.from_pretrained(FINE_TUNED_MODEL_PATH)
         _model.eval()
     return _model, _processor
+
 def _build_prompts_for_item(item_type:str, item_subtype:str) -> list[tuple[str, str]]:
     prompts = []
     item_type_lower = item_type.lower()
@@ -156,6 +157,7 @@ def filter_by_weather(closet, weather_tags):
         filtered.append(item)
 
     return filtered
+
 #group items by type in the closet
 def group_by_type(closet):
     groups = {

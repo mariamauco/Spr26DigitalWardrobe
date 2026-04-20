@@ -7,7 +7,11 @@ from PIL import Image, UnidentifiedImageError
 
 import torch
 from transformers import CLIPProcessor, CLIPModel
+<<<<<<< Updated upstream
 from daily_outfit.sortingOutfits import filter_by_weather, group_by_type
+=======
+from daily_outfit.sortingOutfits import group_by_type, filter_by_weather, group_by_style
+>>>>>>> Stashed changes
 # util functions
 from util.error_handling import validate_single_clothing_item
 from util.prompts import COARSE_PROMPTS
@@ -204,7 +208,10 @@ def daily_outfit():
     #group by type
     groups = group_by_type(filtered_closet)
 
-    #rank items using style_fashionCLIP tuned version
+    #rank items using style_fashionCLIP tuned version, keeping in mind that each clothing item can have one or more style tags
+    
+
+
     #ranking call
     #ranked_groups = style_fashionclip.rank(groups, preferences)
     ranked_groups = groups  # placeholder
@@ -212,7 +219,7 @@ def daily_outfit():
     #PASS ranked groups to create_outfit
     #TODO: call create_outfit with ranked_groups, preferences, weather_tags
 
-    return jsonify(filtered_closet)
+    return jsonify(ranked_groups)
 
 
 if __name__ == "__main__":
