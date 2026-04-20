@@ -46,7 +46,6 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    flex: 1,
     width: 200,
     height: 51,
     paddingVertical: 4,
