@@ -38,7 +38,9 @@ export const typeToSectionKey = new Map<string, string>([
 // Selectable metadata chips for each item in the edit modal.
 export const COLORS = [
   "black", "white", "gray", "red", "blue", "green", "yellow",
-  "orange", "purple", "pink", "brown", "beige", "navy", "maroon", "teal", "cream",
+  "orange", "purple", "pink", "brown", "beige", "navy", "maroon",
+  "teal", "cream", "burgundy", "rust", "camel", "mustard", "olive",
+  "lavender", "coral", "grey"
 ];
 
 export const TAGS = [

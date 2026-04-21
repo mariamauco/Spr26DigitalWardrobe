@@ -25,8 +25,11 @@ const ClothingItemSchema = new mongoose.Schema(
         subtypeConfidence: {type: Number, required: false},
         colors: {type: [String], enum: [
             "black", "white", "gray", "red", "blue", "green", "yellow",
-            "orange", "purple", "pink", "brown", "beige", "navy", "maroon", "teal", "cream",
+            "orange", "purple", "pink", "brown", "beige", "navy", "maroon",
+             "teal", "cream", "burgundy", "rust", "camel", "mustard", "olive",
+             "lavender", "coral", "grey"
         ], default: []}, // ex: ["blue", "white"],
+        colorConfidence: {type: Number, required: false},
         tags: {type: [String], enum: [
             "casual", "streetwear",
             "bohemian", "summer", "winter", "spring", "fall",

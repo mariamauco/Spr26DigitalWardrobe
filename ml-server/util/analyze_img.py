@@ -6,7 +6,7 @@ import requests
 import seaborn as sns
 import torch
 from transformers import CLIPProcessor, CLIPModel
-from util.prompts import FINE_CATEGORY_PROMPTS, STYLE_FINE_CATEGORIES, STYLES
+from util.prompts import FINE_CATEGORY_PROMPTS, STYLE_FINE_CATEGORIES, STYLES, COLOR_PROMPTS
 
 @torch.inference_mode()
 def clip_classify(image: Image.Image, label_to_prompt: dict, model: CLIPModel, processor: CLIPProcessor):
@@ -71,3 +71,8 @@ def get_img_embedding(model:CLIPModel, processor:CLIPProcessor, img):
     embedding = img_features[0].detach().cpu().float().tolist()
 
     return embedding
+
+@torch.inference_mode()
+def classify_color(image: Image.Image, model: CLIPModel, processor: CLIPProcessor) -> tuple[str, float]:
+    best_label, confidence, _ = clip_classify(image, COLOR_PROMPTS, model, processor)
+    return best_label, confidence

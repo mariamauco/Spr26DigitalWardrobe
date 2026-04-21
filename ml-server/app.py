@@ -12,7 +12,7 @@ from daily_outfit.create_outfit import assemble_outfits
 # util functions
 from util.error_handling import validate_single_clothing_item
 from util.prompts import COARSE_PROMPTS
-from util.analyze_img import clip_classify, clip_classify_fine, get_img_embedding, clip_classify_style
+from util.analyze_img import clip_classify, clip_classify_fine, get_img_embedding, clip_classify_style, classify_color
 
 # background removal function
 from util.remove_bg import remove_bg
@@ -119,6 +119,8 @@ def process_image():
     )
     print('Fine classification done')
 
+    color_label, color_conf = classify_color(clip_image, model, processor)
+
     pred_style, style_conf, style_probs = clip_classify_style(
         clip_image, pred_fine, model, processor
     )
@@ -153,6 +155,9 @@ def process_image():
         "coarse_probs": coarse_probs,
         "pred_fine": pred_fine,
         "fine_conf": fine_conf,
+        "pred_color":color_label,
+        "color_conf":color_conf,
+
         "fine_probs": fine_probs,
         "fine_pool_coarse": fine_coarse_key,
         "validation_message": message,

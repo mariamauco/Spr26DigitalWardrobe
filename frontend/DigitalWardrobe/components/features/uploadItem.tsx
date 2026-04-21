@@ -355,10 +355,12 @@ export function ItemCard() {
 		formatConfidence(uploadedItem?.confidence) ||
 		formatConfidence(uploadedItem?.typeConfidence);
 
+	const detectedTags = formatColors(uploadedItem?.tags);
+
 	const detectedConfidenceValue =
-		uploadedItem?.confidenceScore ??
-		uploadedItem?.confidence ??
-		uploadedItem?.typeConfidence ??
+		(uploadedItem?.typeConfidence + uploadedItem?.subtypeConfidence +
+		uploadedItem?.colorConfidence + uploadedItem?.styleConfidence) / 4;
+
 		null;
 
 	if (!showPopup) return null;
@@ -403,6 +405,12 @@ export function ItemCard() {
 							{detectedColors ? (
 								<Text style={styles.popupInfoText}>
 									<Text style={styles.popupInfoLabel}>Colors:</Text> {detectedColors}
+								</Text>
+							) : null}
+
+							{detectedTags ? (
+								<Text style={styles.popupInfoText}>
+									<Text style={styles.popupInfoLabel}>Style:</Text> {detectedTags}
 								</Text>
 							) : null}
 

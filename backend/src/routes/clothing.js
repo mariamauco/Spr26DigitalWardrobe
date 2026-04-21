@@ -20,13 +20,8 @@ const processImage = async (imagePath) => {
   const styleConfidence = modelResult?.style_conf;
 
   // try common possible color field names from the model response
-  const detectedColors =
-    modelResult?.colors ||
-    modelResult?.pred_colors ||
-    modelResult?.dominant_colors ||
-    modelResult?.dominantColors ||
-    modelResult?.color ||
-    [];
+  const detectedColors = modelResult?.pred_color || [];
+  const colorConfidence = modelResult?.color_conf
 
   return {
     type,
@@ -38,6 +33,7 @@ const processImage = async (imagePath) => {
     styles,
     styleConfidence,
     detectedColors,
+    colorConfidence
   };
 };
 
@@ -66,78 +62,75 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
 
     let imagePath = `/uploads/${req.file.filename}`;
     let {
-  type,
-  subtype,
-  imageEmbedding,
-  typeConfidence,
-  subtypeConfidence,
-  imagePathNoBg,
-  styles,
-  styleConfidence,
-  detectedColors,
-} = await processImage(imagePath);
+    type,
+    subtype,
+    imageEmbedding,
+    typeConfidence,
+    subtypeConfidence,
+    imagePathNoBg,
+    styles,
+    styleConfidence,
+    detectedColors,
+    colorConfidence
+  } = await processImage(imagePath);
 
-console.log("detectedColors from model:", detectedColors);
+  console.log("detectedColors from model:", detectedColors);
 
-if (imagePathNoBg) {
-  deleteImage(imagePath);
-  imagePath = imagePathNoBg;
-}
+  if (imagePathNoBg) {
+    deleteImage(imagePath);
+    imagePath = imagePathNoBg;
+  }
 
-let name = req.body.name;
+  let name = req.body.name;
 
-// colors from frontend if provided, otherwise use model output
-const manualColors = parseList(req.body.colors);
+  // colors from frontend if provided, otherwise use model output
+  const manualColors = parseList(req.body.colors);
 
-console.log("manual colors from req.body:", manualColors);
+  console.log("manual colors from req.body:", manualColors);
 
-const colors =
-  manualColors.length > 0
-    ? manualColors
-    : Array.isArray(detectedColors)
-      ? detectedColors.map(String).filter(Boolean)
-      : detectedColors
-        ? [String(detectedColors)]
-        : [];
-
-        console.log("final colors saved:", colors);
-        
-let tags = parseList(req.body.tags);
-if (styles) tags.push(styles);
-
-    let message = "Success";
-    let require_input = false;
-
-    if (!name)
-      name = req.file.filename;
+  const colors = manualColors
+  colors.push(detectedColors);
 
 
-    if (typeConfidence < 0.4){
-      message = "We couldn't quite identify this item. Please categorize it manually."
-      type = 'not detected';
-      subtype = 'not detected';
-      require_input = true;
-    }
+  console.log("final colors saved:", colors);
+          
+  let tags = parseList(req.body.tags);
+  if (styles) tags.push(styles);
 
-    const item = await ClothingItem.create({
-      user: req.user.id,
-      name,
-      type,
-      typeConfidence,
-      subtype,
-      subtypeConfidence,
-      colors,
-      tags,
-      styleConfidence,
-      imagePath,
-      imageEmbedding
-    });
+  let message = "Success";
+  let require_input = false;
 
-    const response = {
-      message,
-      require_input,
-      item: item,
-    }
+  if (!name)
+    name = req.file.filename;
+
+
+  if (typeConfidence < 0.4){
+    message = "We couldn't quite identify this item. Please categorize it manually."
+    type = 'not detected';
+    subtype = 'not detected';
+    require_input = true;
+  }
+
+  const item = await ClothingItem.create({
+    user: req.user.id,
+    name,
+    type,
+    typeConfidence,
+    subtype,
+    subtypeConfidence,
+    colors,
+    tags,
+    colorConfidence,
+    styleConfidence,
+    imagePath,
+    imageEmbedding
+  });
+
+  const response = {
+    message,
+    require_input,
+    item: item,
+  }
 
     res.status(201).json({response});
   } catch (err) {
@@ -207,6 +200,8 @@ router.delete("/:id", auth, async (req, res) => {
 
     // Remove the actual file from /uploads
     deleteImage(item.imagePath);
+    
+
 
     res.json({ message: "Deleted" });
   } catch (err) {
