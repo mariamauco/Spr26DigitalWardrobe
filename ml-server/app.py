@@ -9,6 +9,8 @@ import torch
 from transformers import CLIPProcessor, CLIPModel
 from daily_outfit.sortingOutfits import filter_by_weather, group_by_type, group_by_style
 from daily_outfit.create_outfit import assemble_outfits
+from daily_outfit.sortingOutfits import _load_style_fashionclip
+from pathlib import Path
 # util functions
 from util.error_handling import validate_single_clothing_item
 from util.prompts import COARSE_PROMPTS
@@ -17,13 +19,16 @@ from util.analyze_img import clip_classify, clip_classify_fine, get_img_embeddin
 # background removal function
 from util.remove_bg import remove_bg
 
+#Since the model was already pre-loaded when sortingOutfits was imported, this just returns the cached version
+model, processor = _load_style_fashionclip()
+
 # model
-MODEL_NAME = "patrickjohncyh/fashion-clip"
-FINE_MODE = "pred_coarse"
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-model = CLIPModel.from_pretrained(MODEL_NAME).to(DEVICE)
-processor = CLIPProcessor.from_pretrained(MODEL_NAME)
-model.eval()
+# MODEL_NAME = "patrickjohncyh/fashion-clip"
+# FINE_MODE = "pred_coarse"
+# DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+# model = CLIPModel.from_pretrained(MODEL_NAME).to(DEVICE)
+# processor = CLIPProcessor.from_pretrained(MODEL_NAME)
+# model.eval()
 
 # Flask cors: flask extension that enables cros origin resource sharing (useful for development)
 from flask_cors import CORS
@@ -204,10 +209,8 @@ def daily_outfit():
                 "weatherTags": weatherTags
             }
         }), 400
-    #filter by wheather
-    #filtered_closet = filter_by_weather(closet, weatherTags, model, processor)
-
-    #rank items using style_fashionCLIP tuned version, keeping in mind that each clothing item can have one or more style tags
+    
+    # filter by weather + rank by style preferences
     filtered_closet = group_by_style(closet, preferences, weatherTags)
 
     #group by type
