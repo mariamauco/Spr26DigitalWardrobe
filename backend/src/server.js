@@ -52,7 +52,7 @@ app.use("/api/weather", weatherRoutes);
 app.use("/api/users", userRoutes);
 
 // PROFILE PICTURE ROUTES //
-app.use("/", profilePicRoutes);
+app.use("/api/profile-pic", profilePicRoutes);
 
 
 

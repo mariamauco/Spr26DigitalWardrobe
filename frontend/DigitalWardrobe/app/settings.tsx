@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {View, Text, StyleSheet, Pressable, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView,} from "react-native";
+import {View, Text, StyleSheet, Pressable, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image} from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
@@ -17,6 +18,8 @@ export default function SettingsScreen() {
   const [name, setName] = useState("");
   const [zipcode, setZipcode] = useState("");
   const [saved, setSaved] = useState(false);
+
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
 
   // fetch full user profile 
   useEffect(() => {
@@ -45,9 +48,29 @@ export default function SettingsScreen() {
       }
     };
 
+      const fetchProfilePic = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) return;
+        const response = await fetch(`${API_URL}/api/profile-pic`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setProfilePicUrl(`${API_URL}${data.profilePic.image_path}`);
+        }
+      } catch (err) {
+        console.error("Error fetching profile pic:", err);
+      }
+    };
+
+    fetchProfilePic();
     fetchUser();
   }, []);
 
+    
+ 
+  
 
   const handleSave = async () => {
     if (!user) return;
@@ -82,6 +105,48 @@ export default function SettingsScreen() {
     }
   };
 
+  const handlePickImage = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      alert("Permission to access photos is required.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("profilePic", {
+        uri: asset.uri,
+        name: "profile.jpg",
+        type: "image/jpeg",
+      } as any);
+
+      const response = await fetch(`${API_URL}/api/profile-pic`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProfilePicUrl(`${API_URL}${data.profilePic.image_path}`);
+      }
+    } catch (err) {
+      console.error("Error uploading profile pic:", err);
+    }
+  };
+
   return (
     <LinearGradient
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
@@ -110,6 +175,22 @@ export default function SettingsScreen() {
           {/* ── Settings card ── */}
           <View style={styles.settingsCard}>
 
+            {/* profile photo */}
+            <View style={styles.photoBlock}>
+              <Pressable onPress={handlePickImage}>
+                {profilePicUrl ? (
+                  <Image source={{ uri: profilePicUrl }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <MaterialCommunityIcons name="account-outline" size={40} color="#B7A6A6" />
+                  </View>
+                )}
+              </Pressable>
+              <Pressable onPress={handlePickImage}>
+                <Text style={styles.changePhotoText}>change photo</Text>
+              </Pressable>
+            </View>
+            
             {/* Name */}
             <View style={styles.settingBlock}>
               <Text style={styles.settingLabel}>Name</Text>
@@ -270,4 +351,36 @@ const styles = StyleSheet.create({
   tabItem: {
     alignItems: "center",
   },
+
+  // profile picture 
+  photoBlock: {
+  alignItems: "center",
+  gap: 8,
+  paddingBottom: 8,
+  borderBottomWidth: 1,
+  borderBottomColor: "rgba(138,95,95,0.1)",
+  marginBottom: 4,
+},
+
+avatar: {
+  width: 90,
+  height: 90,
+  borderRadius: 45,
+  backgroundColor: "rgba(245,237,237,0.55)",
+},
+
+avatarPlaceholder: {
+  width: 90,
+  height: 90,
+  borderRadius: 45,
+  backgroundColor: "rgba(245,237,237,0.55)",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+changePhotoText: {
+  color: "#8A5F5F",
+  fontSize: 13,
+  fontFamily: "EncodeSansSemiCondensed_400Regular",
+},
 });

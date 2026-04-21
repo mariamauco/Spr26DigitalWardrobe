@@ -1,65 +1,113 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { useUser } from "../components/features/userContext";
 import { LinearGradient } from "expo-linear-gradient";
 import GridOverlay from "../components/features/gridoverlay";
 import DashboardSidebar from "../components/features/dashboardSidebar";
 import { TextInput } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 export default function SettingsScreen() {
   const { user, setUser } = useUser();
 
-    const [name, setName] = useState("");
-    const [zipcode, setZipcode] = useState("");
+  const [name, setName] = useState("");
+  const [zipcode, setZipcode] = useState("");
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
 
-    useEffect(() => {
-      setName(user?.name ?? "");
-      setZipcode(user?.zipCode ?? "");
-    }, [user]);
+  useEffect(() => {
+    setName(user?.name ?? "");
+    setZipcode(user?.zipCode ?? "");
 
-    // function that triggers when clicking Save button
-    const handleSave = async () => {
-  if (!user) return;
+    const fetchProfilePic = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) return;
+        const response = await fetch(`${API_URL}/api/profile-pic`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setProfilePicUrl(`${API_URL}${data.profilePic.image_path}`);
+        }
+      } catch (err) {
+        console.error("Error fetching profile pic:", err);
+      }
+    };
+    fetchProfilePic();
 
-  try {
-    const token = await AsyncStorage.getItem("token");
+  }, [user]);
 
-    const response = await fetch(`${API_URL}/api/users`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name, zipCode: zipcode }),  
-    });
+  const handleSave = async () => {
+    if (!user) return;
 
-    if (!response.ok) {
-      console.error("Failed to update user:", await response.text());
-      return;
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/api/users`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name, zipCode: zipcode }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to update user:", await response.text());
+        return;
+      }
+
+      const updatedUser = await response.json();
+      setUser(updatedUser);
+      console.log("Saved to backend:", updatedUser);
+
+    } catch (err) {
+      console.error("Error saving user:", err);
     }
+  };
 
-    const updatedUser = await response.json();
-    setUser(updatedUser);
-    console.log("Saved to backend:", updatedUser);
+  const handlePickImage = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-  } catch (err) {
-    console.error("Error saving user:", err);
-  }
-};
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const formData = new FormData();
+        formData.append("profilePic", file);
 
+        const response = await fetch(`${API_URL}/api/profile-pic`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
 
-    return (
+        if (response.ok) {
+          const data = await response.json();
+          setProfilePicUrl(`${API_URL}${data.profilePic.image_path}`);
+        }
+      } catch (err) {
+        console.error("Error uploading profile pic:", err);
+      }
+    };
+    input.click();
+  };
+
+  return (
     <LinearGradient
       colors={["#FDECEB", "rgba(246,242,223,0.90)"]}
       style={styles.container}
     >
-        <GridOverlay />
+      <GridOverlay />
       <View style={styles.contentWrapper}>
-        <DashboardSidebar 
-          activeScreen="settings" 
+        <DashboardSidebar
+          activeScreen="settings"
           username={user?.name || "User"}
         />
 
@@ -70,6 +118,23 @@ export default function SettingsScreen() {
           </Text>
 
           <View style={styles.settingsCard}>
+
+            {/* profile photo */}
+            <View style={styles.photoBlock}>
+              <Pressable onPress={handlePickImage}>
+                {profilePicUrl ? (
+                  <Image source={{ uri: profilePicUrl }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <MaterialCommunityIcons name="account-outline" size={40} color="#B7A6A6" />
+                  </View>
+                )}
+              </Pressable>
+              <Pressable onPress={handlePickImage}>
+                <Text style={styles.changePhotoText}>change photo</Text>
+              </Pressable>
+            </View>
+
             <View style={styles.settingBlock}>
               <Text style={styles.settingLabel}>Name</Text>
               <TextInput
@@ -93,9 +158,11 @@ export default function SettingsScreen() {
                 maxLength={5}
               />
             </View>
+
             <Pressable style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>save</Text>
             </Pressable>
+
           </View>
         </View>
       </View>
@@ -159,7 +226,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: "DMSerifDisplay_400Regular",
   },
-  
+
   settingBlock: {
     gap: 10,
   },
@@ -188,5 +255,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "EncodeSansSemiCondensed_400Regular",
     textTransform: "lowercase",
+  },
+
+  photoBlock: {
+    alignItems: "center",
+    gap: 8,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(138,95,95,0.1)",
+    marginBottom: 4,
+  },
+
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "rgba(245,237,237,0.55)",
+  },
+
+  avatarPlaceholder: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "rgba(245,237,237,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  changePhotoText: {
+    color: "#8A5F5F",
+    fontSize: 13,
+    fontFamily: "EncodeSansSemiCondensed_400Regular",
   },
 });
