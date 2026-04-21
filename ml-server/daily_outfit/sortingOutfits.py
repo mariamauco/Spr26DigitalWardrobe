@@ -218,8 +218,14 @@ def group_by_style(closet: list[dict], preferences: dict, weather_tags: list[str
         f"[group_by_style] after weather filter item_count={len(weather_filtered)} preference_styles={preferences.get('styleTags', [])}"
     )
 
-    # step 2: get the user's preferred styles
-    user_styles = [s.lower() for s in preferences.get("styleTags", [])]
+    # step 2: normalize user style tags into comparable tokens.
+    # Example: "formal, business casual" -> {"formal", "business casual"}
+    def _style_tokens(label: str) -> set[str]:
+        return {part.strip().lower() for part in str(label).split(",") if part.strip()}
+
+    user_styles = set()
+    for style in preferences.get("styleTags", []):
+        user_styles.update(_style_tokens(style))
 
     #base case the user has no preference of style so you can make any kind of outfit combination
     if not user_styles:
@@ -227,7 +233,7 @@ def group_by_style(closet: list[dict], preferences: dict, weather_tags: list[str
         return weather_filtered  # no style preference, return all weather-appropriate items
 
     # step 3: score each item against the user's preferred styles
-    CONFIDENCE_THRESHOLD = 0.40
+    CONFIDENCE_THRESHOLD = 0.25
     matching_items = []
 
     for item in weather_filtered:
@@ -245,11 +251,14 @@ def group_by_style(closet: list[dict], preferences: dict, weather_tags: list[str
             print(f"[group_by_style] no scores returned for item_id={item.get('_id')}")
             continue
 
-        # check if any of the user's preferred styles score above 40%
+        # check if any of the user's preferred styles score above threshold
         item["style_scores"] = scores
         for score_entry in scores:
-            if (score_entry["style"].lower() in user_styles
-                    and score_entry["score"] >= CONFIDENCE_THRESHOLD):
+            predicted_style_tokens = _style_tokens(score_entry["style"])
+            if (
+                score_entry["score"] >= CONFIDENCE_THRESHOLD
+                and predicted_style_tokens.intersection(user_styles)
+            ):
                 item["predicted_style"] = score_entry["style"]
                 matching_items.append(item)
                 print(
@@ -258,6 +267,15 @@ def group_by_style(closet: list[dict], preferences: dict, weather_tags: list[str
                 break  # item matched, no need to check other styles
 
     print(f"[group_by_style] matched_items_count={len(matching_items)}")
+
+    # If style filtering is too strict to form any valid outfit, fallback to weather-only filtering.
+    grouped_matches = group_by_type(matching_items)
+    can_make_standard = bool(grouped_matches["top"] and grouped_matches["bottom"] and grouped_matches["shoe"])
+    can_make_one_piece = bool(grouped_matches["one_piece"] and grouped_matches["shoe"])
+
+    if not (can_make_standard or can_make_one_piece):
+        print("[group_by_style] fallback: insufficient slot coverage after style filtering; using weather-filtered items")
+        return weather_filtered
 
     return matching_items
 # if __name__ == '__main__':

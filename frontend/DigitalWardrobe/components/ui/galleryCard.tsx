@@ -11,6 +11,7 @@ import {
   NativeSyntheticEvent,
 } from "react-native";
 import example from "../../utils/dailyOutfitExample.json"
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Props = {
   width?: number;
@@ -18,9 +19,12 @@ type Props = {
 };
 
 const GalleryCarousel: React.FC<Props> = ({ width = 500, height = 400 }) => {  
-  const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+  const RAW_API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+  const API_ORIGIN = RAW_API_URL.replace(/\/+$/, "").replace(/\/api$/, "");
+  const API_BASE = `${API_ORIGIN}/api`;
 
   const [loading, setLoading] = useState(true);
+  const [imageBaseUrl, setImageBaseUrl] = useState(API_ORIGIN);
 
   // OUTFIT VARIABLES
   // the types of clothing items we have
@@ -68,8 +72,8 @@ const GalleryCarousel: React.FC<Props> = ({ width = 500, height = 400 }) => {
   };
   const ORDER: clothingLabel[] = ["top", "one_piece", "bottom", "outerwear", "shoe", "accessory"];
 
-  // setting for testing with example
-  const [dev, setDev] = useState(1); // 1 for dev
+  // Use sample data only when explicitly enabled.
+  const [useExampleData] = useState(false);
 
   // 1. GET OUTFIT
   useEffect(() => {
@@ -82,11 +86,25 @@ const GalleryCarousel: React.FC<Props> = ({ width = 500, height = 400 }) => {
     // make api call to get daily outfit
     const fetchOutfits = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/weather/daily-outfit`);
+        const token = await AsyncStorage.getItem("token");
+        if (!token) return;
+        const response = await fetch(`${API_BASE}/weather/daily-outfit`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         console.log(response)
 
         if (!response.ok) {
           throw new Error("Failed to fetch outfits");
+        }
+
+        // Keep image host aligned with the API response host.
+        try {
+          const responseOrigin = new URL(response.url).origin;
+          if (responseOrigin) {
+            setImageBaseUrl(responseOrigin);
+          }
+        } catch {
+          // Keep configured base URL when response URL is not parseable.
         }
 
         outfitData = await response.json();
@@ -101,7 +119,7 @@ const GalleryCarousel: React.FC<Props> = ({ width = 500, height = 400 }) => {
       setDailyOutfits(outfitsList);
     }
     const run = async () => {
-      if(!dev){ // call the api if not in dev mode
+      if(!useExampleData){ // call the api unless sample data is explicitly enabled
         await fetchOutfits();
     }
       processData(outfitData);
@@ -110,7 +128,7 @@ const GalleryCarousel: React.FC<Props> = ({ width = 500, height = 400 }) => {
     }
 
     run();    
-  }, [API_URL, dev]);
+  }, [API_BASE, useExampleData]);
 
 
   // RENDER OUTFITS 
@@ -179,7 +197,7 @@ const GalleryCarousel: React.FC<Props> = ({ width = 500, height = 400 }) => {
                   return (
                     <Image
                       key={it.id}
-                      source={{ uri: `${API_URL}${it.imagePath}` }} // create full uri
+                      source={{ uri: `${imageBaseUrl}${it.imagePath}` }} // create full uri
                       style={{
                         position: "absolute",
                         left: b.x * (width - 80),
