@@ -207,15 +207,15 @@ def daily_outfit():
     #filter by wheather
     #filtered_closet = filter_by_weather(closet, weatherTags, model, processor)
 
-    #group by type
-    groups = group_by_type(closet)
-
     #rank items using style_fashionCLIP tuned version, keeping in mind that each clothing item can have one or more style tags
-    filtered_closet = group_by_style(groups, preferences, weatherTags)
+    filtered_closet = group_by_style(closet, preferences, weatherTags)
+
+    #group by type
+    groups = group_by_type(filtered_closet)
 
     #PASS ranked groups to create_outfit
     #TODO: call create_outfit with ranked_groups, preferences, weather_tags
-    create_outfit = assemble_outfits(filtered_closet)
+    create_outfit = assemble_outfits(groups)
 
     return jsonify(create_outfit)
 
