@@ -1,9 +1,18 @@
 import React, { createContext, useContext, useState } from "react";
-import { View, Text, StyleSheet, Image, Platform, ActivityIndicator, Pressable, Alert, ActionSheetIOS } from "react-native";
+import {
+	View,
+	Text,
+	StyleSheet,
+	Image,
+	Platform,
+	ActivityIndicator,
+	Pressable,
+	Alert,
+	ActionSheetIOS,
+} from "react-native";
+import Svg, { Circle } from "react-native-svg";
 import * as ImagePicker from "expo-image-picker";
-import * as ImageCamera from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
-
 import { getToken } from "@/utils/authStorage";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "";
@@ -47,6 +56,80 @@ function buildImageUrl(imagePath?: string | null) {
 	return `${base}${normalizedPath}`;
 }
 
+function normalizeConfidence(value: any) {
+	if (value === undefined || value === null || value === "") return null;
+
+	const num = Number(value);
+	if (Number.isNaN(num)) return null;
+
+	// if backend gives 0.82 -> 82
+	// if backend gives 82 -> 82
+	const percent = num <= 1 ? num * 100 : num;
+	return Math.max(0, Math.min(100, percent));
+}
+
+function formatConfidence(value: any) {
+	const percent = normalizeConfidence(value);
+	if (percent === null) return null;
+	return `${percent.toFixed(0)}%`;
+}
+
+function formatColors(value: any) {
+	if (!value) return null;
+
+	if (Array.isArray(value)) {
+		if (!value.length) return null;
+		return value.join(", ");
+	}
+
+	return String(value);
+}
+
+function ConfidenceWheel({ value }: { value: any }) {
+	const percent = normalizeConfidence(value);
+
+	if (percent === null) return null;
+
+	const size = 78;
+	const strokeWidth = 8;
+	const radius = (size - strokeWidth) / 2;
+	const circumference = 2 * Math.PI * radius;
+	const progress = (percent / 100) * circumference;
+	const dashOffset = circumference - progress;
+
+	return (
+		<View style={styles.confidenceWheelWrapper}>
+			<Svg width={size} height={size}>
+				<Circle
+					stroke="#E8DED6"
+					fill="none"
+					cx={size / 2}
+					cy={size / 2}
+					r={radius}
+					strokeWidth={strokeWidth}
+				/>
+				<Circle
+					stroke="#8A5F5F"
+					fill="none"
+					cx={size / 2}
+					cy={size / 2}
+					r={radius}
+					strokeWidth={strokeWidth}
+					strokeDasharray={`${circumference} ${circumference}`}
+					strokeDashoffset={dashOffset}
+					strokeLinecap="round"
+					rotation="-90"
+					origin={`${size / 2}, ${size / 2}`}
+				/>
+			</Svg>
+
+			<View style={styles.confidenceWheelCenter}>
+				<Text style={styles.confidenceWheelText}>{percent.toFixed(0)}%</Text>
+			</View>
+		</View>
+	);
+}
+
 export function UploadProvider({ children }: { children: React.ReactNode }) {
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 	const [imageFile, setImageFile] = useState<UploadImage | null>(null);
@@ -70,46 +153,52 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 
 	const handlePickImage = async () => {
 		try {
-			
-			let choice = 2;
-			let result = null;
+			let choice: number | null = null;
+			let result: ImagePicker.ImagePickerResult | null = null;
 
-			if(!isWeb){
+			if (!isWeb) {
 				choice = await new Promise<number>((resolve) => {
 					ActionSheetIOS.showActionSheetWithOptions(
-						{ options: ["Take Photo", "Choose from Library", "Cancel"], cancelButtonIndex: 2,},
+						{
+							options: ["Take Photo", "Choose from Library", "Cancel"],
+							cancelButtonIndex: 2,
+						},
 						resolve
 					);
 				});
-
-
 			}
-			if(isWeb || choice === 1){
+
+			if (isWeb || choice === 1) {
 				const libPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 				if (!libPermission.granted) {
 					Alert.alert("Permission required", "Allow photo access to upload.");
-				return;
+					return;
 				}
+
 				result = await ImagePicker.launchImageLibraryAsync({
 					mediaTypes: ["images"],
 					allowsEditing: true,
 					aspect: [4, 5],
 					quality: 1,
 				});
-			}else if(choice === 0){
+			} else if (choice === 0) {
 				const camPermission = await ImagePicker.requestCameraPermissionsAsync();
 				if (!camPermission.granted) {
 					Alert.alert("Permission required", "Allow camera access to take a photo.");
 					return;
 				}
+
 				result = await ImagePicker.launchCameraAsync({
 					mediaTypes: ["images"],
 					allowsEditing: true,
 					aspect: [4, 5],
 					quality: 1,
 				});
+			} else if (!isWeb && choice === 2) {
+				return;
 			}
-			if (choice === 2 || !result || result.canceled || !result.assets?.length) return;
+
+			if (!result || result.canceled || !result.assets?.length) return;
 
 			const asset = result.assets[0];
 			const resized = await ImageManipulator.manipulateAsync(
@@ -132,6 +221,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 			setIsUploading(false);
 		} catch (error) {
 			console.log("Image picker error:", error);
+			Alert.alert("Upload error", "Something went wrong while picking the image.");
 		}
 	};
 
@@ -142,9 +232,13 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 			setAnalysisText("");
 
 			const token = await getToken();
-			if (!token || !imageFile) return;
+			if (!token || !imageFile) {
+				setAnalysisText("Missing image or auth token");
+				return;
+			}
 
 			const formData = new FormData();
+
 			if (Platform.OS === "web") {
 				const fileResponse = await fetch(imageFile.uri);
 				const blob = await fileResponse.blob();
@@ -176,6 +270,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 
 			const item = data?.response?.item || data?.item || data?.clothingItem || null;
 			setUploadedItem(item);
+			console.log("uploaded item returned from backend:", item);
 
 			const detectedImageUrl = buildImageUrl(item?.imagePath);
 			if (detectedImageUrl) setUploadedImage(detectedImageUrl);
@@ -249,18 +344,28 @@ export function ItemCard() {
 		uploadedItem,
 		hasStartedAnalysis,
 		showPopup,
-		analysisText,
 		isUploading,
 		uploadImage,
 		resetUpload,
 	} = useUploadContext();
-	const isWeb = Platform.OS === "web";
+
+	const detectedColors = formatColors(uploadedItem?.colors);
+	const detectedConfidenceText =
+		formatConfidence(uploadedItem?.confidenceScore) ||
+		formatConfidence(uploadedItem?.confidence) ||
+		formatConfidence(uploadedItem?.typeConfidence);
+
+	const detectedConfidenceValue =
+		uploadedItem?.confidenceScore ??
+		uploadedItem?.confidence ??
+		uploadedItem?.typeConfidence ??
+		null;
 
 	if (!showPopup) return null;
 
 	return (
 		<View style={styles.popupOverlay}>
-			<View style={[styles.popupCard, !isUploading && analysisText ? styles.popupCardResult : null]}>
+			<View style={[styles.popupCard, !isUploading && uploadedItem ? styles.popupCardResult : null]}>
 				{!isUploading && uploadedItem ? (
 					<>
 						<Text style={styles.popupResultTitle}>we detected:</Text>
@@ -290,8 +395,22 @@ export function ItemCard() {
 
 							{uploadedItem.subtype ? (
 								<Text style={styles.popupInfoText}>
-									<Text style={styles.popupInfoLabel}>Subtype:</Text> {uploadedItem.subtype.replace(/-/g, " ")}
+									<Text style={styles.popupInfoLabel}>Subtype:</Text>{" "}
+									{uploadedItem.subtype.replace(/-/g, " ")}
 								</Text>
+							) : null}
+
+							{detectedColors ? (
+								<Text style={styles.popupInfoText}>
+									<Text style={styles.popupInfoLabel}>Colors:</Text> {detectedColors}
+								</Text>
+							) : null}
+
+							{detectedConfidenceText ? (
+								<View style={styles.confidenceBlock}>
+									<Text style={styles.popupInfoLabel}>Confidence</Text>
+									<ConfidenceWheel value={detectedConfidenceValue} />
+								</View>
 							) : null}
 						</View>
 					</>
@@ -315,7 +434,11 @@ export function ItemCard() {
 						</View>
 
 						<View style={styles.popupButtons}>
-							<Pressable style={[styles.confirmButton, isUploading && { opacity: 0.6 }]} onPress={uploadImage} disabled={isUploading}>
+							<Pressable
+								style={[styles.confirmButton, isUploading && { opacity: 0.6 }]}
+								onPress={uploadImage}
+								disabled={isUploading}
+							>
 								<Text style={styles.popupButtonText}>{isUploading ? "loading..." : "confirm"}</Text>
 							</Pressable>
 
@@ -332,11 +455,11 @@ export function ItemCard() {
 
 const styles = StyleSheet.create({
 	smallCard: {
-		width: '100%',
-		height: '100%',
+		width: "100%",
+		height: "100%",
 		backgroundColor: "rgba(254, 253, 244, 0.6)",
 		borderRadius: 30,
-		justifyContent:'center'
+		justifyContent: "center",
 	},
 	uploadContent: {
 		flex: 1,
@@ -502,10 +625,34 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontFamily: "EncodeSansSemiCondensed_400Regular",
 		textAlign: "center",
-		marginBottom: 4,
+		marginBottom: 6,
 	},
 	popupInfoLabel: {
 		color: "#8A5F5F",
 		fontFamily: "DMSerifDisplay_400Regular",
+		fontSize: 18,
+	},
+	confidenceBlock: {
+		marginTop: 14,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	confidenceWheelWrapper: {
+		marginTop: 10,
+		width: 78,
+		height: 78,
+		justifyContent: "center",
+		alignItems: "center",
+		position: "relative",
+	},
+	confidenceWheelCenter: {
+		position: "absolute",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	confidenceWheelText: {
+		color: "#4E4E4E",
+		fontSize: 14,
+		fontFamily: "EncodeSansSemiCondensed_400Regular",
 	},
 });

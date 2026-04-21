@@ -18,13 +18,28 @@ const processImage = async (imagePath) => {
   const imagePathNoBg = modelResult?.bg_removed_image?.url;
   const styles = modelResult?.pred_style;
   const styleConfidence = modelResult?.style_conf;
-  
-  // store confidence percentage
 
-  // error handling for no type or sub type detected
-  return { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence, imagePathNoBg, styles, styleConfidence };
+  // try common possible color field names from the model response
+  const detectedColors =
+    modelResult?.colors ||
+    modelResult?.pred_colors ||
+    modelResult?.dominant_colors ||
+    modelResult?.dominantColors ||
+    modelResult?.color ||
+    [];
+
+  return {
+    type,
+    subtype,
+    imageEmbedding,
+    typeConfidence,
+    subtypeConfidence,
+    imagePathNoBg,
+    styles,
+    styleConfidence,
+    detectedColors,
+  };
 };
-
 
 //     CREATE CLOTHING ITEM     //
 router.post("/", auth, upload.single("image"), async (req, res) => {
@@ -50,17 +65,45 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
     };
 
     let imagePath = `/uploads/${req.file.filename}`;
-    let { type, subtype, imageEmbedding, typeConfidence, subtypeConfidence, imagePathNoBg, styles, styleConfidence } = await processImage(imagePath);
+    let {
+  type,
+  subtype,
+  imageEmbedding,
+  typeConfidence,
+  subtypeConfidence,
+  imagePathNoBg,
+  styles,
+  styleConfidence,
+  detectedColors,
+} = await processImage(imagePath);
 
-    if (imagePathNoBg) {
-      deleteImage(imagePath)
-      imagePath = imagePathNoBg;
-    }
+console.log("detectedColors from model:", detectedColors);
 
-    let name = req.body.name; // make name the image path if no input
-    const colors = parseList(req.body.colors);
-    let tags = parseList(req.body.tags);
-    tags.push(styles);
+if (imagePathNoBg) {
+  deleteImage(imagePath);
+  imagePath = imagePathNoBg;
+}
+
+let name = req.body.name;
+
+// colors from frontend if provided, otherwise use model output
+const manualColors = parseList(req.body.colors);
+
+console.log("manual colors from req.body:", manualColors);
+
+const colors =
+  manualColors.length > 0
+    ? manualColors
+    : Array.isArray(detectedColors)
+      ? detectedColors.map(String).filter(Boolean)
+      : detectedColors
+        ? [String(detectedColors)]
+        : [];
+
+        console.log("final colors saved:", colors);
+        
+let tags = parseList(req.body.tags);
+if (styles) tags.push(styles);
 
     let message = "Success";
     let require_input = false;
