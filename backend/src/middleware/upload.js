@@ -36,12 +36,41 @@ export const upload = multer({
 });
 
 
-export function deleteImage(imagePath) {
-  if (!imagePath) return false;
+function resolveLocalUploadPath(imagePath) {
+  if (!imagePath || typeof imagePath !== "string") return null;
 
-  const resolvedPath = path.isAbsolute(imagePath)
-    ? imagePath
-    : path.join(process.cwd(), imagePath);
+  let candidate = imagePath.trim();
+
+  // If we receive a URL, use only its path portion.
+  if (/^https?:\/\//i.test(candidate)) {
+    try {
+      candidate = new URL(candidate).pathname;
+    } catch {
+      return null;
+    }
+  }
+
+  // Normalize "uploads/x.jpg" and "/uploads/x.jpg" to a relative path.
+  const uploadsPrefix = /^\/?uploads\//i;
+  if (uploadsPrefix.test(candidate)) {
+    candidate = candidate.replace(/^\//, "");
+  } else if (path.isAbsolute(candidate)) {
+    // For absolute paths, only allow files already under this project's uploads dir.
+    const normalized = path.normalize(candidate);
+    const uploadsRoot = path.normalize(uploadDir + path.sep);
+    return normalized.startsWith(uploadsRoot) ? normalized : null;
+  } else {
+    // For non-uploads relative values, treat as unsupported input.
+    return null;
+  }
+
+  return path.join(process.cwd(), candidate);
+}
+
+
+export function deleteImage(imagePath) {
+  const resolvedPath = resolveLocalUploadPath(imagePath);
+  if (!resolvedPath) return false;
 
   if (!fs.existsSync(resolvedPath)) return false;
 
