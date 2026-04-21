@@ -1,7 +1,7 @@
 import { Text, View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import React, { useState } from "react";
 
-import { Pressable, useWindowDimensions } from "react-native";
+import { useWindowDimensions } from "react-native";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 // imports for components
@@ -9,11 +9,10 @@ import Button from "../components/ui/button";
 import OmbreBackground from "../components/features/ombrebackground";
 import GridOverlay from "../components/features/gridoverlay";
 import TextBox from "../components/ui/textBox";
-import Dropdown from "../components/ui/dropdown";
+import Dropdown from "../components/ui/dropdown.web";
 import PlaceholderCard from "../components/ui/card";
 import { countries } from "../components/features/countryCodes";
 import NavBar from "../components/features/navbar";
-import { replace } from 'expo-router/build/global-state/routing';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL
 
