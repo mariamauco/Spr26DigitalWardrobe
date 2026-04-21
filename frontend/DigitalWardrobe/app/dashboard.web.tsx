@@ -110,7 +110,7 @@ export default function DashboardScreen() {
 						<View style={styles.mainRow}>
 							{/* Daily outfit space; still uses the shared carousel component. */}
 							<View style={styles.dailyCard}>
-								<Text style={styles.cardText}>daily outfit</Text>
+								<Text style={styles.cardText}>Today's Outfit</Text>
 								<View style={{ marginTop: 20 }}>
 									<GalleryCarousel width={500} height={500} />
 								</View>
@@ -128,7 +128,9 @@ export default function DashboardScreen() {
 					</ScrollView>
 				</View>
 
-				<ItemCard/>
+				
+					<ItemCard/>
+				
 			</UploadProvider>
 		</LinearGradient>
 	);
@@ -137,6 +139,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		height:'100%'
 	},
 	contentWrapper: {
 		flex: 1,
@@ -171,6 +174,7 @@ const styles = StyleSheet.create({
 	rightColumn: {
 		gap: 28,
 		alignItems: "center",
+		height:280
 	},
 	cardText: {
 		color: "#8A5F5F",

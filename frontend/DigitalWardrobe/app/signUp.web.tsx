@@ -15,7 +15,7 @@ import { countries } from "../components/features/countryCodes";
 import NavBar from "../components/features/navbar";
 import { replace } from 'expo-router/build/global-state/routing';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
 // when sign up button is pressed this function is called
 // sends user info to backend

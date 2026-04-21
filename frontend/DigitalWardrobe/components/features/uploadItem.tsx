@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
-import { View, Text, StyleSheet, Image, Platform, ActivityIndicator, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, Image, Platform, ActivityIndicator, Pressable, Alert, ActionSheetIOS } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageCamera from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
 
 import { getToken } from "@/utils/authStorage";
@@ -65,22 +66,50 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
 		setIsUploading(false);
 	};
 
+	const isWeb = Platform.OS === "web";
+
 	const handlePickImage = async () => {
 		try {
-			const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-			if (!permission.granted) {
-				Alert.alert("Permission required", "Allow photo access to upload.");
-				return;
+			
+			let choice = 2;
+			let result = null;
+
+			if(!isWeb){
+				choice = await new Promise<number>((resolve) => {
+					ActionSheetIOS.showActionSheetWithOptions(
+						{ options: ["Take Photo", "Choose from Library", "Cancel"], cancelButtonIndex: 2,},
+						resolve
+					);
+				});
+
+
 			}
-
-			const result = await ImagePicker.launchImageLibraryAsync({
-				mediaTypes: ["images"],
-				allowsEditing: true,
-				aspect: [4, 5],
-				quality: 1,
-			});
-
-			if (result.canceled || !result.assets?.length) return;
+			if(isWeb || choice === 1){
+				const libPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+				if (!libPermission.granted) {
+					Alert.alert("Permission required", "Allow photo access to upload.");
+				return;
+				}
+				result = await ImagePicker.launchImageLibraryAsync({
+					mediaTypes: ["images"],
+					allowsEditing: true,
+					aspect: [4, 5],
+					quality: 1,
+				});
+			}else if(choice === 0){
+				const camPermission = await ImagePicker.requestCameraPermissionsAsync();
+				if (!camPermission.granted) {
+					Alert.alert("Permission required", "Allow camera access to take a photo.");
+					return;
+				}
+				result = await ImagePicker.launchCameraAsync({
+					mediaTypes: ["images"],
+					allowsEditing: true,
+					aspect: [4, 5],
+					quality: 1,
+				});
+			}
+			if (choice === 2 || !result || result.canceled || !result.assets?.length) return;
 
 			const asset = result.assets[0];
 			const resized = await ImageManipulator.manipulateAsync(
@@ -203,10 +232,10 @@ export function UploadCard() {
 				</>
 			) : (
 				<View style={styles.uploadContent}>
-					<Text style={styles.uploadTitle}>add item</Text>
-					<Text style={styles.uploadDescription}>upload a photo to your wardrobe</Text>
+					<Text style={styles.uploadTitle}>Add Item</Text>
+					<Text style={styles.uploadDescription}>Upload an item to your wardrobe</Text>
 					<View style={styles.uploadButton}>
-						<Text style={styles.uploadButtonText}>choose photo</Text>
+						<Text style={styles.uploadButtonText}>Choose photo</Text>
 					</View>
 				</View>
 			)}
@@ -225,6 +254,7 @@ export function ItemCard() {
 		uploadImage,
 		resetUpload,
 	} = useUploadContext();
+	const isWeb = Platform.OS === "web";
 
 	if (!showPopup) return null;
 
@@ -302,10 +332,11 @@ export function ItemCard() {
 
 const styles = StyleSheet.create({
 	smallCard: {
-		width: 293,
-		height: 275,
+		width: '100%',
+		height: '100%',
 		backgroundColor: "rgba(254, 253, 244, 0.6)",
 		borderRadius: 30,
+		justifyContent:'center'
 	},
 	uploadContent: {
 		flex: 1,
@@ -343,7 +374,7 @@ const styles = StyleSheet.create({
 		textTransform: "lowercase",
 	},
 	uploadPreview: {
-		width: "82%",
+		width: "80%",
 		height: 170,
 		borderRadius: 20,
 		resizeMode: "cover",
@@ -375,14 +406,14 @@ const styles = StyleSheet.create({
 		zIndex: 50,
 	},
 	popupCard: {
-		width: 420,
+		minWidth: 380,
 		minHeight: 620,
 		backgroundColor: "#FEFDF4",
 		borderRadius: 30,
 		padding: 24,
 		gap: 18,
 		alignItems: "center",
-		justifyContent: "flex-start",
+		justifyContent: "center",
 	},
 	popupCardResult: {
 		justifyContent: "flex-start",

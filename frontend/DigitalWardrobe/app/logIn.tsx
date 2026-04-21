@@ -8,8 +8,6 @@ import Button from "../components/ui/button";
 import OmbreBackground from "../components/features/ombrebackground";
 import GridOverlay from "../components/features/gridoverlay";
 import TextBox from "../components/ui/textBox";
-import Dropdown from "../components/ui/dropdown";
-import PlaceholderCard from "../components/ui/card";
 import NavBar from "../components/features/navbar";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
@@ -94,146 +92,110 @@ export default function LogInScreen() {
 		<View style={styles.mainContainer}>
 			<OmbreBackground />
 			<GridOverlay />
-			<NavBar />
-							
-			<ScrollView 
-				contentContainerStyle={styles.mainScrollContent}
-				showsVerticalScrollIndicator={false}
-			>
-				<KeyboardAvoidingView 
-							behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-							style={[styles.keyboardView]}
-				>
-					<View style={styles.logInContainer}>
-						{/* Title header */}
-						<View style={styles.header}>
-							<Text style={styles.title}>Log In</Text>
+			<View style={styles.logInContainer}>
+				{/* Title header */}
+				<View style={styles.header}>
+					<Text style={styles.title}>Log In</Text>
+				</View>
+
+				<View style={styles.container}>
+					{/* Email input field */}
+					<TextBox 
+						placeholder='email' 
+						value={email} 
+						onChangeText={(text) => {
+							setEmail(text);
+							setErrorMessage(null);
+						}}								
+						keyboardType="email-address"
+						autoCapitalize="none"
+					/>
+					{/* Password input field */}
+					<TextBox 
+						placeholder='password' 
+						secureTextEntry 
+						value={password} 
+						onChangeText={(text) => {
+							setPassword(text);
+							setErrorMessage(null);
+						}}
+					/>
+
+					{/* Error message display */}
+					{errorMessage && (
+						<View style={styles.errorBox}>
+							<Text style={styles.errorText}>{errorMessage}</Text>
 						</View>
+					)}	
 
-						<View style={styles.container}>
-							{/* Email input field */}
-							<TextBox 
-								placeholder='email' 
-								value={email} 
-								onChangeText={(text) => {
-									setEmail(text);
-									setErrorMessage(null);
-								}}								
-								keyboardType="email-address"
-								autoCapitalize="none"
-							/>
-							{/* Password input field */}
-							<TextBox 
-								placeholder='password' 
-								secureTextEntry 
-								value={password} 
-								onChangeText={(text) => {
-									setPassword(text);
-									setErrorMessage(null);
-								}}
-							/>
+					{/* Log In button */}
+					<Button
+						title="Log In"
+						onPress={login}
+					/>
+				</View>
 
-							{/* Error message display */}
-							{errorMessage && (
-								<View style={styles.errorBox}>
-									<Text style={styles.errorText}>{errorMessage}</Text>
-								</View>
-							)}				
-							<View style={{marginTop:20}}/>
-								{/* Log In button */}
-								<Button title="Log In" onPress={login} />
-							</View>
+					{/* Footer message*/}
 
-							{/* Footer message*/}
-
-							<Pressable onPress={() => router.replace("/signUp")}> 
-								<Text style={styles.signUpText}>Sign up</Text>
-							</Pressable>
-						</View>
-				</KeyboardAvoidingView>
-			</ScrollView>
+					<Pressable onPress={() => router.replace("/signUp")}> 
+						<Text style={styles.signUpText}>Sign up</Text>
+					</Pressable>
+			</View>
 		</View>
 		</>
 	);
 }
 
 const styles = StyleSheet.create({
-	
-	mainContainer: {
-        flex: 1, // This ensures the background covers the whole screen
-		justifyContent: "center",
+    mainContainer: {
+        flex: 1,
     },
-
-	mainScrollContent:{
-		flexGrow:1,
-		justifyContent:'center',
-		paddingVertical:40,
-	},
-
-	keyboardView:{
-		flex:1,
-	},
-
-	logInContainer:{
-		display: "flex",
-		flex: 1,
-		flexDirection: "row",
-		justifyContent: "center",
-		alignContent: "center",
-		width: "90%", // 90% on mobile
-		maxWidth:1150,
-		minHeight:500,
-		marginVertical:40,
-		alignItems: "center",
-		alignSelf:"center",
-
-	},
+    mainScrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center', // Centers the form vertically on the screen
+    },
+    logInContainer: {
+        flex: 1,
+        flexDirection: "column", // CRITICAL: Stacks elements vertically
+        alignItems: "center",
+        justifyContent: "center",
+        width: "90%",
+        alignSelf: "center",
+        marginVertical: 40,
+    },
     header: {
-		height:60,
-		marginBottom:40,
-        alignItems: 'center',
-		justifyContent:'center'
+        marginBottom: 30, // Space between "Log In" title and inputs
     },
-	title: {
-		color: "#8A5F5F",
-		fontFamily: "DMSerifDisplay_400Regular", 
-		letterSpacing:1,
-		fontSize: 36,
-		fontWeight: "600",
-		textAlign:'center',
-	},	
-	container: {
-		width: '100%',
-		alignItems: 'center',
-		gap: 16,
-	},
-	signUpText: {
-		fontFamily: 'DM Serif Display',
-		fontSize: 22,
-		fontWeight: '700',
-		color: '#6A6A6A',
-		textDecorationLine: 'underline',
-	},
-	/*
-	inputWrapper: {
-        backgroundColor: "#FEFDF4",
-        borderRadius: 12,
-        height: 60,
-        justifyContent: 'center',
-        paddingHorizontal: 20,
-        shadowColor: "#DCA0A0",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.6,
-        shadowRadius: 4,
-        elevation: 5,
-    },*/
-	errorBox: {
-		backgroundColor: "#f7b0b6",
-		borderRadius: 8,
-		padding: 10,
-		width: "73%",
-		alignSelf: "center",
-	},
-
-	errorText: { color: "#842029", fontSize: 20, textAlign: "center" }
-});	
+    title: {
+        color: "#8A5F5F",
+        fontFamily: "DMSerifDisplay_400Regular", 
+        fontSize: 48,
+        textAlign: 'center',
+    },
+    container: {
+        width: '100%',
+        maxWidth: 320, // Keeps inputs from getting too wide on tablets
+        alignItems: 'center',
+        gap: 20, // Spacing between your text boxes
+    },
+    errorBox: {
+        backgroundColor: "#f7b0b6",
+        borderRadius: 8,
+        padding: 10,
+        width: "100%",
+        marginTop: 10,
+    },
+    errorText: { 
+        color: "#842029", 
+        fontSize: 16, 
+        textAlign: "center" 
+    },
+    signUpText: {
+        fontFamily: 'DMSerifDisplay_400Regular',
+        fontSize: 22,
+        fontWeight: '700',
+        color: '#8A5F5F',
+        textDecorationLine: 'underline',
+        marginTop: 30,
+    },
+});
