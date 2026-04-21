@@ -95,7 +95,7 @@ const getUserWeather = async (user) => {
 export const dailyOutfit = async (userId) => {
 
     // 1. Get the user's profile from the database using their ID.
-    const user = await User.findById({userId});
+    const user = await User.findById(userId);
     if (!user) {
         const err = new Error("User not found");
         err.status = 404;
@@ -109,10 +109,18 @@ export const dailyOutfit = async (userId) => {
     const tags = weatherTags(weatherData);
 
     // 4. Find this user's onboarding profile to read styling preferences.
-    const onboarding = await OnboardingProfile.findById({userId});
+    const onboarding = await OnboardingProfile.findOne({user: userId});
 
     // 5. Keep only preference fields needed by the model.
     //    These labels shape outfit generation style and comfort level.
+
+    // no onboarding found with user
+    if(!onboarding){
+        const err = new Error("No Onboarding profile found.");
+        err.status = 404;
+        throw err;
+    }
+
     const preferences = {
         comfort: onboarding.comfort,
         experimental: onboarding.experimental,
@@ -121,7 +129,7 @@ export const dailyOutfit = async (userId) => {
     }
 
     // 6. Load all clothing items in the user's closet.
-    const closet = await ClothingItem.find({userId}).sort({ createdAt: -1 });
+    const closet = await ClothingItem.find({user: userId}).sort({ createdAt: -1 });
 
     // 7. Build the request payload for the daily outfit model route.
     const payload = {
@@ -129,43 +137,13 @@ export const dailyOutfit = async (userId) => {
         preferences,
         closet,
         weatherTags: tags,
-        slots: ["top", "bottom", "outerwear", "footwear", "accessories"],
+        slots: ["top", "bottom", "outerwear", "shoe", "accessory", "one_piece"],
     };
 
     // 8. Call the ML model with preferences, closet items, and weather tags.
     const modelResponse = await callModel(modelRoutes.dailyOutfit, payload);
 
     let response = modelResponse;
-    
-    // DUMMY Data
-    if (!modelResponse){
-        response = {
-            first:{
-                top,
-                bottom,
-                accessory,
-                shoe,
-                one_piece,
-                outerwear
-            }, 
-            second: {
-                top: null,
-                bottom: null,
-                accessory: null,
-                shoe: null,
-                one_piece:null,
-                outerwear: null
-            }, 
-            third: {
-                top: null,
-                bottom: null,
-                accessory: null,
-                shoe: null,
-                one_piece:null,
-                outerwear: null
-            }
-        }
-    }
 
     // 9. Return the model response back to the route handler.
     return response;
