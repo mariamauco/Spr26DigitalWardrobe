@@ -69,7 +69,15 @@ export default function SettingsScreen() {
   }, []);
 
     
- 
+
+const handleLogout = async () => {
+  try {
+    await AsyncStorage.removeItem("token");
+    router.replace("/logIn");
+  } catch (err) {
+    console.log("Logout error:", err);
+  }
+};
   
 
   const handleSave = async () => {
@@ -169,8 +177,17 @@ export default function SettingsScreen() {
           <View style={styles.statusSpacer} />
 
           {/* ── Header ── */}
-          <Text style={styles.title}>SETTINGS</Text>
-          <Text style={styles.subtitle}>Manage your account.</Text>
+          <View style={styles.headerRow}>
+            <View>
+              <Text style={styles.title}>SETTINGS</Text>
+              <Text style={styles.subtitle}>Manage your account</Text>
+            </View>
+
+            <Pressable style={styles.logoutButtonInline} onPress={handleLogout}>
+              <Text style={styles.logoutText}>logout</Text>
+            </Pressable>
+          </View>
+
 
           {/* ── Settings card ── */}
           <View style={styles.settingsCard}>
@@ -216,7 +233,7 @@ export default function SettingsScreen() {
                 maxLength={5}
               />
             </View>
-
+                
             {/* Save button */}
             <Pressable style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>
@@ -381,6 +398,26 @@ avatarPlaceholder: {
 changePhotoText: {
   color: "#8A5F5F",
   fontSize: 13,
+  fontFamily: "EncodeSansSemiCondensed_400Regular",
+},
+
+headerRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  width: "100%",
+},
+
+logoutButtonInline: {
+  backgroundColor: "#4E4E4E",
+  paddingVertical: 8,
+  paddingHorizontal: 16,
+  borderRadius: 14,
+},
+
+logoutText: {
+  color: "#FEFDF4",
+  fontSize: 14,
   fontFamily: "EncodeSansSemiCondensed_400Regular",
 },
 });
