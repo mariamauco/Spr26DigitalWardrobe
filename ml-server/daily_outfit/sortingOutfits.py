@@ -9,7 +9,7 @@ from pathlib import Path
 from util.prompts import STYLES, STYLE_FINE_CATEGORIES
 
 #logic to use the fine_tuned model including loading and importing
-FINE_TUNED_MODEL_PATH = Path(__file__).parent.parent / "util" / "fine_tuned_model2"
+FINE_TUNED_MODEL_PATH = Path(__file__).parent.parent / "util" / "fine_tuned_model"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 _model = None

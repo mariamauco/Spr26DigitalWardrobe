@@ -120,7 +120,7 @@ export const dailyOutfit = async (userId) => {
     const dateKey = `${y}-${mm}-${dd}`;
 
     const nextLocalMidnightShiftedMs = Date.UTC(y, m - 1, d + 1, 0, 0, 0, 0);
-    const expiresAt = new Date(nextLocalMidnightShiftedMs - tz * 1000;);
+    const expiresAt = new Date(nextLocalMidnightShiftedMs - tz * 1000);
 
     // look for the cache for this day, if found --> return it
     const cache = await DailyOutfit.findOne({ user: userId, dateKey, expiresAt: { $gt: new Date() },}).lean();

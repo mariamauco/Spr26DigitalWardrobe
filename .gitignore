@@ -36,3 +36,5 @@ ml-server/custom_dataset/scraping/pinterest_profile
 
 Scriptsactivate.bat
 ScriptsActivate.ps1
+
+ml-server/util/fine_tuned_model/
