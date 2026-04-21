@@ -7,7 +7,7 @@ from PIL import Image, UnidentifiedImageError
 
 import torch
 from transformers import CLIPProcessor, CLIPModel
-from daily_outfit.sortingOutfits import filter_by_weather, group_by_type, group_by_style
+from daily_outfit.sortingOutfits import group_by_type, group_by_style
 from daily_outfit.create_outfit import assemble_outfits
 from daily_outfit.sortingOutfits import _load_style_fashionclip
 from pathlib import Path
