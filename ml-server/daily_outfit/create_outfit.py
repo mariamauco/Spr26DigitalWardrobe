@@ -53,7 +53,7 @@ def pick_third_best(items, used_ids):
 def assemble_outfits(filtered_closet):
     """
     Build up to 3 outfits from the weather- and style-filtered closet.
-    Each outfit requires at minimum: (top + bottom + footwear) OR (one-piece + footwear).
+    Each outfit requires at minimum: (top + bottom + shoe) OR (one_piece + shoe).
     No item is reused across outfits.
 
     Returns a dictionary with keys "first", "second", "third"; value is an outfit dict or null.
@@ -73,39 +73,39 @@ def assemble_outfits(filtered_closet):
     for key, picker in zip(outfit_keys, pickers):
         top = picker(sorted_groups["top"], used_ids)
         bottom = picker(sorted_groups["bottom"], used_ids)
-        footwear = picker(sorted_groups["footwear"], used_ids)
-        onepiece = picker(sorted_groups["one-piece"], used_ids)
+        shoe = picker(sorted_groups["shoe"], used_ids)
+        one_piece = picker(sorted_groups["one_piece"], used_ids)
 
         #step 5: build each outfit using the following logic: 
         '''
-        For each of the three slots, it tries to pick a top, bottom, footwear, and one-piece using that slot's picker. Then it checks which combo works:
+        For each of the three slots, it tries to pick a top, bottom, shoe, and one_piece using that slot's picker. Then it checks which combo works:
 
-        If it found a top and bottom and footwear - build a standard outfit
-        Else if it found a one-piece and footwear - build a one-piece outfit
+        If it found a top and bottom and shoe - build a standard outfit
+        Else if it found a one_piece and shoe - build a one_piece outfit
         Else stop entirely, because there aren't enough items left for a valid outfit. The remaining slots stay null. 
         '''
-        if top and bottom and footwear:
+        if top and bottom and shoe:
             outfit = {
                 "top": top["_id"],
                 "bottom": bottom["_id"],
-                "footwear": footwear["_id"],
+                "shoe": shoe["_id"],
             }
-            used_ids.update([top["_id"], bottom["_id"], footwear["_id"]])
-        elif onepiece and footwear:
+            used_ids.update([top["_id"], bottom["_id"], shoe["_id"]])
+        elif one_piece and shoe:
             outfit = {
-                "top": onepiece["_id"],
+                "top": one_piece["_id"],
                 "bottom": None,
-                "footwear": footwear["_id"],
+                "shoe": shoe["_id"],
             }
-            used_ids.update([onepiece["_id"], footwear["_id"]])
+            used_ids.update([one_piece["_id"], shoe["_id"]])
         else:
             break  # not enough items for a valid outfit; remaining slots stay null ?? #TODO: ask maria if we should return what we have
 
         outerwear = picker(sorted_groups["outerwear"], used_ids)
-        accessory = picker(sorted_groups["accessories"], used_ids)
+        accessory = picker(sorted_groups["accessory"], used_ids)
 
         outfit["outerwear"] = outerwear["_id"] if outerwear else None
-        outfit["accessories"] = accessory["_id"] if accessory else None
+        outfit["accessory"] = accessory["_id"] if accessory else None
 
         if outerwear:
             used_ids.add(outerwear["_id"])

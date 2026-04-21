@@ -77,11 +77,13 @@ const GalleryCarousel: React.FC<Props> = ({ width = 500, height = 400 }) => {
     // dummy outfits
     let outfitData: DailyOutfitsResponse = example as DailyOutfitsResponse;
 
+    console.log(outfitData)
     
     // make api call to get daily outfit
     const fetchOutfits = async () => {
       try {
         const response = await fetch(`${API_URL}/api/weather/daily-outfit`);
+        console.log(response)
 
         if (!response.ok) {
           throw new Error("Failed to fetch outfits");
