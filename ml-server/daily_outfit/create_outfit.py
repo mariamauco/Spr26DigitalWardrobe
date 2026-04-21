@@ -59,6 +59,11 @@ def assemble_outfits(filtered_closet):
     Returns a dictionary with keys "first", "second", "third"; value is an outfit dict or null.
     """
 
+    print(
+        "[assemble_outfits] input counts="
+        + ", ".join(f"{cat}:{len(items)}" for cat, items in filtered_closet.items())
+    )
+
     #step 1: sort the items in the closet by their confidence score in similarity to the users preferences
     sorted_groups = {cat: _sorted_by_score(items) for cat, items in filtered_closet.items()}
 
@@ -75,6 +80,10 @@ def assemble_outfits(filtered_closet):
         bottom = picker(sorted_groups["bottom"], used_ids)
         shoe = picker(sorted_groups["shoe"], used_ids)
         one_piece = picker(sorted_groups["one_piece"], used_ids)
+
+        print(
+            f"[assemble_outfits] slot={key} top={getattr(top, '_id', None) if False else (top.get('_id') if top else None)} bottom={bottom.get('_id') if bottom else None} shoe={shoe.get('_id') if shoe else None} one_piece={one_piece.get('_id') if one_piece else None}"
+        )
 
         #step 5: build each outfit using the following logic: 
         '''
@@ -99,6 +108,7 @@ def assemble_outfits(filtered_closet):
             }
             used_ids.update([one_piece["_id"], shoe["_id"]])
         else:
+            print(f"[assemble_outfits] stopping at slot={key} because no valid outfit could be formed")
             break  # not enough items for a valid outfit; remaining slots stay null ?? #TODO: ask maria if we should return what we have
 
         outerwear = picker(sorted_groups["outerwear"], used_ids)
@@ -113,5 +123,7 @@ def assemble_outfits(filtered_closet):
             used_ids.add(accessory["_id"])
 
         result[key] = outfit
+        print(f"[assemble_outfits] built slot={key} outfit={outfit}")
 
+    print(f"[assemble_outfits] final result={result}")
     return result

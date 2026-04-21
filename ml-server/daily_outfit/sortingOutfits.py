@@ -20,6 +20,7 @@ def _load_style_fashionclip():
     #why are we doing global vars?
     global _model, _processor
     if _model is None:
+        print(f"[style_fashionclip] loading fine-tuned CLIP model from {FINE_TUNED_MODEL_PATH} on {DEVICE}")
         _model = CLIPModel.from_pretrained(FINE_TUNED_MODEL_PATH).to(DEVICE)
         _processor = CLIPProcessor.from_pretrained(FINE_TUNED_MODEL_PATH)
         _model.eval()
@@ -48,6 +49,8 @@ def _build_prompts_for_item(item_type:str, item_subtype:str) -> list[tuple[str, 
 def style_fashionclip(image_embedding: list[float], item_type: str, item_subtype: str) -> list[dict]:
     model, processor = _load_style_fashionclip()
 
+    print(f"[style_fashionclip] scoring item type={item_type!r}, subtype={item_subtype!r}, embedding_dim={len(image_embedding) if image_embedding else 0}")
+
     # Convert stored embedding to tensor
     img_emb = torch.tensor(image_embedding, dtype=torch.float32).unsqueeze(0).to(DEVICE)
     img_emb = img_emb / img_emb.norm(p=2, dim=-1, keepdim=True).clamp_min(1e-12)
@@ -56,6 +59,8 @@ def style_fashionclip(image_embedding: list[float], item_type: str, item_subtype
     style_prompt_pairs = _build_prompts_for_item(item_type, item_subtype)
     styles = [s for s, _ in style_prompt_pairs]
     prompts = [p for _, p in style_prompt_pairs]
+
+    print(f"[style_fashionclip] built {len(prompts)} prompts for styles={styles}")
 
     text_inputs = processor(
         text=prompts,
@@ -74,6 +79,8 @@ def style_fashionclip(image_embedding: list[float], item_type: str, item_subtype
 
     results = [{"style": style, "score": round(score, 4)} for style, score in zip(styles, probs)]
     results.sort(key=lambda x: x["score"], reverse=True)
+
+    print(f"[style_fashionclip] top scores={results[:3]}")
 
     return results
 
@@ -150,6 +157,8 @@ def filter_by_weather(closet, weather_tags):
     excluded_types = set()
     excluded_item_tags = set()
 
+    print(f"[filter_by_weather] incoming closet_count={len(closet)} weather_tags={weather_tags}")
+
     for tag in weather_tags:
         tag_lower = tag.lower()
 
@@ -157,6 +166,10 @@ def filter_by_weather(closet, weather_tags):
             excluded_subtypes.update(WEATHER_EXCLUSIONS[tag_lower]["subtypes"])
             excluded_types.update(WEATHER_EXCLUSIONS[tag_lower]["types"])
             excluded_item_tags.update(WEATHER_EXCLUSIONS[tag_lower].get("tags", []))
+
+    print(
+        f"[filter_by_weather] excluded_subtypes={sorted(excluded_subtypes)} excluded_types={sorted(excluded_types)} excluded_item_tags={sorted(excluded_item_tags)}"
+    )
 
     filtered = []
     for item in closet:
@@ -167,6 +180,8 @@ def filter_by_weather(closet, weather_tags):
         if any(t in excluded_item_tags for t in item.get("tags", [])):
             continue
         filtered.append(item)
+
+    print(f"[filter_by_weather] filtered closet_count={len(filtered)}")
 
     return filtered
 
@@ -184,6 +199,11 @@ def group_by_type(closet):
         item_type = item.get("type", "").lower()
         if item_type in groups:
             groups[item_type].append(item)
+
+    print(
+        "[group_by_type] counts="
+        + ", ".join(f"{group}:{len(items)}" for group, items in groups.items())
+    )
     return groups
 
 def group_by_style(closet: list[dict], preferences: dict, weather_tags: list[str]) -> list[dict]:
@@ -194,11 +214,16 @@ def group_by_style(closet: list[dict], preferences: dict, weather_tags: list[str
     # step 1: filter out items that don't fit the weather
     weather_filtered = filter_by_weather(closet, weather_tags)
 
+    print(
+        f"[group_by_style] after weather filter item_count={len(weather_filtered)} preference_styles={preferences.get('styleTags', [])}"
+    )
+
     # step 2: get the user's preferred styles
     user_styles = [s.lower() for s in preferences.get("styleTags", [])]
 
     #base case the user has no preference of style so you can make any kind of outfit combination
     if not user_styles:
+        print("[group_by_style] no preferred styles provided; returning weather-filtered items")
         return weather_filtered  # no style preference, return all weather-appropriate items
 
     # step 3: score each item against the user's preferred styles
@@ -217,6 +242,7 @@ def group_by_style(closet: list[dict], preferences: dict, weather_tags: list[str
         scores = style_fashionclip(image_embedding, item_type, item_subtype)
 
         if not scores:
+            print(f"[group_by_style] no scores returned for item_id={item.get('_id')}")
             continue
 
         # check if any of the user's preferred styles score above 40%
@@ -226,7 +252,12 @@ def group_by_style(closet: list[dict], preferences: dict, weather_tags: list[str
                     and score_entry["score"] >= CONFIDENCE_THRESHOLD):
                 item["predicted_style"] = score_entry["style"]
                 matching_items.append(item)
+                print(
+                    f"[group_by_style] matched item_id={item.get('_id')} predicted_style={score_entry['style']} score={score_entry['score']}"
+                )
                 break  # item matched, no need to check other styles
+
+    print(f"[group_by_style] matched_items_count={len(matching_items)}")
 
     return matching_items
 # if __name__ == '__main__':
