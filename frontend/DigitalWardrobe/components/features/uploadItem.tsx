@@ -232,10 +232,10 @@ export function UploadCard() {
 				</>
 			) : (
 				<View style={styles.uploadContent}>
-					<Text style={styles.uploadTitle}>add item</Text>
-					<Text style={styles.uploadDescription}>upload a photo to your wardrobe</Text>
+					<Text style={styles.uploadTitle}>Add Item</Text>
+					<Text style={styles.uploadDescription}>Upload an item to your wardrobe</Text>
 					<View style={styles.uploadButton}>
-						<Text style={styles.uploadButtonText}>choose photo</Text>
+						<Text style={styles.uploadButtonText}>Choose photo</Text>
 					</View>
 				</View>
 			)}
