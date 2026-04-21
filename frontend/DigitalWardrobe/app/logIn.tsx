@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Pressable } from 'react-native';
+import { Text, View, StyleSheet, Pressable } from 'react-native';
 import React, { useState } from "react";
 import {useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
@@ -8,7 +8,6 @@ import Button from "../components/ui/button";
 import OmbreBackground from "../components/features/ombrebackground";
 import GridOverlay from "../components/features/gridoverlay";
 import TextBox from "../components/ui/textBox";
-import NavBar from "../components/features/navbar";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
 
