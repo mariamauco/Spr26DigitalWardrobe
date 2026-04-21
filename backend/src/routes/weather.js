@@ -6,6 +6,7 @@ import fetch from "node-fetch";
 import { callModel, modelRoutes } from "../middleware/model.js";
 import OnboardingProfile from "../models/OnboardingProfile.js";
 import { model } from "mongoose";
+import DailyOutfit from "../models/DailyOutfit.js";
 
 const router = express.Router();
 
@@ -94,7 +95,7 @@ const getUserWeather = async (user) => {
 
 export const dailyOutfit = async (userId) => {
 
-    // 1. Get the user's profile from the database using their ID.
+    // Get the user's profile from the database using their ID.
     const user = await User.findById(userId);
     if (!user) {
         const err = new Error("User not found");
@@ -102,8 +103,28 @@ export const dailyOutfit = async (userId) => {
         throw err;
     }
 
-    // 2. Fetch current weather for the user's zipcode/country.
+    // 1. Fetch current weather for the user's zipcode/country.
     const weatherData = await getUserWeather(user);
+
+    // 2. Check if there is an outfit already
+    const tz = Number(weatherData.timezone || 0);
+    const userTime = Date.now() + tz*1000
+    const userDate = new Date(userTime)
+    // dateKey: YYYY-MM-DD
+    const y = userDate.getUTCFullYear();
+    const m = userDate.getUTCMonth() + 1;
+    const d = userDate.getUTCDate();
+
+    const mm = String(m).padStart(2, "0");
+    const dd = String(d).padStart(2, "0");
+    const dateKey = `${y}-${mm}-${dd}`;
+
+    const nextLocalMidnightShiftedMs = Date.UTC(y, m - 1, d + 1, 0, 0, 0, 0);
+    const expiresAt = new Date(nextLocalMidnightShiftedMs - tz * 1000;);
+
+    // look for the cache for this day, if found --> return it
+    const cache = await DailyOutfit.findOne({ user: userId, dateKey, expiresAt: { $gt: new Date() },}).lean();
+    if(cache?.outfit) {return cache.outfit};
 
     // 3. Convert raw weather response into ML-friendly weather tags.
     const tags = weatherTags(weatherData);
@@ -145,7 +166,14 @@ export const dailyOutfit = async (userId) => {
 
     let response = modelResponse;
 
-    // 9. Return the model response back to the route handler.
+    // 9. Save to cache.
+    await DailyOutfit.findOneAndUpdate(
+        { user: userId, dateKey },
+        { user: userId, dateKey, outfit: modelResponse, expiresAt },
+        { upsert: true, setDefaultsOnInsert: true }
+    );
+        
+    // 10. Return the model response back to the route handler.
     return response;
 };
 
@@ -162,6 +190,7 @@ router.get("/", authMiddleware, async (req, res) => {
 
 // get daily outfit route
 router.get("/daily-outfit", authMiddleware, async (req, res) => {
+
     try {
         const result = await dailyOutfit(req.user.id);
         res.json(result);
