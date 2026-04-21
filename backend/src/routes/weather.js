@@ -95,6 +95,57 @@ const getUserWeather = async (user) => {
 
 export const dailyOutfit = async (userId) => {
 
+    const OUTFIT_SLOTS = ["top", "bottom", "outerwear", "shoe", "accessory", "one_piece"];
+
+    const emptyItem = { id: "", imagePath: "" };
+
+    const hydrateOutfitResponse = (rawOutfits, closetItems) => {
+        if (!rawOutfits || typeof rawOutfits !== "object") return rawOutfits;
+
+        const byId = new Map(
+            (closetItems || []).map((item) => [String(item?._id), item?.imagePath || ""])
+        );
+
+        const hydrated = {};
+
+        for (const [outfitKey, outfitVal] of Object.entries(rawOutfits)) {
+            if (!outfitVal || typeof outfitVal !== "object") {
+                hydrated[outfitKey] = outfitVal;
+                continue;
+            }
+
+            const nextOutfit = {};
+            for (const slot of OUTFIT_SLOTS) {
+                const slotVal = outfitVal[slot];
+
+                if (!slotVal) {
+                    nextOutfit[slot] = emptyItem;
+                    continue;
+                }
+
+                if (typeof slotVal === "object" && "id" in slotVal && "imagePath" in slotVal) {
+                    nextOutfit[slot] = {
+                        id: slotVal.id || "",
+                        imagePath: slotVal.imagePath || "",
+                    };
+                    continue;
+                }
+
+                if (typeof slotVal === "string") {
+                    const imagePath = byId.get(slotVal) || "";
+                    nextOutfit[slot] = { id: slotVal, imagePath };
+                    continue;
+                }
+
+                nextOutfit[slot] = emptyItem;
+            }
+
+            hydrated[outfitKey] = nextOutfit;
+        }
+
+        return hydrated;
+    };
+
     // Get the user's profile from the database using their ID.
     const user = await User.findById(userId);
     if (!user) {
@@ -122,9 +173,14 @@ export const dailyOutfit = async (userId) => {
     const nextLocalMidnightShiftedMs = Date.UTC(y, m - 1, d + 1, 0, 0, 0, 0);
     const expiresAt = new Date(nextLocalMidnightShiftedMs - tz * 1000);
 
+    // 6. Load all clothing items in the user's closet.
+    const closet = await ClothingItem.find({user: userId}).sort({ createdAt: -1 });
+
     // look for the cache for this day, if found --> return it
     const cache = await DailyOutfit.findOne({ user: userId, dateKey, expiresAt: { $gt: new Date() },}).lean();
-    if(cache?.outfit) {return cache.outfit};
+    if(cache?.outfit) {
+        return hydrateOutfitResponse(cache.outfit, closet);
+    };
 
     // 3. Convert raw weather response into ML-friendly weather tags.
     const tags = weatherTags(weatherData);
@@ -149,9 +205,6 @@ export const dailyOutfit = async (userId) => {
         styleTags: onboarding.styleTags
     }
 
-    // 6. Load all clothing items in the user's closet.
-    const closet = await ClothingItem.find({user: userId}).sort({ createdAt: -1 });
-
     // 7. Build the request payload for the daily outfit model route.
     const payload = {
         userId,
@@ -164,12 +217,12 @@ export const dailyOutfit = async (userId) => {
     // 8. Call the ML model with preferences, closet items, and weather tags.
     const modelResponse = await callModel(modelRoutes.dailyOutfit, payload);
 
-    let response = modelResponse;
+    let response = hydrateOutfitResponse(modelResponse, closet);
 
     // 9. Save to cache.
     await DailyOutfit.findOneAndUpdate(
         { user: userId, dateKey },
-        { user: userId, dateKey, outfit: modelResponse, expiresAt },
+        { user: userId, dateKey, outfit: response, expiresAt },
         { upsert: true, setDefaultsOnInsert: true }
     );
         
