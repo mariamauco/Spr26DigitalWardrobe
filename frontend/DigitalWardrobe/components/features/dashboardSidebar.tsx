@@ -1,8 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { router } from "expo-router";
 import { useUser } from "./userContext";
 import { removeToken } from "../../utils/authStorage";
+import { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type DashboardSidebarProps = {
     username?: string;
@@ -21,12 +23,38 @@ export default function DashboardSidebar({
     router.replace("/logIn");
   };
 
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
+  const API_URL = process.env.EXPO_PUBLIC_API_URL ?? '';
+
+  useEffect(() => {
+    const fetchProfilePic = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) return;
+        const response = await fetch(`${API_URL}/api/profile-pic`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setProfilePicUrl(`${API_URL}${data.profilePic.image_path}`);
+        }
+      } catch (err) {
+        console.error("Error fetching profile pic:", err);
+      }
+    };
+    fetchProfilePic();
+  }, [user]);
+
   return (
     <View style={styles.sidebar}>
       <Text style={styles.logo}>Digital Wardrobe</Text>
 
       <View style={styles.profileRow}>
-        <View style={styles.avatar} />
+        {profilePicUrl ? (
+          <Image source={{ uri: profilePicUrl }} style={styles.avatar} />
+        ) : (
+          <View style={styles.avatar} />
+        )}
         <Text style={styles.username}>
           {user?.name ?? "User"}
         </Text>
@@ -117,8 +145,8 @@ const styles = StyleSheet.create({
 
   avatar: {
     width: 60,
-    height: 78,
-    borderRadius: 28,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: "#F7F5F2",
   },
 
