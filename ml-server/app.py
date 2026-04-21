@@ -175,20 +175,20 @@ def process_image():
 def daily_outfit():
     request_data = request.get_json()
 
-    userID = request_data.get('userID')
+    userId = request_data.get('userId')
     preferences = request_data.get('preferences')
     closet = request_data.get('closet')
     weatherTags = request_data.get('weatherTags')
 
     #check if every item is there and if so continue, if not then null
     is_valid = (
-        userID != ''
+        userId != ''
         and preferences 
         and isinstance(closet, list) and len(closet) > 0
         and isinstance(weatherTags, list) and len(weatherTags) > 0
     )
 
-    print(userID != '')
+    print(userId != '')
     print(preferences)
     print(isinstance(closet, list))
     print(isinstance(weatherTags, list))
@@ -198,7 +198,7 @@ def daily_outfit():
         return jsonify({
             "error": "Missing or invalid fields",
             "received": {
-                "userID": userID,
+                "userId": userId,
                 "preferences": preferences,
                 "closet": closet,
                 "weatherTags": weatherTags

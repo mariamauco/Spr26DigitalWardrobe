@@ -1,6 +1,7 @@
 import express from "express";
 import User from "../models/User.js";
 import authMiddleware from "../middleware/auth.js";
+import ClothingItem from "../models/ClothingItem.js";
 import fetch from "node-fetch";
 import { callModel, modelRoutes } from "../middleware/model.js";
 import OnboardingProfile from "../models/OnboardingProfile.js";
@@ -94,7 +95,7 @@ const getUserWeather = async (user) => {
 export const dailyOutfit = async (userId) => {
 
     // 1. Get the user's profile from the database using their ID.
-    const user = await User.findById(userId);
+    const user = await User.findById({userId});
     if (!user) {
         const err = new Error("User not found");
         err.status = 404;
@@ -108,7 +109,7 @@ export const dailyOutfit = async (userId) => {
     const tags = weatherTags(weatherData);
 
     // 4. Find this user's onboarding profile to read styling preferences.
-    const onboarding = await OnboardingProfile.findById(userId);
+    const onboarding = await OnboardingProfile.findById({userId});
 
     // 5. Keep only preference fields needed by the model.
     //    These labels shape outfit generation style and comfort level.
@@ -120,7 +121,7 @@ export const dailyOutfit = async (userId) => {
     }
 
     // 6. Load all clothing items in the user's closet.
-    const closet = await ClothingItem.find(userId).sort({ createdAt: -1 });
+    const closet = await ClothingItem.find({userId}).sort({ createdAt: -1 });
 
     // 7. Build the request payload for the daily outfit model route.
     const payload = {
@@ -134,30 +135,33 @@ export const dailyOutfit = async (userId) => {
     // 8. Call the ML model with preferences, closet items, and weather tags.
     const modelResponse = await callModel(modelRoutes.dailyOutfit, payload);
 
-    const response = modelResponse;
+    let response = modelResponse;
     
     // DUMMY Data
-    if (modelResponse.status != 200){
+    if (!modelResponse){
         response = {
             first:{
                 top,
                 bottom,
-                accessories,
-                footwear,
+                accessory,
+                shoe,
+                one_piece,
                 outerwear
             }, 
             second: {
                 top: null,
                 bottom: null,
-                accessories: null,
-                footwear: null,
+                accessory: null,
+                shoe: null,
+                one_piece:null,
                 outerwear: null
             }, 
             third: {
                 top: null,
                 bottom: null,
-                accessories: null,
-                footwear: null,
+                accessory: null,
+                shoe: null,
+                one_piece:null,
                 outerwear: null
             }
         }

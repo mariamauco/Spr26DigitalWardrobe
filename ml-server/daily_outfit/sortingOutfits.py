@@ -175,10 +175,10 @@ def group_by_type(closet):
     groups = {
         "top": [],
         "bottom": [],
-        "footwear": [],
+        "shoe": [],
         "outerwear": [],
-        "accessories": [],
-        "one-piece": []
+        "accessory": [],
+        "one_piece": []
     }
     for item in closet:
         item_type = item.get("type", "").lower()

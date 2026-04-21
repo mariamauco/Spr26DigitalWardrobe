@@ -7,7 +7,7 @@ const endpoint = process.env.MODEL_API_URL || "https://ml.digitalwardrobe.xyz/";
 
 // routes from the ml-server 
 export const modelRoutes = Object.freeze({
-    dailyOutfit: "/generate-daily",
+    dailyOutfit: "/daily_outfit",
     processImage: "/process-image",
 });
 
