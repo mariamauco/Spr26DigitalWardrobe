@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.git/
+evaluate_clip/env/
+evaluate_clip/eval_out/
+evaluate_clip/eval_out_finetuned/
+custom_dataset/dataset/
+custom_dataset/scraping/
+util/fine_tuned_model/

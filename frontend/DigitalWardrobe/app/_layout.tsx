@@ -1,4 +1,3 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { UserProvider } from "../components/features/userContext";
@@ -27,18 +26,16 @@ const [fontsLoaded] = useFonts({
 
   return (
     <UserProvider>
-      <ThemeProvider value={DefaultTheme}>
-        <Stack initialRouteName="landing" screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="landing" />
-          <Stack.Screen name="dashboard" />
-          <Stack.Screen name="logIn" />
-          <Stack.Screen name="signUp" />
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name= "privacy" />
-        </Stack>
+      <Stack initialRouteName="landing" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="landing" />
+        <Stack.Screen name="dashboard" />
+        <Stack.Screen name="logIn" />
+        <Stack.Screen name="signUp" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="privacy" />
+      </Stack>
 
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <StatusBar style="auto" />
     </UserProvider>
   );
 }

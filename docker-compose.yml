@@ -1,0 +1,105 @@
+services:
+  flask-dev:
+    build:
+      context: ./ml-server
+      dockerfile: Dockerfile
+    profiles: [dev]
+    ports:
+      - "6002:6002"
+    environment:
+      FLASK_DEBUG: "1"
+    volumes:
+      - ./ml-server:/app
+      - ./backend/uploads:/backend/uploads
+    restart: "no"
+    command: python -m flask --app app run --host=0.0.0.0 --port=6002 --debug
+
+  express-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    profiles: [dev]
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: development
+      PORT: 6001
+      MODEL_API_URL: http://flask-dev:6002
+    ports:
+      - "6001:6001"
+    volumes:
+      - ./backend:/app
+      - express_node_modules:/app/node_modules
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      flask-dev:
+        condition: service_started
+    restart: "no"
+    command: npm run dev
+
+  react-dev:
+    build:
+      context: ./frontend/DigitalWardrobe
+      dockerfile: Dockerfile.dev
+    profiles: [dev]
+    environment:
+      HOST: 0.0.0.0
+      EXPO_PUBLIC_API_URL: http://localhost:6001
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "6080:6080"
+    volumes:
+      - ./frontend/DigitalWardrobe:/app
+      - react_node_modules:/app/node_modules
+    depends_on:
+      - express-dev
+    restart: "no"
+
+  flask-prod:
+    build:
+      context: ./ml-server
+      dockerfile: Dockerfile
+    profiles: [prod]
+    expose:
+      - "6002"
+    environment:
+      FLASK_DEBUG: "0"
+    volumes:
+      - ./backend/uploads:/backend/uploads
+    restart: always
+    command: python -m flask --app app run --host=0.0.0.0 --port=6002
+
+  express-prod:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    profiles: [prod]
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: production
+      PORT: 6001
+      MODEL_API_URL: http://flask-prod:6002
+    expose:
+      - "6001"
+    depends_on:
+      flask-prod:
+        condition: service_started
+    restart: always
+
+  web-prod:
+    build:
+      context: ./frontend/DigitalWardrobe
+      dockerfile: Dockerfile.prod
+      args:
+        EXPO_PUBLIC_API_URL: ""
+    profiles: [prod]
+    ports:
+      - "6080:80"
+    depends_on:
+      - express-prod
+    restart: always
+
+volumes:
+  express_node_modules:
+  react_node_modules:
