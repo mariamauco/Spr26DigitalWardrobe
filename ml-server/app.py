@@ -110,7 +110,11 @@ def process_image():
         return jsonify(error=message), 400
 
     # use the background-removed image for both clip stages
-    clip_image = result_image.convert("RGB")
+    #instead of replacing the background with transparent pixels, replace it with white pixels
+    #placing a white background will improve clips accuracy to classify the color of an image
+    white_bg = Image.new("RGB", result_image.size, (255, 255, 255))
+    white_bg.paste(result_image, mask=result_image.split()[3])
+    clip_image = white_bg
     image_embedding = get_img_embedding(model, processor, clip_image)
 
     pred_coarse, coarse_conf, coarse_probs = clip_classify(

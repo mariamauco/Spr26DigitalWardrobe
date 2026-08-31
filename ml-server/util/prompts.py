@@ -113,6 +113,11 @@ COLOR_PROMPTS = {
     "lavender": "a photo of lavender clothing with a dominant lavender color",
     "burgundy": "a fashion photograph of clothing in a rich burgundy hue, deep wine-red tone prominently visible across the fabric, studio lighting against a neutral background",
     "teal": "a photo of teal clothing, a medium blue-green color like a peacock feather, between cyan and dark green",
+    "cream":    "a photo of cream clothing, an off-white with a faint warm yellowish tint, warmer than white but much lighter than beige",
+    "olive":    "a photo of olive clothing, a muted yellow-green like olive oil, dark and earthy with a brownish tint, not bright green",
+    "mustard":  "a photo of mustard clothing, a deep muted yellow-brown like mustard condiment, darker and more brownish than bright yellow",
+    "camel":    "a photo of camel clothing, a warm light-brown like a camel's coat, between tan and medium brown, richer than beige",
+    "rust":     "a photo of rust clothing, a dark reddish-brown like oxidized iron, warmer and darker than orange, less purple than burgundy",
 }
 
 STYLE_FINE_CATEGORIES: dict[tuple[str, str], list[str]] = {
